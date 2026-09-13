@@ -1,0 +1,85 @@
+# Distribution Agent — Platform Setup
+
+Each platform requires you to obtain credentials yourself (OAuth
+consent has to be granted by a logged-in human — this can't be
+scripted). Once you have them, put them in `.env` (copy from
+`.env.example`) and never commit that file.
+
+## Instagram
+
+1. Convert the target account to a **Business or Creator** account
+   (Instagram app → Settings → Account type).
+2. Link it to a **Facebook Page** (any minimal Page works).
+3. Create a Meta Developer App at https://developers.facebook.com,
+   add the **Instagram Graph API** product.
+4. Run the OAuth flow yourself (Graph API Explorer or your app's login
+   flow) granting `instagram_basic` and `instagram_content_publish`,
+   then exchange for a **long-lived token**
+   (`GET /oauth/access_token?grant_type=fb_exchange_token...`).
+5. Fill in `IG_ACCESS_TOKEN` and `IG_BUSINESS_ACCOUNT_ID`.
+
+Note: `InstagramAdapter.upload()` needs a **publicly reachable video
+URL** (`VideoAsset.public_url`), not a local file — the Graph API
+fetches the video from that URL itself.
+
+## Facebook
+
+1. Same Meta Developer App as above.
+2. Generate a **Page access token** with `pages_manage_posts` and
+   `pages_read_engagement`.
+3. Fill in `FB_PAGE_ACCESS_TOKEN` and `FB_PAGE_ID`.
+
+`FacebookAdapter.upload()` accepts either `VideoAsset.local_path` or
+`VideoAsset.public_url`.
+
+## YouTube
+
+1. Create a Google Cloud project, enable **YouTube Data API v3**.
+2. Create an OAuth 2.0 Client ID (Desktop app type is simplest).
+3. Run the OAuth consent flow once, locally, with scope
+   `https://www.googleapis.com/auth/youtube.upload`, to get a
+   **refresh token** (e.g. via `google-auth-oauthlib`'s
+   `InstalledAppFlow.run_local_server()`).
+4. Fill in `YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`.
+
+New Google Cloud projects start in **testing mode** with a small quota
+— request production access before relying on this for real traffic.
+
+## Reddit
+
+1. Register an app at https://www.reddit.com/prefs/apps (type:
+   "script").
+2. Fill in `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`,
+   `REDDIT_USERNAME`, `REDDIT_PASSWORD`, `REDDIT_USER_AGENT`,
+   `REDDIT_SUBREDDIT`.
+
+Reddit has been tightening password-grant OAuth for third-party apps —
+if `RedditAdapter` stops authenticating, check current Reddit API docs
+and switch to the web-app OAuth code flow.
+
+## Email notifications
+
+Standard SMTP — `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`,
+`SMTP_PASSWORD`, `SMTP_FROM_ADDRESS`. Any provider works (Gmail app
+password, SendGrid SMTP relay, etc.).
+
+## Usage
+
+```python
+from pathlib import Path
+from distribution_agent import distribute
+from distribution_agent.adapters.base import VideoAsset
+
+asset = VideoAsset(
+    caption="Check out our new product!",
+    local_path=Path("video.mp4"),      # needed for YouTube, Reddit
+    public_url="https://cdn.example.com/video.mp4",  # needed for Instagram, optional for Facebook
+)
+
+records = distribute(asset, platforms=["youtube", "instagram"], poc_email="client@example.com")
+for r in records:
+    print(r)
+```
+
+Only pass videos here that have already passed the Quality Control
+Agent (see `agent-prompts.md`).
