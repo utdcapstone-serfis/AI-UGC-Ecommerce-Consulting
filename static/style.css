@@ -327,6 +327,59 @@ dl dd { margin: 2px 0 0; font-size: 14px; line-height: 1.5; word-break: break-wo
   font-size: 13px;
 }
 
+/* Conversation / reply drafts */
+.conversation-panel { border-left: 4px solid #6d28d9; }
+
+.thread { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+
+.thread-message {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.thread-inbound { background: #fafbfc; }
+.thread-outbound { background: #fbfcff; border-left: 3px solid var(--brand); }
+
+.thread-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+.thread-who { font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-muted); }
+.thread-date { color: var(--text-muted); margin-left: auto; }
+
+.thread-subject { font-size: 13px; margin-bottom: 8px; }
+.thread-body {
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 10px;
+}
+
+.log-reply-form {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 560px;
+}
+.log-reply-form h3 { margin: 0 0 4px; font-size: 14px; }
+.log-reply-form label { font-size: 12px; color: var(--text-muted); }
+.log-reply-form input,
+.log-reply-form textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+}
+.log-reply-form button { align-self: flex-start; margin-top: 4px; }
+
 @media (max-width: 900px) {
   .cards { grid-template-columns: repeat(2, 1fr); }
   .detail-grid { grid-template-columns: 1fr; }

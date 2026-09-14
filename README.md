@@ -205,6 +205,39 @@ which the future send agent should set instead once it's implemented.)
    `lead_status='contacted'` on success, and add an explicit, off-by-default
    trigger (CLI flag and/or a "Send" button gated to `approved` leads only).
 
+## Conversation / reply drafts
+
+Once a prospect replies to the first-touch email, `ReplyDraftAgent`
+(`agents/reply_writer.py`) can draft a suggested response - but it never
+sends anything and it never runs on its own. The flow, all on the lead
+detail page under "Conversation":
+
+1. There is no live inbox connection yet, so a human logs the prospect's
+   actual reply by pasting it into the "Log a reply from this prospect" form.
+2. That save triggers `ReplyDraftAgent.draft_reply()`, which reads the
+   original outreach email plus the prospect's reply and drafts a response -
+   Claude-written if `ANTHROPIC_API_KEY` is set, otherwise a safe template
+   fallback that explicitly declines to guess at things like pricing and
+   offers a human follow-up instead.
+3. The draft is stored as a new `messages` row with `approval_status =
+   'pending_review'` - same lifecycle, same table of allowed values
+   (`pending_review`/`approved`/`rejected`) as the first-touch email.
+4. A human reviews it in the thread and clicks **Approve Reply** or
+   **Reject Reply**. Approving only updates the database - still nothing is
+   sent.
+
+This was a deliberate, discussed tradeoff: "fully autonomous" send-and-reply
+was explicitly requested and explicitly declined, for the same reason
+automatic first-touch sending was never implemented - an unsupervised AI
+conversing with a real prospect can say something wrong with nobody catching
+it first. This gives you a drafted reply for every conversation turn while
+keeping a human decision in the loop each time.
+
+**Not yet built:** a live inbox connection (Gmail API/IMAP) that would
+auto-detect a prospect's reply instead of requiring it to be pasted in
+manually. That's a real, separate integration - see "What remains as a
+future enhancement" below.
+
 ## Ethical/legal notes on contact data
 
 - No LinkedIn scraping - it violates LinkedIn's ToS. Contact/profile URLs come only from licensed providers (Apollo.io, Hunter.io) that source and verify this data legitimately.

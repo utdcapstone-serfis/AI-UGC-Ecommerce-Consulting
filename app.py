@@ -11,6 +11,7 @@ import os
 from flask import Flask, abort, redirect, render_template, request, send_file, url_for
 
 import storage
+from agents.reply_writer import ReplyDraftAgent
 from export_excel import export_to_excel
 
 app = Flask(__name__)
@@ -91,7 +92,8 @@ def lead_detail(lead_id):
     if lead is None:
         abort(404)
     analytics = storage.get_platform_analytics(lead_id)
-    return render_template("lead_detail.html", lead=lead, analytics=analytics)
+    messages = storage.get_messages(lead_id)
+    return render_template("lead_detail.html", lead=lead, analytics=analytics, messages=messages)
 
 
 @app.route("/lead/<int:lead_id>/approve", methods=["POST"])
@@ -119,6 +121,53 @@ def update_lead_status(lead_id):
         abort(400)
     storage.set_lead_status(lead_id, new_status)
     return redirect(url_for("lead_detail", lead_id=lead_id))
+
+
+@app.route("/lead/<int:lead_id>/log-reply", methods=["POST"])
+def log_reply(lead_id):
+    """A human pastes in a reply a prospect actually sent (there's no live
+    inbox connection - this is a manual log step). That triggers
+    ReplyDraftAgent to draft a suggested response, saved as pending_review.
+    Nothing here sends anything."""
+    lead = storage.get_lead(lead_id)
+    if lead is None:
+        abort(404)
+
+    inbound_subject = request.form.get("inbound_subject", "").strip()
+    inbound_body = request.form.get("inbound_body", "").strip()
+    if not inbound_body:
+        abort(400)
+
+    storage.log_inbound_message(lead_id, inbound_subject, inbound_body)
+
+    subject, body = ReplyDraftAgent().draft_reply(
+        lead,
+        original_subject=lead.draft_email_subject,
+        original_body=lead.draft_email_body,
+        inbound_subject=inbound_subject,
+        inbound_body=inbound_body,
+    )
+    storage.save_reply_draft(lead_id, subject, body)
+
+    return redirect(url_for("lead_detail", lead_id=lead_id))
+
+
+@app.route("/message/<int:message_id>/approve", methods=["POST"])
+def approve_message(message_id):
+    message = storage.get_message(message_id)
+    if message is None:
+        abort(404)
+    storage.set_message_approval(message_id, "approved")
+    return redirect(url_for("lead_detail", lead_id=message["lead_id"]))
+
+
+@app.route("/message/<int:message_id>/reject", methods=["POST"])
+def reject_message(message_id):
+    message = storage.get_message(message_id)
+    if message is None:
+        abort(404)
+    storage.set_message_approval(message_id, "rejected")
+    return redirect(url_for("lead_detail", lead_id=message["lead_id"]))
 
 
 @app.route("/export")

@@ -138,4 +138,51 @@
     </form>
   </section>
 
+  <section class="panel conversation-panel">
+    <h2>Conversation</h2>
+    <p class="actions-note">
+      There's no live inbox connection yet, so replies are logged manually: paste in what the
+      prospect actually sent below, and ReplyDraftAgent will draft a suggested response for you
+      to review here. Nothing is ever sent automatically - draft replies sit at Pending Review
+      just like the first-touch email above until a human approves them.
+    </p>
+
+    {% if messages %}
+    <div class="thread">
+      {% for m in messages %}
+      <div class="thread-message thread-{{ m.direction }}">
+        <div class="thread-meta">
+          <span class="thread-who">{{ "Prospect" if m.direction == "inbound" else "Serfis (draft)" }}</span>
+          {% if m.direction == "outbound" %}
+            <span class="badge badge-approval-{{ m.approval_status }}">{{ approval_labels.get(m.approval_status, m.approval_status) }}</span>
+          {% endif %}
+          <span class="thread-date">{{ m.created_at[:16].replace("T", " ") if m.created_at else "" }}</span>
+        </div>
+        <div class="thread-subject"><strong>Subject:</strong> {{ m.subject or "-" }}</div>
+        <pre class="thread-body">{{ m.body }}</pre>
+        {% if m.direction == "outbound" and m.approval_status == "pending_review" %}
+        <div class="action-row">
+          <form method="post" action="{{ url_for('approve_message', message_id=m.id) }}">
+            <button type="submit" class="btn btn-approve">Approve Reply</button>
+          </form>
+          <form method="post" action="{{ url_for('reject_message', message_id=m.id) }}">
+            <button type="submit" class="btn btn-reject">Reject Reply</button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('log_reply', lead_id=lead.id) }}" class="log-reply-form">
+      <h3>Log a reply from this prospect</h3>
+      <label for="inbound_subject">Subject</label>
+      <input type="text" name="inbound_subject" id="inbound_subject" placeholder="Re: {{ lead.draft_email_subject }}">
+      <label for="inbound_body">What did they write?</label>
+      <textarea name="inbound_body" id="inbound_body" rows="4" placeholder="Paste the prospect's reply here..." required></textarea>
+      <button type="submit" class="btn btn-secondary">Generate Draft Reply</button>
+    </form>
+  </section>
+
 {% endblock %}
