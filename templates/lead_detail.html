@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}{{ lead.company_name }} - Serfis Lead Dashboard{% endblock %}
+{% block content %}
+
+  <a class="back-link" href="{{ url_for('dashboard') }}">&larr; Back to all leads</a>
+
+  {% if lead.source == 'demo_sample' %}
+  <div class="sample-banner">
+    <strong>Sample data.</strong> This is a fictional lead used to demonstrate the converted-lead and content-analytics view. It is not a real prospect, and none of its numbers came from a real platform.
+  </div>
+  {% endif %}
+
+  <div class="detail-header">
+    <div>
+      <h1>{{ lead.company_name }}</h1>
+      <div class="detail-subhead">
+        {% if lead.website %}<a href="{{ lead.website }}" target="_blank" rel="noopener">{{ lead.website }}</a>{% endif %}
+      </div>
+    </div>
+    <div class="detail-badges">
+      {% if lead.icp_fit_score is not none %}
+        <span class="score-pill score-{{ 'high' if lead.icp_fit_score >= 7 else ('mid' if lead.icp_fit_score >= 4 else 'low') }}">
+          ICP Fit: {{ lead.icp_fit_score }}/10
+        </span>
+      {% endif %}
+      <span class="badge badge-status-{{ lead.lead_status }}">{{ lead_status_labels.get(lead.lead_status, lead.lead_status) }}</span>
+      <span class="badge badge-approval-{{ lead.approval_status }}">{{ approval_labels.get(lead.approval_status, lead.approval_status) }}</span>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <section class="panel">
+      <h2>Company</h2>
+      <dl>
+        <dt>Industry</dt><dd>{{ lead.industry or "-" }}</dd>
+        <dt>Company Size</dt><dd>{{ lead.company_size or "-" }}</dd>
+        <dt>Location</dt><dd>{{ lead.location or "-" }}</dd>
+        <dt>What They Sell</dt><dd>{{ lead.what_they_sell or "-" }}</dd>
+        <dt>Funding Notes</dt><dd>{{ lead.funding_notes or "-" }}</dd>
+      </dl>
+    </section>
+
+    <section class="panel">
+      <h2>ICP Fit</h2>
+      <dl>
+        <dt>ICP Fit Score (1-10)</dt><dd>{{ lead.icp_fit_score if lead.icp_fit_score is not none else "-" }}</dd>
+        <dt>Why It Fits</dt><dd>{{ lead.why_it_fits or "-" }}</dd>
+      </dl>
+    </section>
+
+    <section class="panel">
+      <h2>Point of Contact</h2>
+      <dl>
+        <dt>Contact Name</dt><dd>{{ lead.contact_name or "-" }}</dd>
+        <dt>Contact Title</dt><dd>{{ lead.contact_title or "-" }}</dd>
+        <dt>Contact Email</dt><dd>{{ lead.contact_email or "-" }}</dd>
+        <dt>Contact/Profile URL</dt>
+        <dd>
+          {% if lead.contact_profile_url and lead.contact_profile_url.startswith('http') %}
+            <a href="{{ lead.contact_profile_url }}" target="_blank" rel="noopener">{{ lead.contact_profile_url }}</a>
+          {% else %}{{ lead.contact_profile_url or "-" }}{% endif %}
+        </dd>
+      </dl>
+    </section>
+
+    <section class="panel">
+      <h2>Research</h2>
+      <dl>
+        <dt>Research Notes</dt><dd>{{ lead.research_notes or "-" }}</dd>
+        <dt>Research Sources</dt><dd>{{ lead.research_sources or "-" }}</dd>
+      </dl>
+    </section>
+
+    <section class="panel panel-highlight">
+      <h2>Recommended Outreach Angle</h2>
+      <p class="outreach-angle">{{ lead.outreach_angle or "-" }}</p>
+    </section>
+
+    <section class="panel panel-highlight panel-email">
+      <h2>Draft Email</h2>
+      <div class="email-subject"><strong>Subject:</strong> {{ lead.draft_email_subject or "-" }}</div>
+      <pre class="email-body">{{ lead.draft_email_body or "-" }}</pre>
+    </section>
+  </div>
+
+  <section class="panel panel-highlight analytics-panel">
+    <h2>Content Performance Analytics</h2>
+    {% if analytics %}
+      <p class="analytics-note">
+        Engagement on content Serfis produced for this account, by platform.
+        {% if lead.source == 'demo_sample' %}Sample numbers for demo purposes - not real platform data.{% endif %}
+      </p>
+      <div class="analytics-grid">
+        {% for row in analytics %}
+        <div class="platform-card platform-{{ row.platform }}">
+          <div class="platform-name">{{ platform_labels.get(row.platform, row.platform) }}</div>
+          <dl class="platform-metrics">
+            <div><dt>Views</dt><dd>{{ "{:,}".format(row.views) }}</dd></div>
+            <div><dt>Likes</dt><dd>{{ "{:,}".format(row.likes) }}</dd></div>
+            <div><dt>Shares</dt><dd>{{ "{:,}".format(row.shares) }}</dd></div>
+            <div><dt>Comments</dt><dd>{{ "{:,}".format(row.comments) }}</dd></div>
+          </dl>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="analytics-empty">
+        No published content yet for this lead. Analytics will appear here once outreach
+        converts and Serfis-produced content goes live across channels.
+      </p>
+    {% endif %}
+  </section>
+
+  <section class="panel actions-panel">
+    <h2>Review This Outreach</h2>
+    <p class="actions-note">
+      Approving or rejecting only updates this record in the database - it does not send an email or text.
+    </p>
+    <div class="action-row">
+      <form method="post" action="{{ url_for('approve_lead', lead_id=lead.id) }}">
+        <button type="submit" class="btn btn-approve">Approve Outreach</button>
+      </form>
+      <form method="post" action="{{ url_for('reject_lead', lead_id=lead.id) }}">
+        <button type="submit" class="btn btn-reject">Reject Outreach</button>
+      </form>
+    </div>
+
+    <form method="post" action="{{ url_for('update_lead_status', lead_id=lead.id) }}" class="status-form">
+      <label for="lead_status">Lead Status</label>
+      <select name="lead_status" id="lead_status">
+        {% for value in lead_statuses %}
+          <option value="{{ value }}" {% if lead.lead_status == value %}selected{% endif %}>
+            {{ lead_status_labels[value] }}
+          </option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-secondary">Update Status</button>
+    </form>
+  </section>
+
+{% endblock %}

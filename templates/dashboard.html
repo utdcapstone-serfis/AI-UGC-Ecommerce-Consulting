@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Serfis Lead Dashboard{% endblock %}
+{% block content %}
+
+  <section class="cards">
+    <div class="card">
+      <div class="card-value">{{ stats.total }}</div>
+      <div class="card-label">Total Leads</div>
+    </div>
+    <div class="card">
+      <div class="card-value">{{ stats.qualified }}</div>
+      <div class="card-label">Qualified Leads (score &ge; 7)</div>
+    </div>
+    <div class="card card-pending">
+      <div class="card-value">{{ stats.pending }}</div>
+      <div class="card-label">Pending Review</div>
+    </div>
+    <div class="card card-approved">
+      <div class="card-value">{{ stats.approved }}</div>
+      <div class="card-label">Approved</div>
+    </div>
+    <div class="card card-rejected">
+      <div class="card-value">{{ stats.rejected }}</div>
+      <div class="card-label">Rejected</div>
+    </div>
+  </section>
+
+  {% if stats.sample_count > 0 %}
+  <p class="sample-note">
+    Includes {{ stats.sample_count }} fictional sample lead ("Serfis Sample") used to demonstrate the converted-lead / content-analytics view - not a real prospect.
+  </p>
+  {% endif %}
+
+  <form class="filters" method="get" action="{{ url_for('dashboard') }}">
+    <input type="text" name="q" placeholder="Search company name..." value="{{ filters.q }}">
+
+    <select name="icp_score">
+      <option value="">Any ICP Score</option>
+      {% for score in range(10, 0, -1) %}
+        <option value="{{ score }}" {% if filters.icp_score == score|string %}selected{% endif %}>
+          {{ score }}+ and above
+        </option>
+      {% endfor %}
+    </select>
+
+    <select name="lead_status">
+      <option value="">Any Lead Status</option>
+      {% for value in lead_statuses %}
+        <option value="{{ value }}" {% if filters.lead_status == value %}selected{% endif %}>
+          {{ lead_status_labels[value] }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <select name="approval_status">
+      <option value="">Any Approval Status</option>
+      {% for value in approval_statuses %}
+        <option value="{{ value }}" {% if filters.approval_status == value %}selected{% endif %}>
+          {{ approval_labels[value] }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <select name="industry">
+      <option value="">Any Industry</option>
+      {% for value in industries %}
+        <option value="{{ value }}" {% if filters.industry == value %}selected{% endif %}>{{ value }}</option>
+      {% endfor %}
+    </select>
+
+    <select name="sort_dir">
+      <option value="desc" {% if filters.sort_dir == 'desc' %}selected{% endif %}>ICP Score: High to Low</option>
+      <option value="asc" {% if filters.sort_dir == 'asc' %}selected{% endif %}>ICP Score: Low to High</option>
+    </select>
+
+    <button type="submit">Apply</button>
+    <a class="clear-link" href="{{ url_for('dashboard') }}">Clear</a>
+  </form>
+
+  <section class="table-wrap">
+    <table class="lead-table">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Industry</th>
+          <th>Company Size</th>
+          <th>ICP Score</th>
+          <th>Contact</th>
+          <th>Lead Status</th>
+          <th>Approval</th>
+          <th>Date Added</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for lead in leads %}
+        <tr class="lead-row" onclick="window.location='{{ url_for('lead_detail', lead_id=lead.id) }}'">
+          <td class="company-cell">{{ lead.company_name }}</td>
+          <td>{{ lead.industry or "-" }}</td>
+          <td>{{ lead.company_size or "-" }}</td>
+          <td>
+            {% if lead.icp_fit_score is not none %}
+              <span class="score-pill score-{{ 'high' if lead.icp_fit_score >= 7 else ('mid' if lead.icp_fit_score >= 4 else 'low') }}">
+                {{ lead.icp_fit_score }}
+              </span>
+            {% else %}-{% endif %}
+          </td>
+          <td>{{ lead.contact_name or "-" }}</td>
+          <td><span class="badge badge-status-{{ lead.lead_status }}">{{ lead_status_labels.get(lead.lead_status, lead.lead_status) }}</span></td>
+          <td><span class="badge badge-approval-{{ lead.approval_status }}">{{ approval_labels.get(lead.approval_status, lead.approval_status) }}</span></td>
+          <td>{{ lead.created_at[:10] if lead.created_at else "-" }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="empty-state">No leads match these filters.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+{% endblock %}
