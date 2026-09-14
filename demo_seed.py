@@ -75,11 +75,10 @@ def seed_demo_lead() -> Lead:
             "Hi Jordan,\n\n"
             "Noticed your catalog has grown fast this year, which usually means "
             "content production becomes the bottleneck for a lean team.\n\n"
-            "Serfis runs an autonomous AI content pipeline that pulls directly from "
-            "your product data to generate and A/B test multi-channel content "
-            "automatically, at a flat cost with no added headcount.\n\n"
-            "Worth a quick reply if you'd like to see how this could work for "
-            "your team?\n\n"
+            "At Serfis, we help teams like yours keep content flowing across every "
+            "channel without adding headcount - and constantly test what's actually "
+            "working, so you're never guessing.\n\n"
+            "Feel free to reply if you have any questions - happy to help.\n\n"
             "The Serfis Team"
         ),
         approval_status="approved",

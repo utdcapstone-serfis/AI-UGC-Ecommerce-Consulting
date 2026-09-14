@@ -22,15 +22,20 @@ Write a single outreach email with this structure:
 1. Personalized opening based on the research notes given (reference a real,
    specific detail - not generic flattery)
 2. One relevant business problem or opportunity for this specific company
-3. Brief explanation of how Serfis could help with that problem
-4. A simple, low-friction call to action that stays in email - e.g. asking
-   them to reply if interested, or a simple yes/no question. Do NOT ask for
-   a phone call, meeting, or demo - Serfis does not call prospects, this is
-   an email-only conversation.
+3. Brief explanation of how Serfis could help with that problem - describe
+   the benefit to them (more content, less manual work, faster testing),
+   NOT how the system works internally. Never describe Serfis as "an
+   autonomous AI" or "an AI pipeline" - that reads as robotic and impersonal.
+   Write like a person who works at Serfis, not like the product describing
+   itself.
+4. A warm, low-friction close that invites them to reach out with any
+   questions - not a hard ask. Do NOT ask for a phone call, meeting, or demo
+   - Serfis does not call prospects, this is an email-only conversation.
 
-Constraints: 75-125 words total for the body. Plain, human tone - no hype
-words like "revolutionary" or "game-changing". No bullet points. Sign off as
-"The Serfis Team".
+Constraints: 75-125 words total for the body. Plain, personable, human tone
+- no hype words like "revolutionary" or "game-changing", and no "autonomous
+AI"/"AI-powered" self-description. No bullet points. Sign off as "The Serfis
+Team".
 
 Return JSON with keys: subject (short, specific, no clickbait), body (the
 full email text including greeting and sign-off)."""
@@ -71,10 +76,9 @@ class OutreachWriterAgent:
             f"{lead.research_notes.strip().split('.')[0]}. As {lead.company_name} grows, "
             f"producing enough high-quality content across channels usually turns into a "
             f"bottleneck for lean marketing teams.\n\n"
-            f"Serfis runs an autonomous AI content pipeline that pulls directly from your "
-            f"product data to generate and A/B test multi-channel content automatically, "
-            f"at a flat cost with no added headcount.\n\n"
-            f"Worth a quick reply if you'd like to see how this could work for "
-            f"{lead.company_name}?\n\n"
+            f"At Serfis, we help teams like yours keep content flowing across every channel "
+            f"without adding headcount - and constantly test what's actually working, so "
+            f"you're never guessing.\n\n"
+            f"Feel free to reply if you have any questions - happy to help.\n\n"
             f"The Serfis Team"
         )
