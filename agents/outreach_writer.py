@@ -23,7 +23,10 @@ Write a single outreach email with this structure:
    specific detail - not generic flattery)
 2. One relevant business problem or opportunity for this specific company
 3. Brief explanation of how Serfis could help with that problem
-4. A simple, low-friction call to action (e.g. a short call, not a demo/signup)
+4. A simple, low-friction call to action that stays in email - e.g. asking
+   them to reply if interested, or a simple yes/no question. Do NOT ask for
+   a phone call, meeting, or demo - Serfis does not call prospects, this is
+   an email-only conversation.
 
 Constraints: 75-125 words total for the body. Plain, human tone - no hype
 words like "revolutionary" or "game-changing". No bullet points. Sign off as
@@ -71,6 +74,7 @@ class OutreachWriterAgent:
             f"Serfis runs an autonomous AI content pipeline that pulls directly from your "
             f"product data to generate and A/B test multi-channel content automatically, "
             f"at a flat cost with no added headcount.\n\n"
-            f"Worth a quick 15-minute call to see if it's a fit?\n\n"
+            f"Worth a quick reply if you'd like to see how this could work for "
+            f"{lead.company_name}?\n\n"
             f"The Serfis Team"
         )

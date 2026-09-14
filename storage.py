@@ -58,6 +58,28 @@ CREATE TABLE IF NOT EXISTS platform_analytics (
 
 PLATFORMS = ["facebook", "instagram", "youtube", "x", "reddit"]
 
+# Conversation thread for a lead, beyond the first-touch email already stored
+# on the leads row itself. 'inbound' rows are logged manually by a human
+# (pasting in what a prospect actually wrote - there is no live inbox
+# connection yet, see agents/reply_writer.py). 'outbound' rows are draft
+# replies from ReplyDraftAgent and follow the exact same pending_review /
+# approved / rejected lifecycle as the first-touch email - nothing here is
+# ever sent automatically.
+MESSAGES_SCHEMA = """
+CREATE TABLE IF NOT EXISTS messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lead_id INTEGER NOT NULL,
+    direction TEXT NOT NULL,
+    subject TEXT,
+    body TEXT,
+    approval_status TEXT,
+    created_at TEXT,
+    FOREIGN KEY(lead_id) REFERENCES leads(id) ON DELETE CASCADE
+);
+"""
+
+MESSAGE_DIRECTIONS = ["inbound", "outbound"]
+
 # Columns added after the table originally shipped. Kept as (name, sql_type,
 # default) so init_db() can ALTER an existing leads.db in place without
 # losing data - this is what lets the dashboard sit on top of a DB the
@@ -96,6 +118,7 @@ def init_db() -> None:
     with get_conn() as conn:
         conn.execute(SCHEMA)
         conn.execute(PLATFORM_ANALYTICS_SCHEMA)
+        conn.execute(MESSAGES_SCHEMA)
         existing_cols = {row["name"] for row in conn.execute("PRAGMA table_info(leads)")}
         for col_name, col_type, default in _MIGRATIONS:
             if col_name not in existing_cols:
@@ -122,6 +145,7 @@ def reset_all_leads() -> None:
     with get_conn() as conn:
         conn.execute("DELETE FROM leads")
         conn.execute("DELETE FROM platform_analytics")
+        conn.execute("DELETE FROM messages")
 
 
 def save_lead(lead: Lead) -> Lead:
@@ -292,6 +316,50 @@ def get_platform_analytics(lead_id: int) -> list[dict]:
         ).fetchall()
     by_platform = {r["platform"]: dict(r) for r in rows}
     return [by_platform[p] for p in PLATFORMS if p in by_platform]
+
+
+def log_inbound_message(lead_id: int, subject: str, body: str) -> int:
+    """Records a message a prospect actually sent (pasted in by a human -
+    there's no live inbox connection). Returns the new message id."""
+    with get_conn() as conn:
+        cur = conn.execute(
+            "INSERT INTO messages (lead_id, direction, subject, body, approval_status, created_at) "
+            "VALUES (?, 'inbound', ?, ?, NULL, ?)",
+            (lead_id, subject, body, datetime.now(timezone.utc).isoformat()),
+        )
+        return cur.lastrowid
+
+
+def save_reply_draft(lead_id: int, subject: str, body: str) -> int:
+    """Stores a drafted reply awaiting human approval. Never sent automatically."""
+    with get_conn() as conn:
+        cur = conn.execute(
+            "INSERT INTO messages (lead_id, direction, subject, body, approval_status, created_at) "
+            "VALUES (?, 'outbound', ?, ?, 'pending_review', ?)",
+            (lead_id, subject, body, datetime.now(timezone.utc).isoformat()),
+        )
+        return cur.lastrowid
+
+
+def get_messages(lead_id: int) -> list[dict]:
+    """Full conversation thread for a lead, oldest first."""
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT * FROM messages WHERE lead_id=? ORDER BY created_at ASC, id ASC", (lead_id,)
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def get_message(message_id: int) -> Optional[dict]:
+    with get_conn() as conn:
+        row = conn.execute("SELECT * FROM messages WHERE id=?", (message_id,)).fetchone()
+    return dict(row) if row else None
+
+
+def set_message_approval(message_id: int, status: str) -> None:
+    assert status in APPROVAL_STATUSES, f"invalid approval_status: {status}"
+    with get_conn() as conn:
+        conn.execute("UPDATE messages SET approval_status=? WHERE id=?", (status, message_id))
 
 
 def _row_to_lead(row: sqlite3.Row) -> Lead:
