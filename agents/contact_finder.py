@@ -43,28 +43,62 @@ class ContactFinderAgent:
         if not config.APOLLO_API_KEY or not lead.website:
             return None
         domain = lead.website.replace("https://", "").replace("http://", "").split("/")[0]
-        url = "https://api.apollo.io/v1/mixed_people/search"
-        payload = {
-            "api_key": config.APOLLO_API_KEY,
+        # Apollo requires the key in the X-Api-Key header, not the body - see
+        # the matching note in discovery.py's _discover_from_apollo. Apollo
+        # also renamed this endpoint from mixed_people/search to
+        # mixed_people/api_search at some point after this was first written.
+        headers = {"X-Api-Key": config.APOLLO_API_KEY, "Content-Type": "application/json"}
+        search_payload = {
             "q_organization_domains": domain,
             "person_titles": config.PREFERRED_TITLES,
             "page": 1,
             "per_page": 1,
         }
         try:
-            resp = requests.post(url, json=payload, timeout=20)
+            resp = requests.post(
+                "https://api.apollo.io/v1/mixed_people/api_search",
+                json=search_payload, headers=headers, timeout=20,
+            )
             resp.raise_for_status()
             people = resp.json().get("people", [])
         except requests.RequestException:
             return None
         if not people:
             return None
-        p = people[0]
+
+        # The search endpoint only returns a masked preview (first name, a
+        # hidden last name, has_email/has_direct_phone flags) - it never
+        # includes the actual email. Getting the real email requires a
+        # second call, to the enrichment ("match") endpoint, which spends
+        # one Apollo credit. See https://docs.apollo.io/reference/people-enrichment
+        candidate = people[0]
+        return self._enrich_via_apollo_match(candidate) or {
+            "name": candidate.get("first_name", ""),
+            "title": candidate.get("title", ""),
+            "email": "",
+            "linkedin_url": "",
+        }
+
+    def _enrich_via_apollo_match(self, candidate: dict) -> Optional[dict]:
+        headers = {"X-Api-Key": config.APOLLO_API_KEY, "Content-Type": "application/json"}
+        payload = {"id": candidate.get("id"), "reveal_personal_emails": True}
+        try:
+            resp = requests.post(
+                "https://api.apollo.io/v1/people/match",
+                json=payload, headers=headers, timeout=20,
+            )
+            resp.raise_for_status()
+            person = resp.json().get("person")
+        except requests.RequestException:
+            return None
+        if not person:
+            return None
+        name = " ".join(filter(None, [person.get("first_name"), person.get("last_name")]))
         return {
-            "name": p.get("name", ""),
-            "title": p.get("title", ""),
-            "email": p.get("email", ""),
-            "linkedin_url": p.get("linkedin_url", ""),
+            "name": name,
+            "title": person.get("title", ""),
+            "email": person.get("email", ""),
+            "linkedin_url": person.get("linkedin_url", ""),
         }
 
     def _find_via_hunter(self, lead: Lead) -> Optional[dict]:

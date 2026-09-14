@@ -27,7 +27,11 @@ class DiscoveredCompany:
 
 class DiscoveryAgent:
     def discover(self, limit: int = 10) -> list[DiscoveredCompany]:
-        if config.DEMO_MODE:
+        # DEMO_MODE only requires ONE of Apollo/Hunter to be set (see config.py).
+        # Discovery specifically needs Apollo - if only a Hunter key was added,
+        # still fall back to the seed list here rather than calling Apollo
+        # with a blank key.
+        if config.DEMO_MODE or not config.APOLLO_API_KEY:
             return self._discover_from_seed(limit)
         return self._discover_from_apollo(limit)
 
@@ -50,15 +54,18 @@ class DiscoveryAgent:
         return out
 
     def _discover_from_apollo(self, limit: int) -> list[DiscoveredCompany]:
+        # Apollo requires the key in the X-Api-Key header, not the body -
+        # sending it in the JSON payload (their older convention) now fails
+        # with 422 INVALID_API_KEY_LOCATION.
         url = "https://api.apollo.io/v1/mixed_companies/search"
+        headers = {"X-Api-Key": config.APOLLO_API_KEY, "Content-Type": "application/json"}
         payload = {
-            "api_key": config.APOLLO_API_KEY,
             "q_organization_keyword_tags": ["saas", "software"],
             "organization_num_employees_ranges": ["1,10", "11,50", "51,200"],
             "page": 1,
             "per_page": limit,
         }
-        resp = requests.post(url, json=payload, timeout=20)
+        resp = requests.post(url, json=payload, headers=headers, timeout=20)
         resp.raise_for_status()
         data = resp.json()
         out = []
