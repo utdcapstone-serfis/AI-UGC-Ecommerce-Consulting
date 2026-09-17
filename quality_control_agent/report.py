@@ -90,6 +90,15 @@ def render_table_html(evaluations: list[QCEvaluation]) -> str:
     )
 
 
+def to_db_records(evaluations: list[QCEvaluation]) -> list[dict]:
+    """Shapes evaluations as {doc_id, data} pairs for a batch write to the
+    `qc_evaluations` collection the QC Review Desk dashboard subscribes to
+    (see SETUP.md — Dashboard). The dashboard auto-updates on write; no
+    republish needed.
+    """
+    return [{"doc_id": ev.doc_id(), "data": ev.to_dict()} for ev in evaluations]
+
+
 def render_standalone_report(evaluations: list[QCEvaluation], title: str = "QC Evaluation Report") -> str:
     """A full, self-contained HTML document — for saving as a plain report file."""
     return (

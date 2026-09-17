@@ -1,5 +1,5 @@
 from .models import HARD_GATE_METRICS, METRIC_WEIGHTS, MetricResult, QCEvaluation, Verdict
-from .report import render_standalone_report, render_table_html
+from .report import render_standalone_report, render_table_html, to_db_records
 
 __all__ = [
     "QCEvaluation",
@@ -9,4 +9,5 @@ __all__ = [
     "HARD_GATE_METRICS",
     "render_table_html",
     "render_standalone_report",
+    "to_db_records",
 ]

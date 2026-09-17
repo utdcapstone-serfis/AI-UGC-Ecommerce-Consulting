@@ -7,6 +7,7 @@ composite score.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
@@ -51,6 +52,7 @@ class MetricResult:
 class QCEvaluation:
     video_title: str
     video_url: str = ""
+    video_source: str = ""  # attribution line, e.g. the agency or brand
     metrics: dict[str, MetricResult] = field(default_factory=dict)
     reviewer_notes: str = ""
 
@@ -83,3 +85,25 @@ class QCEvaluation:
         if score is None:
             return "INCOMPLETE"
         return "PASS" if score >= PASS_THRESHOLD else "FAIL"
+
+    def doc_id(self) -> str:
+        """Stable, slugified id — reused on re-evaluation so it updates
+        the same dashboard record instead of duplicating it."""
+        slug = re.sub(r"[^a-z0-9]+", "-", self.video_title.lower()).strip("-")
+        return slug[:80] or "evaluation"
+
+    def to_dict(self) -> dict:
+        """Shape written to the QC Review Desk dashboard's shared database
+        (collection `qc_evaluations`, this doc_id() as the document id)."""
+        return {
+            "title": self.video_title,
+            "url": self.video_url,
+            "source": self.video_source,
+            "metrics": {
+                key: {"verdict": result.verdict.value, "score": result.score, "note": result.note}
+                for key, result in self.metrics.items()
+            },
+            "composite": self.composite_score(),
+            "verdict": self.final_verdict(),
+            "reviewer_notes": self.reviewer_notes,
+        }

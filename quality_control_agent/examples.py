@@ -8,8 +8,9 @@ from __future__ import annotations
 from .models import MetricResult, QCEvaluation, Verdict
 
 BURGER_REELS = QCEvaluation(
-    video_title="Burger Making Reels (Circle Digital Marketing Agency)",
+    video_title="Burger Making Reels",
     video_url="https://youtube.com/shorts/nqS6yQRHGD8",
+    video_source="Circle Digital Marketing Agency",
     metrics={
         "duration": MetricResult(Verdict.PASS, note="24.5s — within the 15-30s window"),
         "aspect_ratio": MetricResult(Verdict.PASS, note="9:16 vertical"),
@@ -27,6 +28,7 @@ BURGER_REELS = QCEvaluation(
 MCDONALDS_SELF_CONTROL = QCEvaluation(
     video_title="Self Control Who I McDonald's",
     video_url="https://youtu.be/79phlhutGLg",
+    video_source="McDonald's",
     metrics={
         "duration": MetricResult(Verdict.PASS, note="15.04s — right at the floor of the window"),
         "aspect_ratio": MetricResult(Verdict.FAIL, note="854x480 = 16:9 landscape. Out of scope for this agent — a traditional broadcast/pre-roll spot, not short-form vertical content — rejected at intake, not scored"),
