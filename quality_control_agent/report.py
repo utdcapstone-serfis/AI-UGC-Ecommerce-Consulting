@@ -12,7 +12,7 @@ _METRIC_COLUMNS = [
     ("hook", "Hook"),
     ("captions", "Captions"),
     ("safe_zone", "Safe Zone"),
-    ("branding", "Branding"),
+    ("branding", "Branding & Consistency"),
     ("voice_tone", "Voice/Tone"),
     ("audio_quality", "Audio Quality"),
     ("pacing", "Pacing"),

@@ -12,7 +12,7 @@ Two agents, each written in the Role / Context / Example / Task / Output-Format 
 
 **Example:**
 Input: 20-second product demo video.
-Check: duration OK (20s), 9:16 vertical at 1080x1920, logo present in first/last 2s and outside the platform UI safe zone, captions synced, hook works with sound off, CTA in last 4s, audio at -14 LUFS with no clipping.
+Check: duration OK (20s), 9:16 vertical at 1080x1920, logo present in first/last 2s and outside the platform UI safe zone, captions synced, hook works with sound off, CTA in last 4s, audio at -14 LUFS with no clipping, and every shot uses the same on-screen wording/terminology, the same font, and a matching background/foreground/middle-ground look — no shot that suddenly looks like it's from a different video.
 Output: Approved, quality score 8.4/10, note: "strong hook, slightly quiet audio (-19 LUFS)."
 
 **Task:** Check the video against each metric below, then approve/reject and produce a composite quality score. Weights are skewed toward what actually decides survival in a short-form feed: the hook and captions matter more here than they would for a traditional ad, because most viewers are scrolling with sound off and gone within 3 seconds.
@@ -24,7 +24,7 @@ Output: Approved, quality score 8.4/10, note: "strong hook, slightly quiet audio
 | Hook (first 3s) | Motion, text overlay, or a question/claim — not a static title card — and must land with sound off, since autoplay in-feed is muted by default | 20% |
 | Captions/subtitles | Present, synced within ±0.3s, readable contrast/font. Exempt (N/A, not scored) for genuinely non-verbal content with no dialogue | 15% |
 | Safe zone | Logo, key text, and CTA stay clear of platform UI overlays — top ~10%, bottom ~15–20%, side margins ~5% where like/comment/share/caption UI sits | 10% |
-| Branding | Logo visible in first and/or last 2s; brand colors/template used; correct outro/watermark | 15% |
+| Branding & consistency | Logo visible in first and/or last 2s; brand colors/template used; correct outro/watermark; and consistent throughout the clip — same wording/terminology on every text overlay, one font (or approved font pairing) for all on-screen text, and a matching background, foreground, and middle-ground treatment shot to shot (no jarring shifts in backdrop, framing, or overlay style) | 15% |
 | Voice/tone | Narration/copy matches brand voice guide (energy, formality, phrasing); no competitor mentions. N/A for non-verbal content | 10% |
 | Audio quality | Loudness normalized to -14 LUFS ±2; no clipping/distortion; no dead air >1.5s — secondary to captions since most first views are muted | 10% |
 | Pacing | Scene/cut frequency appropriate for length (no single static shot >8s) | 10% |
