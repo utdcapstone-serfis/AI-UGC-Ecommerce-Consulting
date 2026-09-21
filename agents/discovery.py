@@ -1,20 +1,26 @@
 """Step 1: find companies that fit the ICP (SaaS, SMB, recently VC-funded startups).
 
 MVP behavior:
-- DEMO_MODE (no Apollo key): reads data/seed_companies.csv.
-- Real mode (APOLLO_API_KEY set): queries Apollo.io's organization search API,
-  filtered to software/SaaS industries and small-to-mid employee counts.
-  Recent-funding filtering isn't exposed cleanly by Apollo's free org search,
-  so real mode still expects a `funding_notes` hint per result where available
-  and otherwise leaves it for the ResearchAgent to try to confirm from the
-  company's own site/press page.
+- DEMO_MODE (no Apify token): reads data/seed_companies.csv.
+- Real mode (APIFY_API_TOKEN set): runs an Apify Actor
+  (config.APIFY_DISCOVERY_ACTOR, default automation-lab/crunchbase-company-
+  funding-search-scraper) that searches Crunchbase by keyword and can filter
+  to companies with reported funding rounds.
+
+Note: unlike the contact-finding Actor (60K+ users, well-established), the
+discovery Actor is low-usage/unproven at the time this was wired up. The
+input schema (queries/maxItems/requireFunding) was confirmed directly from
+the Actor's published schema; the exact output field names were not fully
+confirmed before a live token was available - _parse_result() below checks
+several likely field name variants defensively and should be revisited
+against real output once you've run this for real.
 """
 import csv
 from dataclasses import dataclass
-
-import requests
+from typing import Optional
 
 import config
+from agents.apify_client import run_actor
 
 
 @dataclass
@@ -25,15 +31,21 @@ class DiscoveredCompany:
     funding_hint: str = ""
 
 
+# Keyword queries sent to the discovery Actor - stand in for Apollo's
+# structured industry/employee-count filters, since this Actor only takes
+# free-text search queries.
+ICP_SEARCH_QUERIES = ["SaaS startup", "software company"]
+
+
 class DiscoveryAgent:
     def discover(self, limit: int = 10) -> list[DiscoveredCompany]:
-        # DEMO_MODE only requires ONE of Apollo/Hunter to be set (see config.py).
-        # Discovery specifically needs Apollo - if only a Hunter key was added,
-        # still fall back to the seed list here rather than calling Apollo
-        # with a blank key.
-        if config.DEMO_MODE or not config.APOLLO_API_KEY:
+        # DEMO_MODE only requires ONE of Apify/Hunter to be set (see config.py).
+        # Discovery specifically needs Apify - if only a Hunter key was added,
+        # still fall back to the seed list here rather than calling Apify
+        # with a blank token.
+        if config.DEMO_MODE or not config.APIFY_API_TOKEN:
             return self._discover_from_seed(limit)
-        return self._discover_from_apollo(limit)
+        return self._discover_from_apify(limit)
 
     def _discover_from_seed(self, limit: int) -> list[DiscoveredCompany]:
         if not config.SEED_COMPANIES_CSV.exists():
@@ -53,28 +65,39 @@ class DiscoveryAgent:
                     break
         return out
 
-    def _discover_from_apollo(self, limit: int) -> list[DiscoveredCompany]:
-        # Apollo requires the key in the X-Api-Key header, not the body -
-        # sending it in the JSON payload (their older convention) now fails
-        # with 422 INVALID_API_KEY_LOCATION.
-        url = "https://api.apollo.io/v1/mixed_companies/search"
-        headers = {"X-Api-Key": config.APOLLO_API_KEY, "Content-Type": "application/json"}
-        payload = {
-            "q_organization_keyword_tags": ["saas", "software"],
-            "organization_num_employees_ranges": ["1,10", "11,50", "51,200"],
-            "page": 1,
-            "per_page": limit,
+    def _discover_from_apify(self, limit: int) -> list[DiscoveredCompany]:
+        run_input = {
+            "queries": ICP_SEARCH_QUERIES,
+            "maxItems": limit,
+            "requireFunding": True,
         }
-        resp = requests.post(url, json=payload, headers=headers, timeout=20)
-        resp.raise_for_status()
-        data = resp.json()
+        items = run_actor(config.APIFY_DISCOVERY_ACTOR, run_input)
         out = []
-        for org in data.get("organizations", [])[:limit]:
-            out.append(
-                DiscoveredCompany(
-                    company_name=org.get("name", ""),
-                    website=org.get("website_url", ""),
-                    source="apollo",
-                )
-            )
+        for item in items[:limit]:
+            company = self._parse_result(item)
+            if company:
+                out.append(company)
         return out
+
+    def _parse_result(self, item: dict) -> Optional[DiscoveredCompany]:
+        """Defensive parsing - checks a few likely field-name variants since
+        the exact output schema wasn't confirmed before this was written."""
+        name = item.get("name") or item.get("companyName") or item.get("title")
+        website = (
+            item.get("website")
+            or item.get("homepageUrl")
+            or item.get("website_url")
+            or item.get("url")
+        )
+        if not name or not website:
+            return None
+
+        funding_type = item.get("lastFundingType") or item.get("last_funding_type") or ""
+        funding_hint = f"Crunchbase: {funding_type}" if funding_type else ""
+
+        return DiscoveredCompany(
+            company_name=name,
+            website=website,
+            source="apify_crunchbase",
+            funding_hint=funding_hint,
+        )

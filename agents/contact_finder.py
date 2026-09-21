@@ -4,14 +4,21 @@ business contact info (name, title, company email, LinkedIn/profile URL).
 Important: this agent never invents a real person's contact details. If no
 provider key is configured, or a provider returns nothing, the contact fields
 are left blank and marked NEEDS_ENRICHMENT so a human knows to fill them in
-manually (e.g. via LinkedIn Sales Navigator, Apollo UI, or Hunter UI) rather
-than being misled by fabricated data.
+manually (e.g. via LinkedIn Sales Navigator, Apify Console, or Hunter UI)
+rather than being misled by fabricated data.
+
+Contact-finding uses config.APIFY_CONTACT_ACTOR (default
+vdrmota/contact-info-scraper) - a well-established Apify Actor (60K+ users)
+that only extracts what a company has published on its own site (contact/
+about pages). It does not scrape LinkedIn profiles for this data - a
+deliberate choice, see README "Ethical/legal notes on contact data".
 """
 from typing import Optional
 
 import requests
 
 import config
+from agents.apify_client import run_actor
 from models import Lead
 
 NEEDS_ENRICHMENT = "NEEDS_ENRICHMENT"
@@ -23,7 +30,7 @@ class ContactFinderAgent:
             self._mark_needs_enrichment(lead)
             return lead
 
-        contact = self._find_via_apollo(lead) or self._find_via_hunter(lead)
+        contact = self._find_via_apify(lead) or self._find_via_hunter(lead)
         if contact:
             lead.contact_name = contact.get("name", "")
             lead.contact_title = contact.get("title", "")
@@ -39,66 +46,54 @@ class ContactFinderAgent:
         lead.contact_email = lead.contact_email or NEEDS_ENRICHMENT
         lead.contact_profile_url = lead.contact_profile_url or NEEDS_ENRICHMENT
 
-    def _find_via_apollo(self, lead: Lead) -> Optional[dict]:
-        if not config.APOLLO_API_KEY or not lead.website:
+    def _find_via_apify(self, lead: Lead) -> Optional[dict]:
+        if not config.APIFY_API_TOKEN or not lead.website:
             return None
-        domain = lead.website.replace("https://", "").replace("http://", "").split("/")[0]
-        # Apollo requires the key in the X-Api-Key header, not the body - see
-        # the matching note in discovery.py's _discover_from_apollo. Apollo
-        # also renamed this endpoint from mixed_people/search to
-        # mixed_people/api_search at some point after this was first written.
-        headers = {"X-Api-Key": config.APOLLO_API_KEY, "Content-Type": "application/json"}
-        search_payload = {
-            "q_organization_domains": domain,
-            "person_titles": config.PREFERRED_TITLES,
-            "page": 1,
-            "per_page": 1,
+        website = lead.website if lead.website.startswith("http") else f"https://{lead.website}"
+        run_input = {
+            "startUrls": [{"url": website}],
+            "maxDepth": 1,
+            "sameDomain": True,
+            "maxRequests": 10,
         }
         try:
-            resp = requests.post(
-                "https://api.apollo.io/v1/mixed_people/api_search",
-                json=search_payload, headers=headers, timeout=20,
-            )
-            resp.raise_for_status()
-            people = resp.json().get("people", [])
+            items = run_actor(config.APIFY_CONTACT_ACTOR, run_input)
         except requests.RequestException:
             return None
-        if not people:
+        for item in items:
+            contact = self._parse_result(item)
+            if contact:
+                return contact
+        return None
+
+    def _parse_result(self, item: dict) -> Optional[dict]:
+        """Defensive parsing - checks likely field-name variants since the
+        exact output schema wasn't fully confirmed before this was written.
+        Only returns a result if we found at least an email - a name/title
+        with no email isn't independently useful here."""
+        emails = item.get("emails") or item.get("email") or []
+        if isinstance(emails, str):
+            emails = [emails]
+        if not emails:
             return None
 
-        # The search endpoint only returns a masked preview (first name, a
-        # hidden last name, has_email/has_direct_phone flags) - it never
-        # includes the actual email. Getting the real email requires a
-        # second call, to the enrichment ("match") endpoint, which spends
-        # one Apollo credit. See https://docs.apollo.io/reference/people-enrichment
-        candidate = people[0]
-        return self._enrich_via_apollo_match(candidate) or {
-            "name": candidate.get("first_name", ""),
-            "title": candidate.get("title", ""),
-            "email": "",
-            "linkedin_url": "",
-        }
-
-    def _enrich_via_apollo_match(self, candidate: dict) -> Optional[dict]:
-        headers = {"X-Api-Key": config.APOLLO_API_KEY, "Content-Type": "application/json"}
-        payload = {"id": candidate.get("id"), "reveal_personal_emails": True}
-        try:
-            resp = requests.post(
-                "https://api.apollo.io/v1/people/match",
-                json=payload, headers=headers, timeout=20,
+        leads = item.get("leads") or item.get("employees") or []
+        name, title = "", ""
+        if leads:
+            first_lead = leads[0]
+            name = first_lead.get("name", "") or " ".join(
+                filter(None, [first_lead.get("firstName"), first_lead.get("lastName")])
             )
-            resp.raise_for_status()
-            person = resp.json().get("person")
-        except requests.RequestException:
-            return None
-        if not person:
-            return None
-        name = " ".join(filter(None, [person.get("first_name"), person.get("last_name")]))
+            title = first_lead.get("title") or first_lead.get("jobTitle") or ""
+
+        linkedins = item.get("linkedIns") or item.get("linkedin") or []
+        linkedin_url = linkedins[0] if linkedins else ""
+
         return {
             "name": name,
-            "title": person.get("title", ""),
-            "email": person.get("email", ""),
-            "linkedin_url": person.get("linkedin_url", ""),
+            "title": title,
+            "email": emails[0],
+            "linkedin_url": linkedin_url,
         }
 
     def _find_via_hunter(self, lead: Lead) -> Optional[dict]:

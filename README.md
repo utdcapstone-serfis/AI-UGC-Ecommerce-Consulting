@@ -30,11 +30,12 @@ serfis-leadgen/
   static/
     style.css                dashboard styling
   agents/
-    discovery.py           Step 1: find companies (seed CSV or Apollo.io)
+    discovery.py           Step 1: find companies (seed CSV or Apify Crunchbase actor)
+    apify_client.py         Shared Apify Actor-runner
     scraper.py              Shared website-text fetcher
     enrichment.py           Step 2: industry/size/location/what-they-sell
     scoring.py               Step 3: ICP fit score 1-10 + reasoning
-    contact_finder.py       Step 4-5: point of contact (Apollo/Hunter, or NEEDS_ENRICHMENT)
+    contact_finder.py       Step 4-5: point of contact (Apify/Hunter, or NEEDS_ENRICHMENT)
     research.py              Step 6: 2-3 personalized observations + sources
     outreach_writer.py       Step 7: drafts the email (75-125 words)
     send_agent.py             Phase 2 stub - NOT wired up, sending is off by default
@@ -74,7 +75,7 @@ cp .env.example .env
 
 Edit `.env`:
 - `ANTHROPIC_API_KEY` - recommended even in demo mode, powers enrichment/research/email quality. Without it, the pipeline falls back to simple heuristic/template logic so it still runs end to end.
-- `APOLLO_API_KEY` / `HUNTER_API_KEY` - add these to leave demo mode and do real company discovery + real contact lookup. Without them, the agent uses `data/seed_companies.csv` for discovery and marks contact fields `NEEDS_ENRICHMENT` rather than inventing a person's name/email.
+- `APIFY_API_TOKEN` / `HUNTER_API_KEY` - add these to leave demo mode and do real company discovery + real contact lookup. Without them, the agent uses `data/seed_companies.csv` for discovery and marks contact fields `NEEDS_ENRICHMENT` rather than inventing a person's name/email. Discovery and contact-finding both run through Apify Actors by default - see "Apify integration" below for which ones and why.
 
 ## Running the pipeline (unchanged)
 
@@ -89,6 +90,35 @@ python main.py reset              # delete ALL leads and analytics (asks "yes" t
 ```
 
 Every run upserts into `output/leads.db` keyed on (company_name, website), so re-running is safe and just refreshes existing rows. Running `python main.py run` right now will add real leads alongside the sample one - that's expected, the sample is just there to show the analytics view until real leads exist.
+
+## Apify integration
+
+Discovery and contact-finding both run through [Apify](https://apify.com)
+Actors (previously Apollo.io - replaced per sponsor direction). Both agents
+call `agents/apify_client.run_actor()`, a thin wrapper around Apify's
+`run-sync-get-dataset-items` REST endpoint - it starts an Actor, waits for it
+to finish, and returns its output dataset directly.
+
+| Purpose | Actor (config.py default) | Reliability |
+|---|---|---|
+| Contact-finding | `vdrmota/contact-info-scraper` | Well-established: Apify-maintained, 60K+ users, 13M+ runs, 4.7★. Extracts only what a company has published on its own site (no LinkedIn scraping). |
+| Company discovery | `automation-lab/crunchbase-company-funding-search-scraper` | **Unproven** - 14 users, no reviews at the time this was wired up. It was the closest fit to "search Crunchbase by keyword, filter to companies with funding," but nothing on Apify matches Apollo's maturity for structured company discovery. |
+
+Both Actor ids are overridable via `.env` (`APIFY_DISCOVERY_ACTOR`,
+`APIFY_CONTACT_ACTOR`) without touching code, in case either needs swapping
+out later.
+
+**Known gap - validate before relying on this:** the discovery Actor's
+*input* schema (`queries`, `maxItems`, `requireFunding`) was confirmed
+directly from its published schema, but the exact *output* field names
+were not confirmed against a real run before a token was available.
+`DiscoveryAgent._parse_result()` and `ContactFinderAgent._parse_result()`
+both check a few likely field-name variants defensively, but - exactly like
+the real bugs we found and fixed in the old Apollo integration by actually
+running it - **run this for real once you have an `APIFY_API_TOKEN` and
+check that leads are coming back with real names/websites/emails, not
+silently empty results.** If the field names are wrong, `_parse_result()`
+is the only place that needs fixing.
 
 ## Running the dashboard (new)
 
@@ -240,7 +270,7 @@ future enhancement" below.
 
 ## Ethical/legal notes on contact data
 
-- No LinkedIn scraping - it violates LinkedIn's ToS. Contact/profile URLs come only from licensed providers (Apollo.io, Hunter.io) that source and verify this data legitimately.
+- No LinkedIn scraping - it violates LinkedIn's ToS. The Apify contact-finding Actor (`vdrmota/contact-info-scraper`) only extracts what a company has published on its own public site (contact/about pages) - it does not scrape LinkedIn profiles. Hunter.io, the fallback, is a licensed data provider.
 - The pipeline never fabricates a real person's name/email. If no provider key is set, or a provider finds nothing, contact fields are explicitly marked `NEEDS_ENRICHMENT` instead of guessing.
 - Website scraping is limited to simple GETs on public marketing pages with a descriptive User-Agent - no bypassing auth, paywalls, or bot protection.
 
@@ -261,7 +291,7 @@ future enhancement" below.
 - **CRM integration**: new `agents/crm_sync.py` pushing approved/contacted leads to HubSpot/Attio/Salesforce.
 - **Follow-up sequences**: a `FollowUpAgent` that schedules N-day-later touches keyed off `lead_status='contacted'` + no reply.
 - **Better lead scoring**: swap `ScoringAgent`'s heuristic/single-call logic for a model trained on your actual closed-won data.
-- **Better discovery**: swap `DiscoveryAgent`'s Apollo call for Crunchbase/PitchBook funding-event feeds to catch "just raised" signals in near-real-time.
+- **Better discovery**: the Apify Crunchbase Actor is low-usage/unproven (see "Apify integration" below) - validate it against real output, or swap in a more established Actor/provider if it doesn't hold up at scale.
 - **Pagination**: the lead table currently renders every matching row - fine at MVP volume, add LIMIT/OFFSET paging in `storage.query_leads()` once lead counts grow large.
 - **Concurrency**: `orchestrator.py` still processes leads sequentially; each agent is stateless enough to parallelize once volume matters.
 - **Postgres/Airtable**: swap `storage.py`'s sqlite3 calls for a hosted DB once you need true multi-user concurrent access to the review queue.

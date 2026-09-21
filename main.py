@@ -21,7 +21,7 @@ from orchestrator import LeadGenPipeline
 
 def cmd_run(args):
     if config.DEMO_MODE:
-        print("[demo mode] APOLLO_API_KEY/HUNTER_API_KEY not set - using seed "
+        print("[demo mode] APIFY_API_TOKEN/HUNTER_API_KEY not set - using seed "
               "companies and marking contact fields NEEDS_ENRICHMENT.\n")
     pipeline = LeadGenPipeline()
     leads = pipeline.run(limit=args.limit)

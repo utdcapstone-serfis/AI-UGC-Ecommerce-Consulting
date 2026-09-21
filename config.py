@@ -13,10 +13,18 @@ DB_PATH = OUTPUT_DIR / "leads.db"
 SEED_COMPANIES_CSV = DATA_DIR / "seed_companies.csv"
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-APOLLO_API_KEY = os.getenv("APOLLO_API_KEY", "")
+APIFY_API_TOKEN = os.getenv("APIFY_API_TOKEN", "")
 HUNTER_API_KEY = os.getenv("HUNTER_API_KEY", "")
 SERPAPI_KEY = os.getenv("SERPAPI_KEY", "")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
+
+# Apify Actor ids used for discovery and contact-finding (see
+# agents/discovery.py and agents/contact_finder.py). Overridable via .env in
+# case you want to swap in a different Actor without touching code.
+APIFY_DISCOVERY_ACTOR = os.getenv(
+    "APIFY_DISCOVERY_ACTOR", "automation-lab/crunchbase-company-funding-search-scraper"
+)
+APIFY_CONTACT_ACTOR = os.getenv("APIFY_CONTACT_ACTOR", "vdrmota/contact-info-scraper")
 
 # Demo mode kicks in automatically when NEITHER discovery/contact provider
 # key is set, or can be forced on via DEMO_MODE=true. Having just one of the
@@ -24,7 +32,7 @@ TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
 # own specific key before calling that provider and falls back gracefully
 # (see agents/discovery.py and agents/contact_finder.py) if only one is set.
 DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true" or not (
-    APOLLO_API_KEY or HUNTER_API_KEY
+    APIFY_API_TOKEN or HUNTER_API_KEY
 )
 
 HAS_CLAUDE = bool(ANTHROPIC_API_KEY)
