@@ -83,3 +83,23 @@ for r in records:
 
 Only pass videos here that have already passed the Quality Control
 Agent (see `agent-prompts.md`).
+
+### Approval gate
+
+`distribute()` never posts without asking first. By default it prompts
+on the terminal per platform (`Post "..." to instagram? [y/N]`) and
+skips (`approved=False` in the returned record) on anything other than
+an explicit yes — including when there's no terminal to prompt on at
+all, so an unattended run can't accidentally post.
+
+To wire approval to something other than a terminal prompt — a
+dashboard button, a Slack confirmation — pass your own `approve`
+callback: it receives `(platform, asset)` and must return `True` for
+that platform's post to go out.
+
+```python
+def approve_from_dashboard(platform: str, asset) -> bool:
+    return get_human_decision(platform, asset.caption)  # your own approval UI
+
+records = distribute(asset, platforms=["youtube"], approve=approve_from_dashboard)
+```

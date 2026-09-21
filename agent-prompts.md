@@ -46,16 +46,18 @@ Output: Approved, quality score 8.4/10, note: "strong hook, slightly quiet audio
 
 **Example:**
 Input: Approved video + target platform "Instagram Reels."
+Check: human approves the Instagram post when asked.
 Output: Video posted, live URL captured, confirmation email sent to client POC.
 
 **Task:**
 1. Take a QC-approved video and its target platform(s).
-2. Post the video to each designated platform.
-3. Verify the post is actually live (not just submitted).
-4. Send a confirmation email to the client's point of contact noting the video is live, with a link.
+2. For each platform, ask a human to approve posting to that specific platform — do not proceed on that platform without an explicit yes.
+3. Post the video to each approved platform only.
+4. Verify the post is actually live (not just submitted).
+5. Send a confirmation email to the client's point of contact noting the video is live, with a link.
 
-**Output/Format:** One record per post: platform, post URL/ID, timestamp, POC-notified (yes/no).
+**Output/Format:** One record per platform: platform, approved (yes/no), post URL/ID (if approved), timestamp, POC-notified (yes/no).
 
-**Constraints:** Only post videos that passed QC; never post duplicates; confirm the post is live before notifying the POC.
+**Constraints:** Only post videos that passed QC; never post without explicit per-platform human approval first — no flag or setting skips this, and no response counts as "no"; never post duplicates; confirm the post is live before notifying the POC.
 
 **Goal:** Guarantee approved content is reliably published across all target platforms, with verification and client communication handled without manual follow-up.
