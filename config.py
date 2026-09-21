@@ -22,7 +22,7 @@ TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
 # agents/discovery.py and agents/contact_finder.py). Overridable via .env in
 # case you want to swap in a different Actor without touching code.
 APIFY_DISCOVERY_ACTOR = os.getenv(
-    "APIFY_DISCOVERY_ACTOR", "automation-lab/crunchbase-company-funding-search-scraper"
+    "APIFY_DISCOVERY_ACTOR", "compass/crawler-google-places"
 )
 APIFY_CONTACT_ACTOR = os.getenv("APIFY_CONTACT_ACTOR", "vdrmota/contact-info-scraper")
 

@@ -49,7 +49,7 @@ class ResearchAgent:
     def _research_heuristic(self, lead: Lead) -> str:
         notes = []
         if lead.funding_notes:
-            notes.append(f"Recent funding signal: {lead.funding_notes}.")
+            notes.append(f"Discovery notes: {lead.funding_notes}.")
         if lead.what_they_sell:
             notes.append(f"Sells: {lead.what_they_sell[:150]}.")
         if not notes:

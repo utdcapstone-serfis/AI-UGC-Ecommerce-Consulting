@@ -36,8 +36,11 @@ class ContactFinderAgent:
             lead.contact_title = contact.get("title", "")
             lead.contact_email = contact.get("email", "")
             lead.contact_profile_url = contact.get("linkedin_url", "")
-        else:
-            self._mark_needs_enrichment(lead)
+        # Fills in NEEDS_ENRICHMENT for any field still blank - covers both
+        # "no contact found at all" and "found an email but no name/title"
+        # (e.g. the free tier of the Apify contact-finder, which returns
+        # emails/LinkedIn but not named leads unless the paid add-on is on).
+        self._mark_needs_enrichment(lead)
         return lead
 
     def _mark_needs_enrichment(self, lead: Lead) -> None:

@@ -3,17 +3,22 @@
 MVP behavior:
 - DEMO_MODE (no Apify token): reads data/seed_companies.csv.
 - Real mode (APIFY_API_TOKEN set): runs an Apify Actor
-  (config.APIFY_DISCOVERY_ACTOR, default automation-lab/crunchbase-company-
-  funding-search-scraper) that searches Crunchbase by keyword and can filter
-  to companies with reported funding rounds.
+  (config.APIFY_DISCOVERY_ACTOR, default compass/crawler-google-places -
+  the "Google Maps Scraper") to find real businesses by search term.
 
-Note: unlike the contact-finding Actor (60K+ users, well-established), the
-discovery Actor is low-usage/unproven at the time this was wired up. The
-input schema (queries/maxItems/requireFunding) was confirmed directly from
-the Actor's published schema; the exact output field names were not fully
-confirmed before a live token was available - _parse_result() below checks
-several likely field name variants defensively and should be revisited
-against real output once you've run this for real.
+History: the original discovery Actor choice was a low-usage Crunchbase
+search scraper (automation-lab/crunchbase-company-funding-search-scraper).
+Live testing showed it is not currently functional - Crunchbase's anti-bot
+protection rejects its scraping sessions outright (confirmed via the Actor's
+own run logs: "session challenge not cleared (HTTP 403)", failing across
+all 6 retry attempts). Switched to Google Maps Scraper instead - still an
+Apify Actor, but one of the most established on the entire platform
+(612K+ users, 4.7 stars, 1,800+ reviews) rather than an unproven one.
+
+Tradeoff: Google Maps search is location-bound rather than funding-filtered,
+so it can't replicate Apollo's "recently funded" filter directly - results
+are seeded from ICP_SEARCH_QUERIES + a location, and funding status still
+gets left for ResearchAgent to try to confirm from the company's own site.
 """
 import csv
 from dataclasses import dataclass
@@ -31,10 +36,11 @@ class DiscoveredCompany:
     funding_hint: str = ""
 
 
-# Keyword queries sent to the discovery Actor - stand in for Apollo's
-# structured industry/employee-count filters, since this Actor only takes
-# free-text search queries.
-ICP_SEARCH_QUERIES = ["SaaS startup", "software company"]
+# Search terms sent to the discovery Actor - stand in for Apollo's
+# structured industry filters, since Google Maps Scraper takes free-text
+# search terms + a location rather than structured filters.
+ICP_SEARCH_QUERIES = ["software company", "SaaS startup", "tech startup"]
+ICP_LOCATION = "United States"
 
 
 class DiscoveryAgent:
@@ -67,37 +73,33 @@ class DiscoveryAgent:
 
     def _discover_from_apify(self, limit: int) -> list[DiscoveredCompany]:
         run_input = {
-            "queries": ICP_SEARCH_QUERIES,
-            "maxItems": limit,
-            "requireFunding": True,
+            "searchStringsArray": ICP_SEARCH_QUERIES,
+            "locationQuery": ICP_LOCATION,
+            "maxCrawledPlacesPerSearch": limit,
         }
-        items = run_actor(config.APIFY_DISCOVERY_ACTOR, run_input)
+        items = run_actor(config.APIFY_DISCOVERY_ACTOR, run_input, timeout=180)
         out = []
-        for item in items[:limit]:
+        for item in items:
             company = self._parse_result(item)
             if company:
                 out.append(company)
+            if len(out) >= limit:
+                break
         return out
 
     def _parse_result(self, item: dict) -> Optional[DiscoveredCompany]:
-        """Defensive parsing - checks a few likely field-name variants since
-        the exact output schema wasn't confirmed before this was written."""
-        name = item.get("name") or item.get("companyName") or item.get("title")
-        website = (
-            item.get("website")
-            or item.get("homepageUrl")
-            or item.get("website_url")
-            or item.get("url")
-        )
+        """Defensive parsing - checks a few likely field-name variants."""
+        name = item.get("title") or item.get("name")
+        website = item.get("website") or item.get("url")
         if not name or not website:
             return None
 
-        funding_type = item.get("lastFundingType") or item.get("last_funding_type") or ""
-        funding_hint = f"Crunchbase: {funding_type}" if funding_type else ""
+        category = item.get("categoryName") or item.get("category") or ""
+        funding_hint = f"Google Maps category: {category}" if category else ""
 
         return DiscoveredCompany(
             company_name=name,
             website=website,
-            source="apify_crunchbase",
+            source="apify_google_maps",
             funding_hint=funding_hint,
         )
