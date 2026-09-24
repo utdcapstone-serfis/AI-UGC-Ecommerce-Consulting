@@ -14,6 +14,7 @@ BURGER_REELS = QCEvaluation(
     metrics={
         "duration": MetricResult(Verdict.PASS, note="24.5s — within the 15-30s window"),
         "aspect_ratio": MetricResult(Verdict.PASS, note="9:16 vertical"),
+        "technical_quality": MetricResult(Verdict.UNMEASURED, note="No local video file available — reviewed via browser playback only, can't run pixel-level blur/noise/blockiness analysis"),
         "hook": MetricResult(Verdict.PASS, score=6, note="Motion present (patty on grill) but no text/question overlay; works fine muted"),
         "captions": MetricResult(Verdict.FLAG, score=3, note="No captions, but also no dialogue to caption — rubric gap for non-verbal content"),
         "safe_zone": MetricResult(Verdict.PASS, score=8, note="Agency tag sits top-left, clear of the right-edge like/comment/share rail"),
@@ -32,6 +33,7 @@ MCDONALDS_SELF_CONTROL = QCEvaluation(
     metrics={
         "duration": MetricResult(Verdict.PASS, note="15.04s — right at the floor of the window"),
         "aspect_ratio": MetricResult(Verdict.FAIL, note="854x480 = 16:9 landscape. Out of scope for this agent — a traditional broadcast/pre-roll spot, not short-form vertical content — rejected at intake, not scored"),
+        "technical_quality": MetricResult(Verdict.UNMEASURED, note="No local video file available — reviewed via browser playback only, can't run pixel-level blur/noise/blockiness analysis"),
         "hook": MetricResult(Verdict.PASS, score=8, note="Extreme close-up of fries with visible steam/motion"),
         "captions": MetricResult(Verdict.FAIL, score=2, note="No captions despite spoken dialogue — genuine miss, not a rubric gap"),
         "safe_zone": MetricResult(Verdict.NOT_APPLICABLE, note="Landscape broadcast spot — vertical in-feed UI safe zones don't apply"),

@@ -23,12 +23,13 @@ Output: Approved, quality score 8.4/10, note: "strong hook, slightly quiet audio
 | Aspect ratio / resolution | 9:16 vertical, min 1080x1920 — native Reels/Shorts/FB Reels/Reddit-video format. Landscape/16:9 content is out of scope, not just a fail | Hard gate |
 | Hook (first 3s) | Motion, text overlay, or a question/claim — not a static title card — and must land with sound off, since autoplay in-feed is muted by default | 20% |
 | Captions/subtitles | Present, synced within ±0.3s, readable contrast/font. Exempt (N/A, not scored) for genuinely non-verbal content with no dialogue | 15% |
-| Safe zone | Logo, key text, and CTA stay clear of platform UI overlays — top ~10%, bottom ~15–20%, side margins ~5% where like/comment/share/caption UI sits | 10% |
 | Branding & consistency | Logo visible in first and/or last 2s; brand colors/template used; correct outro/watermark; and consistent throughout the clip — same wording/terminology on every text overlay, one font (or approved font pairing) for all on-screen text, and a matching background, foreground, and middle-ground treatment shot to shot (no jarring shifts in backdrop, framing, or overlay style) | 15% |
-| Voice/tone | Narration/copy matches brand voice guide (energy, formality, phrasing); no competitor mentions. N/A for non-verbal content | 10% |
+| Technical quality | No visible blurring, sensor/compression noise, or blocking artifacts — measured directly (blur/noise/blockiness via OpenCV on the source file), not judged by eye. Unmeasured when only a hosted/streamed copy is available, not a local file | 10% |
+| Safe zone | Logo, key text, and CTA stay clear of platform UI overlays — top ~10%, bottom ~15–20%, side margins ~5% where like/comment/share/caption UI sits | 10% |
 | Audio quality | Loudness normalized to -14 LUFS ±2; no clipping/distortion; no dead air >1.5s — secondary to captions since most first views are muted | 10% |
-| Pacing | Scene/cut frequency appropriate for length (no single static shot >8s) | 10% |
 | Call-to-action | Clear CTA (follow/link/comment) present in final 3–5s, and legible without sound | 10% |
+| Pacing | Scene/cut frequency appropriate for length (no single static shot >8s) | 5% |
+| Voice/tone | Narration/copy matches brand voice guide (energy, formality, phrasing); no competitor mentions. N/A for non-verbal content | 5% |
 
 **Output/Format:** Pass/fail verdict, per-metric checklist results (pass/fail/score), a composite numeric quality score (weighted average over scored metrics, 0–10), and revision notes if rejected.
 

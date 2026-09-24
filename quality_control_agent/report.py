@@ -9,6 +9,7 @@ from .models import QCEvaluation, Verdict
 _METRIC_COLUMNS = [
     ("duration", "Duration"),
     ("aspect_ratio", "Aspect Ratio"),
+    ("technical_quality", "Technical Quality"),
     ("hook", "Hook"),
     ("captions", "Captions"),
     ("safe_zone", "Safe Zone"),

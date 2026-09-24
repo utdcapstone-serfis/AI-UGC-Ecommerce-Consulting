@@ -30,11 +30,18 @@ of how well everything else scored — see `final_verdict()` in
 | Hook (first 3s) | 20% | Most scroll-away happens in the first 3s, and it has to work muted |
 | Captions | 15% | Feed viewing defaults to sound off; N/A (not scored) for genuinely non-verbal content |
 | Branding & consistency | 15% | Logo/colors/watermark presence, plus consistent wording, font, and background/foreground/middle-ground treatment throughout the clip |
+| Technical quality | 10% | Blur, sensor/compression noise, and blocking artifacts — measured directly via OpenCV, not judged by eye |
 | Safe zone | 10% | Key text/branding must clear platform UI overlays (top ~10%, bottom ~15–20%, sides ~5%) |
-| Voice/tone | 10% | Matches brand voice guide; N/A for non-verbal content |
 | Audio quality | 10% | Target -14 LUFS ±2, no clipping, no dead air >1.5s |
-| Pacing | 10% | No single static/held shot longer than 8s |
 | Call-to-action | 10% | Present in the final 3–5s, legible without sound |
+| Pacing | 5% | No single static/held shot longer than 8s |
+| Voice/tone | 5% | Matches brand voice guide; N/A for non-verbal content |
+
+Pacing and voice/tone were trimmed from 10% to 5% each to make room for
+Technical Quality's 10% — CTA was left untouched given its direct link
+to conversion, and voice/tone and pacing were already the two weakest
+signals in practice (voice/tone is frequently N/A, and pacing is
+currently a visual judgment call, not a measurement).
 
 Composite score = weighted average over metrics that actually have a
 numeric score. N/A and unmeasured metrics are excluded — not counted
@@ -44,10 +51,14 @@ left (`composite_score()` in `models.py`). **Pass threshold: ≥7.0/10**
 
 ## What's actually measured vs. judged
 
-- **Measured directly**, via `ffmpeg`/`ffprobe` — not eyeballed:
-  duration, resolution/aspect ratio, integrated loudness (LUFS, via
-  the `ebur128` filter), peak level (via `volumedetect`, to catch
-  clipping).
+- **Measured directly**, via `ffmpeg`/`ffprobe`/OpenCV — not
+  eyeballed: duration, resolution/aspect ratio, integrated loudness
+  (LUFS, via the `ebur128` filter), peak level (via `volumedetect`, to
+  catch clipping), and technical quality — blur (Laplacian variance),
+  noise (Immerkær fast estimate), and compression blockiness (8×8
+  block-boundary differences), via `quality_control_agent.technical_quality.analyze_technical_quality()`.
+  Requires a local video file; unmeasured for anything only reviewed
+  via streaming/browser playback.
 - **Visual judgment call**, from sampled frames — no automated
   computer vision yet: hook strength, branding/consistency, safe-zone
   placement, pacing/cut frequency, CTA presence.
@@ -70,6 +81,17 @@ Implemented in `quality_control_agent/models.py`:
   table rendering.
 - `report.to_db_records()` — shapes a list of evaluations into
   `{doc_id, data}` pairs ready for a database batch write.
+- `technical_quality.analyze_technical_quality(video_path)` — samples
+  frames via OpenCV and returns a single `MetricResult` for blur/
+  noise/blockiness. Adapted from the metric formulas in
+  [MeaCuulpa/video_quality_analyzer](https://github.com/MeaCuulpa/video_quality_analyzer),
+  with two real bugs from that source fixed rather than carried over:
+  its "jerkiness" metric always computed to `0.0` (it read a
+  hardcoded-zero value instead of the actual per-frame motion series),
+  and its own Good/Bad classification ignored the blur/noise/
+  blockiness scores it computed, deciding purely on mean colorfulness.
+  Both are corrected here — all three measured checks actually feed
+  the verdict.
 
 ## Where results live
 
@@ -94,6 +116,15 @@ data, not live production evaluations.
 - No code-level enforcement that the Distribution Agent only ever
   receives videos that actually passed this agent — that hand-off is
   currently a process convention, not an automated check.
+- Technical Quality's blur threshold was calibrated on typical camera
+  footage. First real run against an AI-generated video scored blur
+  at 0/10 (Laplacian variance 32, against a 40 "blurry" floor) while
+  noise and blockiness both scored a clean 10/10 — plausible (AI-video
+  output and its compression can genuinely soften edges), but not yet
+  validated against enough AI-generated samples to know if the
+  threshold needs a separate calibration for that content type. Worth
+  a human sanity check whenever this metric flags AI-generated footage
+  specifically.
 
 ## Related files
 

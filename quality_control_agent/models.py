@@ -25,15 +25,19 @@ class Verdict(str, Enum):
 # Duration and aspect_ratio are hard gates, not weighted — see hard_gates_pass().
 # Skewed toward what decides survival in a short-form, sound-off-by-default
 # feed: hook and captions outweigh audio quality, unlike a traditional ad.
+# technical_quality was added at 10% by taking 5 points each from pacing and
+# voice_tone (already often N/A for non-verbal content) rather than touching
+# cta, which stays at full weight given its direct link to conversion.
 METRIC_WEIGHTS = {
     "hook": 0.20,
     "captions": 0.15,
     "branding": 0.15,
+    "technical_quality": 0.10,
     "safe_zone": 0.10,
-    "voice_tone": 0.10,
     "audio_quality": 0.10,
-    "pacing": 0.10,
     "cta": 0.10,
+    "pacing": 0.05,
+    "voice_tone": 0.05,
 }
 
 HARD_GATE_METRICS = ("duration", "aspect_ratio")
