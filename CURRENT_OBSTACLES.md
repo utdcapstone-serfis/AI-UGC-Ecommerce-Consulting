@@ -2,6 +2,16 @@
 
 Open risks and blockers that need a human decision or real-world action — not code bugs (those live in `QC_AGENT.md` / `DISTRIBUTION_AGENT.md` as "known gaps"). This is a running list; update it as items get resolved or new ones surface.
 
+## Snapchat: not viable — resolved, no action needed
+
+**Closed, not open** — included here for the record since it looked like a normal "not yet built" gap until checked. Verified against Snap's current docs (2026-09-25): there is no way for an unattended backend to post organic content to Snapchat, full stop.
+
+- **Marketing/Ads API** is exclusively for paid ad campaigns — no organic posting endpoint exists.
+- **Creative Kit** (Snap Kit) — the other candidate — is client-side only. It opens the Snapchat app on a real person's own device with content pre-filled, and that person has to manually review and hit send themselves inside the app. It cannot be triggered unattended from a server.
+- UploadPost's 22+ supported platforms don't include Snapchat either — independent confirmation this isn't just hard to find.
+
+Unlike X or the other platforms on the "not yet built" list, this isn't something more setup work or a different adapter pattern would fix — there's no programmatic surface to build against. Not pursuing Snapchat further unless Snap changes their platform offering.
+
 ## Reddit: commercial API terms and content-policy risk
 
 Reddit's Data API Terms distinguish commercial from non-commercial use, and the distinction is about whether the API is used in connection with a business at all — not specifically whether you're serving third-party clients. Two scenarios, both relevant to how this tool might be used:

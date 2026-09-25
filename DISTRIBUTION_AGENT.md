@@ -110,12 +110,20 @@ successful upload response alone doesn't count as confirmation.
 
 ## Not yet built
 
-Other platforms considered but not implemented: Snapchat (built around
-the Ads API, not organic posting), X/Twitter (no approval gate, but
-real per-request cost — pay-per-usage credits, ~$0.015/post, no
-subscription; see `CURRENT_OBSTACLES.md` for the full cost comparison
-against routing it through UploadPost instead — decision not yet
-made). Either could follow either pattern already
+**Snapchat — confirmed not possible, not just unbuilt.** Verified
+against Snap's current docs (2026-09-25): their Marketing/Ads API is
+paid-campaigns-only, and Creative Kit (the other candidate) is
+client-side-only — it opens the Snapchat app on a real person's own
+device for them to manually review and send, and cannot be triggered
+unattended from a backend. There is no programmatic organic-posting
+surface to build against at all. UploadPost doesn't list Snapchat
+either, independently confirming this. Unlike everything else on this
+list, this isn't a "not yet built" gap — there's nothing to build.
+
+X/Twitter (no approval gate, but real per-request cost — pay-per-usage
+credits, ~$0.015/post, no subscription; see `CURRENT_OBSTACLES.md` for
+the full cost comparison against routing it through UploadPost
+instead — decision not yet made) could follow either pattern already
 established — a native adapter, or a thin `UploadPostAdapter`
 subclass if UploadPost also covers it and the native path is gated.
 
