@@ -18,6 +18,12 @@ HUNTER_API_KEY = os.getenv("HUNTER_API_KEY", "")
 SERPAPI_KEY = os.getenv("SERPAPI_KEY", "")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
 
+# Higgsfield (video/image ad generation) uses two separate credentials, not
+# one - see .claude/skills/higgsfield/ for how these are used.
+HIGGSFIELD_API_KEY_ID = os.getenv("HIGGSFIELD_API_KEY_ID", "")
+HIGGSFIELD_API_KEY_SECRET = os.getenv("HIGGSFIELD_API_KEY_SECRET", "")
+HAS_HIGGSFIELD = bool(HIGGSFIELD_API_KEY_ID and HIGGSFIELD_API_KEY_SECRET)
+
 # Apify Actor ids used for discovery and contact-finding (see
 # agents/discovery.py and agents/contact_finder.py). Overridable via .env in
 # case you want to swap in a different Actor without touching code.
