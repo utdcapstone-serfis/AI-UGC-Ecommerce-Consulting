@@ -19,6 +19,20 @@ Pinterest's Developer API (v5, what `PinterestAdapter` uses) requires the connec
 
 Separately: Pinterest access tokens expire (historically ~30 days), and `PinterestAdapter` doesn't currently handle refresh — `get_pinterest_token.py` has to be rerun manually to get a new token when it lapses. Same category of issue as Instagram's 60-day token expiry, just not yet automated for either.
 
+## X (Twitter): not yet built, real pricing found, decision pending
+
+X isn't implemented yet (no `XAdapter`, native or UploadPost-backed). Initial assumption going in — that X needed an expensive paid subscription tier like the old Free/Basic/Pro system — turned out to be stale. Confirmed via X's current docs (`docs.x.com`) and a pasted excerpt of their live pricing page:
+
+- **X now uses pay-per-usage credits, not subscriptions.** No monthly minimum, no approval process to get write access at all (unlike LinkedIn/TikTok). Fund a credit balance, pay per request.
+- **Post: Create costs $0.015/post** (jumps to $0.200 if the post text includes a URL). Other read/interaction operations are fractions of a cent.
+- **Unconfirmed**: whether attaching video specifically adds a separate media-upload charge beyond the base per-post cost — the pricing sheet only documents the tweet-creation charge itself.
+
+**Cost comparison, UploadPost vs. native**, depends entirely on whether UploadPost is already in use for LinkedIn/TikTok:
+- **Already paying UploadPost's Basic tier (~$16–24/mo) for LinkedIn/TikTok** → adding X there is **$0 marginal cost** (paid tiers include all supported platforms). Native X would mean standing up a second, separate billing relationship with no actual savings.
+- **X as the only reason to use UploadPost** → UploadPost's Free tier ($0, but capped at 10 uploads/month *total across all platforms on the account*) vs. native X (~$0.015/post, uncapped, but its own developer account + funded payment method to set up). Native is cheaper in absolute terms at any real volume; UploadPost is simpler/free at very low volume.
+
+**Decision status:** not made — asked the user twice (native vs. UploadPost) and both times the question was dismissed without an answer, so this is genuinely open rather than defaulted. Given LinkedIn/TikTok already route through UploadPost in this codebase, routing X there too is the practical recommendation, but nothing's been built pending an actual decision.
+
 ## `.env` / credentials management
 
 Current state: each machine running this code needs its own `.env`, created locally from `.env.example` and filled in by hand (never committed — `.gitignore` covers it, and `distribution_agent/__init__.py` auto-loads it via `load_dotenv()` as of 2026-09-24). This works for a single person on a single machine, but doesn't yet have an answer for:

@@ -111,8 +111,11 @@ successful upload response alone doesn't count as confirmation.
 ## Not yet built
 
 Other platforms considered but not implemented: Snapchat (built around
-the Ads API, not organic posting), Twitter/X (meaningful write access
-needs a paid API tier). Either could follow either pattern already
+the Ads API, not organic posting), X/Twitter (no approval gate, but
+real per-request cost — pay-per-usage credits, ~$0.015/post, no
+subscription; see `CURRENT_OBSTACLES.md` for the full cost comparison
+against routing it through UploadPost instead — decision not yet
+made). Either could follow either pattern already
 established — a native adapter, or a thin `UploadPostAdapter`
 subclass if UploadPost also covers it and the native path is gated.
 
