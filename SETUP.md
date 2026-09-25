@@ -32,6 +32,14 @@ fetches the video from that URL itself.
 `FacebookAdapter.upload()` accepts either `VideoAsset.local_path` or
 `VideoAsset.public_url`.
 
+## Threads
+
+1. Same Meta Developer App as Facebook/Instagram — add the **Threads API** product to it.
+2. Run the OAuth flow yourself, granting `threads_basic` and `threads_content_publish`.
+3. Fill in `THREADS_ACCESS_TOKEN` and `THREADS_USER_ID` — this is a **separate id from the Instagram Business Account ID**, even though it's tied to the same underlying account.
+
+Like Instagram, `ThreadsAdapter.upload()` needs a **publicly reachable video URL** (`VideoAsset.public_url`), not a local file. A container that isn't published within 24 hours expires and has to be recreated — not a concern for normal use, but worth knowing if a post gets stuck for other reasons.
+
 ## YouTube
 
 1. Create a Google Cloud project, enable **YouTube Data API v3**.
@@ -105,7 +113,7 @@ from distribution_agent.adapters.base import VideoAsset
 asset = VideoAsset(
     caption="Check out our new product!",
     local_path=Path("video.mp4"),      # needed for YouTube, Reddit, Bluesky, Pinterest, LinkedIn, TikTok
-    public_url="https://cdn.example.com/video.mp4",  # needed for Instagram, optional for Facebook
+    public_url="https://cdn.example.com/video.mp4",  # needed for Instagram and Threads, optional for Facebook
 )
 
 records = distribute(asset, platforms=["youtube", "instagram"], poc_email="client@example.com")

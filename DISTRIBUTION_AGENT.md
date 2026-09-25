@@ -37,6 +37,7 @@ means no post — full stop:
 | Reddit | `adapters/reddit.py` | `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `REDDIT_USERNAME`, `REDDIT_PASSWORD`, `REDDIT_USER_AGENT`, `REDDIT_SUBREDDIT` | Register a "script" app, no review | Re-authenticates every run; watch for Reddit deprecating password-grant apps |
 | YouTube | `adapters/youtube.py` | `YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN` | Google Cloud project + one-time OAuth consent | Refresh token is long-lived **only once the app is out of "Testing" mode** — just 7 days while still in Testing |
 | Facebook | `adapters/facebook.py` | `FB_PAGE_ACCESS_TOKEN`, `FB_PAGE_ID` | Meta Developer App + Page access token | Page token is effectively permanent unless revoked |
+| Threads | `adapters/threads.py` | `THREADS_ACCESS_TOKEN`, `THREADS_USER_ID` | Same Meta Developer App as Facebook/Instagram + Threads API product + its own OAuth scopes | Not yet characterized against a live account |
 | Pinterest | `adapters/pinterest.py` | `PINTEREST_ACCESS_TOKEN`, `PINTEREST_BOARD_ID` | Pinterest Developer app + one-time OAuth consent | Not yet characterized against a live account |
 | Instagram | `adapters/instagram.py` | `IG_ACCESS_TOKEN`, `IG_BUSINESS_ACCOUNT_ID` | Meta Developer App + Business/Creator account + linked Page — the most setup steps of the native adapters | Long-lived token expires **~60 days** — must be refreshed before it lapses, or the OAuth consent flow has to be redone from scratch |
 | LinkedIn | `adapters/uploadpost.py` (`LinkedInAdapter`) | `UPLOADPOST_API_KEY`, `UPLOADPOST_USER` | Routed through UploadPost.com — LinkedIn's own partner-approval process isn't self-serve | UploadPost manages the underlying token; not our concern |
@@ -63,6 +64,14 @@ bodies rather than assuming `raise_for_status()`'s generic error was
 the whole story — worth remembering for any other adapter that starts
 failing without an obvious cause.
 
+`ThreadsAdapter` mirrors `InstagramAdapter`'s container→poll→publish
+shape (same family of API, different product). Endpoint and field
+names (`graph.threads.net/v1.0`, container `status` values, the
+`error_message` field, the 24h container expiry) were confirmed
+against Meta's current Threads API docs before writing it — not
+guessed — but like Pinterest, it hasn't been exercised against a live
+account in this codebase yet.
+
 `LinkedInAdapter` and `TikTokAdapter` are both thin subclasses of one
 shared `UploadPostAdapter` implementation — same endpoint, same
 multipart shape, differing only in the `platform` field value. Unlike
@@ -88,8 +97,8 @@ Defined in `distribution_agent/adapters/base.py`:
 
 - `local_path` — required by YouTube, Reddit, Bluesky, Pinterest,
   LinkedIn, and TikTok (they all upload the file directly).
-- `public_url` — required by Instagram (the Graph API fetches the
-  video server-side, it can't accept a local file); Facebook accepts
+- `public_url` — required by Instagram and Threads (both fetch the
+  video server-side, they can't accept a local file); Facebook accepts
   either `local_path` or `public_url`.
 
 ## Output
@@ -101,12 +110,11 @@ successful upload response alone doesn't count as confirmation.
 
 ## Not yet built
 
-Other platforms considered but not implemented: Threads, Snapchat
-(built around the Ads API, not organic posting), Twitter/X
-(meaningful write access needs a paid API tier). Any of these could
-follow either pattern already established — a native adapter, or a
-thin `UploadPostAdapter` subclass if UploadPost also covers it and the
-native path is gated.
+Other platforms considered but not implemented: Snapchat (built around
+the Ads API, not organic posting), Twitter/X (meaningful write access
+needs a paid API tier). Either could follow either pattern already
+established — a native adapter, or a thin `UploadPostAdapter`
+subclass if UploadPost also covers it and the native path is gated.
 
 ## Related files
 
