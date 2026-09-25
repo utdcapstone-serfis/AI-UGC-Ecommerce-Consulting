@@ -13,6 +13,12 @@ Reddit's Data API Terms distinguish commercial from non-commercial use, and the 
 
 **Action needed:** read Reddit's current terms directly, decide honestly which use case applies, and treat Reddit as a platform that needs more human judgment per-post (genuine community fit, not just QC-pass) than the others in this pipeline.
 
+## Pinterest: requires a business account
+
+Pinterest's Developer API (v5, what `PinterestAdapter` uses) requires the connected account to be a **Business account**, not a personal one — same pattern as Instagram's Business/Creator requirement. Conversion is free and instant (Settings → Account settings → Convert to business account), not an approval process, but it's a real prerequisite: a personal account won't authenticate through the OAuth flow in `SETUP.md`/`get_pinterest_token.py`. Not yet verified firsthand against a live account in this session — confirm by just running the OAuth flow, which will either work or prompt for conversion.
+
+Separately: Pinterest access tokens expire (historically ~30 days), and `PinterestAdapter` doesn't currently handle refresh — `get_pinterest_token.py` has to be rerun manually to get a new token when it lapses. Same category of issue as Instagram's 60-day token expiry, just not yet automated for either.
+
 ## `.env` / credentials management
 
 Current state: each machine running this code needs its own `.env`, created locally from `.env.example` and filled in by hand (never committed — `.gitignore` covers it, and `distribution_agent/__init__.py` auto-loads it via `load_dotenv()` as of 2026-09-24). This works for a single person on a single machine, but doesn't yet have an answer for:
