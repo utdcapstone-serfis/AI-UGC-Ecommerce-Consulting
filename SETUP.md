@@ -63,8 +63,9 @@ The simplest of the bunch — no developer app, no review process.
 
 1. In the Bluesky app: **Settings → App Passwords → Add App Password**.
 2. Fill in `BLUESKY_IDENTIFIER` (your handle, e.g. `you.bsky.social`, or the email on the account) and `BLUESKY_APP_PASSWORD`.
+3. **Confirm the account's email** (Settings → Email) if you haven't already. Video upload specifically fails with a 401 `unconfirmed_email` otherwise — found by actually running this against a real account, not documented anywhere obvious up front.
 
-That's it. `BLUESKY_SERVICE` is optional — only set it if you're on a self-hosted Personal Data Server instead of the default `bsky.social`.
+`BLUESKY_SERVICE` is optional — only set it if you're on a self-hosted Personal Data Server instead of the default `bsky.social`.
 
 Note: video posting on AT Protocol requires the video to finish server-side processing before it can be attached to a post — `BlueskyAdapter.upload()` handles the upload-then-poll flow internally, but it does mean a Bluesky post can take a little longer to go through than the other platforms.
 

@@ -33,7 +33,7 @@ means no post — full stop:
 
 | Platform | Adapter | Credentials (env vars) | Setup effort | Expiry behavior |
 |---|---|---|---|---|
-| Bluesky | `adapters/bluesky.py` | `BLUESKY_IDENTIFIER`, `BLUESKY_APP_PASSWORD` | Simplest native — one App Password, no dev app or review | App Passwords don't expire on a timer |
+| Bluesky | `adapters/bluesky.py` | `BLUESKY_IDENTIFIER`, `BLUESKY_APP_PASSWORD` | Simplest native — one App Password, no dev app or review, **but the account's email must be confirmed** or video upload 401s with `unconfirmed_email` | App Passwords don't expire on a timer |
 | Reddit | `adapters/reddit.py` | `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `REDDIT_USERNAME`, `REDDIT_PASSWORD`, `REDDIT_USER_AGENT`, `REDDIT_SUBREDDIT` | Register a "script" app, no review | Re-authenticates every run; watch for Reddit deprecating password-grant apps |
 | YouTube | `adapters/youtube.py` | `YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN` | Google Cloud project + one-time OAuth consent | Refresh token is long-lived **only once the app is out of "Testing" mode** — just 7 days while still in Testing |
 | Facebook | `adapters/facebook.py` | `FB_PAGE_ACCESS_TOKEN`, `FB_PAGE_ID` | Meta Developer App + Page access token | Page token is effectively permanent unless revoked |
@@ -44,6 +44,24 @@ means no post — full stop:
 
 Full step-by-step credential setup for each platform:
 `SETUP.md`.
+
+**Bluesky video upload — two real bugs found and fixed by testing against
+a live account (2026-09-24), not by re-reading docs:**
+1. The service-auth token's audience must be the account's own PDS
+   (federated — varies per account, e.g. `did:web:discina.us-west.host.bsky.network`
+   for this test account), not a fixed `did:web:video.bsky.app`. The
+   correct value comes from `createSession`'s own response
+   (`didDoc.service` where `id == "#atproto_pds"`) — see
+   `BlueskyAdapter._pds_did_from()`.
+2. That token must be scoped to lexicon method
+   `com.atproto.repo.uploadBlob`, not the more obviously-named
+   `app.bsky.video.uploadVideo` — the service's own 401 body named the
+   expected method directly.
+
+Both were only discoverable by reading the actual rejection response
+bodies rather than assuming `raise_for_status()`'s generic error was
+the whole story — worth remembering for any other adapter that starts
+failing without an obvious cause.
 
 `LinkedInAdapter` and `TikTokAdapter` are both thin subclasses of one
 shared `UploadPostAdapter` implementation — same endpoint, same

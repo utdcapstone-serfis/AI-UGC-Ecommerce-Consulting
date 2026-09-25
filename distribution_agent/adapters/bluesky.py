@@ -3,7 +3,12 @@
 Setup required before this works (see SETUP.md):
   1. In the Bluesky app: Settings > App Passwords > create one. This is
      not your account password — it's scoped and revocable on its own.
-  2. That's it. No developer app registration, no review process,
+  2. Confirm the account's email address (Settings > Email). Video
+     upload specifically requires this — an unconfirmed email fails
+     with a 401 "unconfirmed_email" from the video service, discovered
+     by actually running this against a real account, not documented
+     anywhere obvious up front.
+  3. No developer app registration, no review process beyond that,
      unlike every other adapter in this package.
 
 Requires BLUESKY_IDENTIFIER (handle or email) and BLUESKY_APP_PASSWORD
@@ -19,9 +24,9 @@ referencing the resulting blob.
 """
 
 import os
-import time
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlparse
 
 import requests
 
@@ -39,9 +44,9 @@ class BlueskyAdapter(PlatformAdapter):
         self.identifier = require_env("BLUESKY_IDENTIFIER")
         self.app_password = require_env("BLUESKY_APP_PASSWORD")
         self.service = os.environ.get("BLUESKY_SERVICE", DEFAULT_SERVICE)
-        self.access_jwt, self.did = self._create_session()
+        self.access_jwt, self.did, self.pds_did = self._create_session()
 
-    def _create_session(self) -> tuple[str, str]:
+    def _create_session(self) -> tuple[str, str, str]:
         resp = requests.post(
             f"{self.service}/xrpc/com.atproto.server.createSession",
             json={"identifier": self.identifier, "password": self.app_password},
@@ -49,7 +54,25 @@ class BlueskyAdapter(PlatformAdapter):
         )
         resp.raise_for_status()
         body = resp.json()
-        return body["accessJwt"], body["did"]
+        return body["accessJwt"], body["did"], self._pds_did_from(body)
+
+    @staticmethod
+    def _pds_did_from(session_body: dict) -> str:
+        """The account's home Personal Data Server, as its own did:web —
+        NOT a fixed value: AT Protocol is federated, so different
+        accounts live on different PDS hosts (this account's is
+        *.host.bsky.network, not bsky.social itself, even though that's
+        where we authenticated). service-auth tokens for the video
+        service must be scoped to this exact DID as their audience, or
+        the video service rejects them with a 401 naming the DID it
+        expected — that's how this was discovered and fixed.
+        """
+        services = session_body.get("didDoc", {}).get("service", [])
+        pds = next((s for s in services if s.get("id") == "#atproto_pds"), None)
+        if not pds:
+            raise RuntimeError("createSession response had no #atproto_pds service entry to derive the PDS DID from")
+        host = urlparse(pds["serviceEndpoint"]).hostname
+        return f"did:web:{host}"
 
     def _auth_header(self, token: str) -> dict:
         return {"Authorization": f"Bearer {token}"}
@@ -81,7 +104,11 @@ class BlueskyAdapter(PlatformAdapter):
     def _upload_video(self, local_path: Path) -> dict:
         # The video service is a separate host, so it needs its own
         # short-lived, method-scoped auth token rather than access_jwt.
-        service_token = self._get_service_auth("app.bsky.video.uploadVideo")
+        # The scope must be "com.atproto.repo.uploadBlob" — the service
+        # rejects a token scoped for the (more obviously-named)
+        # "app.bsky.video.uploadVideo" with a 401 naming this method
+        # instead; found by reading the actual rejection body, not docs.
+        service_token = self._get_service_auth("com.atproto.repo.uploadBlob")
 
         with open(local_path, "rb") as f:
             video_bytes = f.read()
@@ -93,8 +120,18 @@ class BlueskyAdapter(PlatformAdapter):
             data=video_bytes,
             timeout=120,
         )
-        resp.raise_for_status()
-        job_id = resp.json()["jobStatus"]["jobId"]
+        # Unlike getJobStatus below, this response is FLAT (jobId at the
+        # top level, not nested under "jobStatus") — confirmed by reading
+        # the real response, not assumed from docs. Bluesky also dedupes
+        # by video content hash: re-uploading identical bytes returns
+        # 409 "already_exists" with a still-usable jobId rather than a
+        # real error, so that's treated as success too.
+        body = resp.json() if resp.content else {}
+        if resp.status_code == 409 and body.get("error") == "already_exists" and body.get("jobId"):
+            job_id = body["jobId"]
+        else:
+            resp.raise_for_status()
+            job_id = body["jobId"]
 
         blob = {}
 
@@ -122,7 +159,7 @@ class BlueskyAdapter(PlatformAdapter):
     def _get_service_auth(self, lxm: str) -> str:
         resp = requests.get(
             f"{self.service}/xrpc/com.atproto.server.getServiceAuth",
-            params={"aud": "did:web:video.bsky.app", "lxm": lxm},
+            params={"aud": self.pds_did, "lxm": lxm},
             headers=self._auth_header(self.access_jwt),
             timeout=15,
         )
