@@ -33,21 +33,43 @@ means no post — full stop:
 
 | Platform | Adapter | Credentials (env vars) | Setup effort | Expiry behavior |
 |---|---|---|---|---|
-| Bluesky | `adapters/bluesky.py` | `BLUESKY_IDENTIFIER`, `BLUESKY_APP_PASSWORD` | Simplest — one App Password, no dev app or review | App Passwords don't expire on a timer |
+| Bluesky | `adapters/bluesky.py` | `BLUESKY_IDENTIFIER`, `BLUESKY_APP_PASSWORD` | Simplest native — one App Password, no dev app or review | App Passwords don't expire on a timer |
 | Reddit | `adapters/reddit.py` | `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `REDDIT_USERNAME`, `REDDIT_PASSWORD`, `REDDIT_USER_AGENT`, `REDDIT_SUBREDDIT` | Register a "script" app, no review | Re-authenticates every run; watch for Reddit deprecating password-grant apps |
 | YouTube | `adapters/youtube.py` | `YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN` | Google Cloud project + one-time OAuth consent | Refresh token is long-lived **only once the app is out of "Testing" mode** — just 7 days while still in Testing |
 | Facebook | `adapters/facebook.py` | `FB_PAGE_ACCESS_TOKEN`, `FB_PAGE_ID` | Meta Developer App + Page access token | Page token is effectively permanent unless revoked |
-| Instagram | `adapters/instagram.py` | `IG_ACCESS_TOKEN`, `IG_BUSINESS_ACCOUNT_ID` | Meta Developer App + Business/Creator account + linked Page — the most setup steps of the five | Long-lived token expires **~60 days** — must be refreshed before it lapses, or the OAuth consent flow has to be redone from scratch |
+| Pinterest | `adapters/pinterest.py` | `PINTEREST_ACCESS_TOKEN`, `PINTEREST_BOARD_ID` | Pinterest Developer app + one-time OAuth consent | Not yet characterized against a live account |
+| Instagram | `adapters/instagram.py` | `IG_ACCESS_TOKEN`, `IG_BUSINESS_ACCOUNT_ID` | Meta Developer App + Business/Creator account + linked Page — the most setup steps of the native adapters | Long-lived token expires **~60 days** — must be refreshed before it lapses, or the OAuth consent flow has to be redone from scratch |
+| LinkedIn | `adapters/uploadpost.py` (`LinkedInAdapter`) | `UPLOADPOST_API_KEY`, `UPLOADPOST_USER` | Routed through UploadPost.com — LinkedIn's own partner-approval process isn't self-serve | UploadPost manages the underlying token; not our concern |
+| TikTok | `adapters/uploadpost.py` (`TikTokAdapter`) | `UPLOADPOST_API_KEY`, `UPLOADPOST_USER` | Routed through UploadPost.com — TikTok's own Content Posting API audit can take weeks | UploadPost manages the underlying token; not our concern |
 
 Full step-by-step credential setup for each platform:
 `SETUP.md`.
+
+`LinkedInAdapter` and `TikTokAdapter` are both thin subclasses of one
+shared `UploadPostAdapter` implementation — same endpoint, same
+multipart shape, differing only in the `platform` field value. Unlike
+every native adapter, `UploadPostAdapter.verify_live()` can only trust
+the upload response itself (UploadPost's docs don't expose a
+get-post/status endpoint) — a genuinely weaker live-confirmation
+guarantee than the rest. Its endpoint/field names also haven't been
+exercised against a live UploadPost account in this codebase yet —
+confirm against their current docs before relying on it in production.
+
+## `.env` loading
+
+`distribution_agent/__init__.py` calls `load_dotenv()` on import, so
+values in a project-root `.env` file are picked up automatically —
+no manual `load_dotenv()` call or shell `export` needed before using
+the package. (This was a real gap until 2026-09-24: `config.py` only
+ever read `os.environ` directly, so `.env` values silently weren't
+seen unless the caller loaded them itself.)
 
 ## `VideoAsset` contract
 
 Defined in `distribution_agent/adapters/base.py`:
 
-- `local_path` — required by YouTube, Reddit, Bluesky (they upload the
-  file directly).
+- `local_path` — required by YouTube, Reddit, Bluesky, Pinterest,
+  LinkedIn, and TikTok (they all upload the file directly).
 - `public_url` — required by Instagram (the Graph API fetches the
   video server-side, it can't accept a local file); Facebook accepts
   either `local_path` or `public_url`.
@@ -61,13 +83,12 @@ successful upload response alone doesn't count as confirmation.
 
 ## Not yet built
 
-Other platforms considered but not implemented, ranked easiest →
-hardest to add next based on setup friction: Pinterest, Threads,
-LinkedIn (gated behind a partner-approval process for posting as an
-org page), Snapchat (built around the Ads API, not organic posting),
-Twitter/X (meaningful write access needs a paid API tier), TikTok
-(slowest — the Content Posting API requires a formal app audit that
-can take days to weeks).
+Other platforms considered but not implemented: Threads, Snapchat
+(built around the Ads API, not organic posting), Twitter/X
+(meaningful write access needs a paid API tier). Any of these could
+follow either pattern already established — a native adapter, or a
+thin `UploadPostAdapter` subclass if UploadPost also covers it and the
+native path is gated.
 
 ## Related files
 

@@ -68,6 +68,26 @@ That's it. `BLUESKY_SERVICE` is optional — only set it if you're on a self-hos
 
 Note: video posting on AT Protocol requires the video to finish server-side processing before it can be attached to a post — `BlueskyAdapter.upload()` handles the upload-then-poll flow internally, but it does mean a Bluesky post can take a little longer to go through than the other platforms.
 
+## Pinterest
+
+1. Create a Pinterest Developer app at https://developers.pinterest.com.
+2. Run the OAuth flow yourself, granting `pins:write` and `boards:read`.
+3. Find the target board's id (`GET /v5/boards`, or from the board's URL) and fill in `PINTEREST_ACCESS_TOKEN` and `PINTEREST_BOARD_ID`.
+
+`PinterestAdapter.upload()` requires `VideoAsset.local_path` — it uploads the file directly and generates the required cover image itself (the video's own first frame) rather than needing you to host a separate thumbnail.
+
+## LinkedIn and TikTok — via UploadPost.com
+
+Both platforms are gated behind an approval process that isn't self-serve: LinkedIn requires applying for their Marketing/Community Management partner API, and TikTok requires a formal Content Posting API audit that can take weeks. Rather than go through either, both are routed through [UploadPost.com](https://upload-post.com), which already holds an approved app for each.
+
+1. Create an UploadPost account and grab your API key from their dashboard.
+2. In the UploadPost dashboard, click **Connect** for LinkedIn and/or TikTok and approve the permissions in the popup that opens — no app of your own to create, no waiting on either platform's review.
+3. Fill in `UPLOADPOST_API_KEY` and `UPLOADPOST_USER` (the profile username shown in their dashboard once connected).
+
+Note: `UploadPostAdapter.verify_live()` can only trust the upload response itself — UploadPost's docs don't expose a separate get-post/status endpoint, so this is a genuinely weaker live-confirmation guarantee than the native adapters, which always re-check the post via the platform's own API. Also note the endpoint/field names here were taken from UploadPost's docs but not exercised against a live account in this codebase — confirm against their current docs before relying on this in production.
+
+Free tier: UploadPost's $0 plan excludes TikTok entirely and caps at 10 uploads/month. The Basic plan (~$16–24/mo) is needed for TikTok and unlimited uploads.
+
 ## Email notifications
 
 Standard SMTP — `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`,
@@ -83,7 +103,7 @@ from distribution_agent.adapters.base import VideoAsset
 
 asset = VideoAsset(
     caption="Check out our new product!",
-    local_path=Path("video.mp4"),      # needed for YouTube, Reddit
+    local_path=Path("video.mp4"),      # needed for YouTube, Reddit, Bluesky, Pinterest, LinkedIn, TikTok
     public_url="https://cdn.example.com/video.mp4",  # needed for Instagram, optional for Facebook
 )
 

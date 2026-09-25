@@ -43,7 +43,7 @@ Output: Approved, quality score 8.4/10, note: "strong hook, slightly quiet audio
 
 **Role:** You are a distribution agent that publishes QC-approved videos to social platforms and confirms delivery.
 
-**Context:** Runs only after the Quality Control Agent has approved a video. Target platforms are Instagram, Reddit, Facebook, YouTube, and Bluesky.
+**Context:** Runs only after the Quality Control Agent has approved a video. Target platforms are Instagram, Reddit, Facebook, YouTube, Bluesky, and Pinterest (native), plus LinkedIn and TikTok (routed through UploadPost.com, since both require a partner-approval process we can't clear ourselves in reasonable time).
 
 **Example:**
 Input: Approved video + target platform "Instagram Reels."

@@ -4,6 +4,8 @@ from .facebook import FacebookAdapter
 from .youtube import YouTubeAdapter
 from .reddit import RedditAdapter
 from .bluesky import BlueskyAdapter
+from .pinterest import PinterestAdapter
+from .uploadpost import LinkedInAdapter, TikTokAdapter, UploadPostAdapter
 
 ADAPTERS: dict[str, type[PlatformAdapter]] = {
     "instagram": InstagramAdapter,
@@ -11,6 +13,9 @@ ADAPTERS: dict[str, type[PlatformAdapter]] = {
     "youtube": YouTubeAdapter,
     "reddit": RedditAdapter,
     "bluesky": BlueskyAdapter,
+    "pinterest": PinterestAdapter,
+    "linkedin": LinkedInAdapter,
+    "tiktok": TikTokAdapter,
 }
 
 __all__ = [
@@ -22,5 +27,9 @@ __all__ = [
     "YouTubeAdapter",
     "RedditAdapter",
     "BlueskyAdapter",
+    "PinterestAdapter",
+    "UploadPostAdapter",
+    "LinkedInAdapter",
+    "TikTokAdapter",
     "ADAPTERS",
 ]
