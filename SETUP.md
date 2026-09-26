@@ -82,6 +82,7 @@ Note: video posting on AT Protocol requires the video to finish server-side proc
 1. Create a Pinterest Developer app at https://developers.pinterest.com.
 2. Run the OAuth flow yourself, granting `pins:write` and `boards:read`.
 3. Find the target board's id (`GET /v5/boards`, or from the board's URL) and fill in `PINTEREST_ACCESS_TOKEN` and `PINTEREST_BOARD_ID`.
+4. **Submit the app to Pinterest for review before relying on it beyond initial testing.** Their Developer Terms require review and approval "prior to distribution to End Users or commencement of use" — this isn't optional for production use, even for posting to a single business's own account. See `CURRENT_OBSTACLES.md` for the full note; this step wasn't in earlier versions of this walkthrough and is a real gap, not a formality to skip.
 
 `PinterestAdapter.upload()` requires `VideoAsset.local_path` — it uploads the file directly and generates the required cover image itself (the video's own first frame) rather than needing you to host a separate thumbnail.
 

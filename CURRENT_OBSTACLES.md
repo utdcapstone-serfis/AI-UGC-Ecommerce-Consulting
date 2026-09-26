@@ -23,11 +23,17 @@ Reddit's Data API Terms distinguish commercial from non-commercial use, and the 
 
 **Action needed:** read Reddit's current terms directly, decide honestly which use case applies, and treat Reddit as a platform that needs more human judgment per-post (genuine community fit, not just QC-pass) than the others in this pipeline.
 
-## Pinterest: requires a business account
+## Pinterest: requires a business account, mandatory app review, and terms worth reading
 
 Pinterest's Developer API (v5, what `PinterestAdapter` uses) requires the connected account to be a **Business account**, not a personal one — same pattern as Instagram's Business/Creator requirement. Conversion is free and instant (Settings → Account settings → Convert to business account), not an approval process, but it's a real prerequisite: a personal account won't authenticate through the OAuth flow in `SETUP.md`/`get_pinterest_token.py`. Not yet verified firsthand against a live account in this session — confirm by just running the OAuth flow, which will either work or prompt for conversion.
 
 Separately: Pinterest access tokens expire (historically ~30 days), and `PinterestAdapter` doesn't currently handle refresh — `get_pinterest_token.py` has to be rerun manually to get a new token when it lapses. Same category of issue as Instagram's 60-day token expiry, just not yet automated for either.
+
+**Mandatory app review — a real gap the original walkthrough missed.** Pinterest's Developer and API Terms of Service, Section 2.3: *"You must submit your application, integration, or interface to Pinterest for review and approval prior to distribution to End Users **or commencement of use**."* Unlike Instagram/Facebook (where review is only required for apps requesting access beyond your own account/Page), this phrasing applies to commencing use at all, not just public distribution. Getting an access token via `get_pinterest_token.py` will work technically; using it beyond initial testing without submitting for Pinterest's review would be a real ToS violation, not just a formality. `SETUP.md` now flags this — actually submitting for review hasn't been done.
+
+**One thing worth knowing, not a problem**: Pinterest's Developer Guidelines explicitly prohibit blanket auto-posting — *"if your app allows end users to schedule Pin publishing, the end user must choose each Pin to be published."* This is a real compliance requirement, and it's already satisfied: the approval gate in `distribute()` (see `DISTRIBUTION_AGENT.md`) requires exactly this — explicit per-post human confirmation, never a blanket auto-approve. Built before this was known to be a Pinterest requirement specifically, not because of it, but it happens to be exactly what Pinterest's terms demand.
+
+Lower relevance for this use case: the data-privacy/CCPA/deletion obligations (Section 4 of their terms) govern *pulling* Pinterest Data (analytics, audience data) back out — since this pipeline only posts, never reads Pinterest Data, these mostly don't apply unless a future Pinterest analytics feature gets added. Same with the "publishing content" linking-back rules, which govern apps that *display* Pinterest content elsewhere, not apps that post content *into* Pinterest.
 
 ## X (Twitter): not yet built, real pricing found, decision pending
 
