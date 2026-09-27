@@ -86,6 +86,20 @@ Note: video posting on AT Protocol requires the video to finish server-side proc
 
 `PinterestAdapter.upload()` requires `VideoAsset.local_path` — it uploads the file directly and generates the required cover image itself (the video's own first frame) rather than needing you to host a separate thumbnail.
 
+## X (Twitter)
+
+Native, not via UploadPost — X has no approval gate at all (unlike LinkedIn/TikTok), just a real per-request cost. See `CURRENT_OBSTACLES.md` for the full pricing breakdown and why native won out over UploadPost for this one.
+
+1. Go to **developer.x.com**, create a **confidential client** ("Web App, Automated App or Bot" type — needs both a Client ID and Client Secret, unlike a "public" client which only gets an ID).
+2. Fund a credit balance for the app (pay-per-usage — no subscription, but posting won't work with a zero balance).
+3. Set the app's callback/redirect URL to exactly `http://localhost:8766/callback`.
+4. Fill in `X_CLIENT_ID` and `X_CLIENT_SECRET` in `.env`.
+5. Run `python get_x_token.py` yourself — same pattern as YouTube/Pinterest: it opens your browser, you approve, and it prints a refresh token in your own terminal for you to copy into `.env` as `X_REFRESH_TOKEN`.
+
+Note: X's docs don't say whether refresh tokens rotate (a new one issued each time the old one's used, invalidating it). `XAdapter` handles this defensively — if a refresh ever returns a new token, it's written back into `.env` automatically, so this shouldn't silently break even if rotation turns out to be real.
+
+`XAdapter.upload()` requires `VideoAsset.local_path` — it does a full chunked upload (INIT/APPEND/FINALIZE) directly to X, then polls for video processing before posting.
+
 ## LinkedIn and TikTok — via UploadPost.com
 
 Both platforms are gated behind an approval process that isn't self-serve: LinkedIn requires applying for their Marketing/Community Management partner API, and TikTok requires a formal Content Posting API audit that can take weeks. Rather than go through either, both are routed through [UploadPost.com](https://upload-post.com), which already holds an approved app for each.
@@ -113,7 +127,7 @@ from distribution_agent.adapters.base import VideoAsset
 
 asset = VideoAsset(
     caption="Check out our new product!",
-    local_path=Path("video.mp4"),      # needed for YouTube, Reddit, Bluesky, Pinterest, LinkedIn, TikTok
+    local_path=Path("video.mp4"),      # needed for YouTube, Reddit, Bluesky, Pinterest, X, LinkedIn, TikTok
     public_url="https://cdn.example.com/video.mp4",  # needed for Instagram and Threads, optional for Facebook
 )
 

@@ -40,6 +40,7 @@ means no post — full stop:
 | Threads | `adapters/threads.py` | `THREADS_ACCESS_TOKEN`, `THREADS_USER_ID` | Same Meta Developer App as Facebook/Instagram + Threads API product + its own OAuth scopes | Not yet characterized against a live account |
 | Pinterest | `adapters/pinterest.py` | `PINTEREST_ACCESS_TOKEN`, `PINTEREST_BOARD_ID` | Pinterest Developer app + one-time OAuth consent | Not yet characterized against a live account |
 | Instagram | `adapters/instagram.py` | `IG_ACCESS_TOKEN`, `IG_BUSINESS_ACCOUNT_ID` | Meta Developer App + Business/Creator account + linked Page — the most setup steps of the native adapters | Long-lived token expires **~60 days** — must be refreshed before it lapses, or the OAuth consent flow has to be redone from scratch |
+| X | `adapters/x.py` | `X_CLIENT_ID`, `X_CLIENT_SECRET`, `X_REFRESH_TOKEN` | Native — confidential client + OAuth 2.0 PKCE consent; no approval gate, but needs a funded pay-per-usage credit balance | Access tokens short-lived, refreshed per call; refresh-token rotation unconfirmed by X's docs so handled defensively (see below) |
 | LinkedIn | `adapters/uploadpost.py` (`LinkedInAdapter`) | `UPLOADPOST_API_KEY`, `UPLOADPOST_USER` | Routed through UploadPost.com — LinkedIn's own partner-approval process isn't self-serve | UploadPost manages the underlying token; not our concern |
 | TikTok | `adapters/uploadpost.py` (`TikTokAdapter`) | `UPLOADPOST_API_KEY`, `UPLOADPOST_USER` | Routed through UploadPost.com — TikTok's own Content Posting API audit can take weeks | UploadPost manages the underlying token; not our concern |
 
@@ -72,6 +73,18 @@ against Meta's current Threads API docs before writing it — not
 guessed — but like Pinterest, it hasn't been exercised against a live
 account in this codebase yet.
 
+`XAdapter` uses OAuth 2.0 Authorization Code + PKCE (chosen over OAuth
+1.0a since it matches the refresh-token pattern already used for
+YouTube). Endpoint/field names for chunked media upload
+(INIT/APPEND/FINALIZE/STATUS) and the token endpoint were confirmed
+against X's current docs before writing this. One thing the docs
+didn't confirm: whether refresh tokens rotate on use. Handled
+defensively regardless — `_get_access_token()` writes any new
+`refresh_token` a refresh response includes back into `.env`
+automatically (via `python-dotenv`'s `set_key()`), so this doesn't
+silently break if rotation turns out to be real. Not yet exercised
+against a live account.
+
 `LinkedInAdapter` and `TikTokAdapter` are both thin subclasses of one
 shared `UploadPostAdapter` implementation — same endpoint, same
 multipart shape, differing only in the `platform` field value. Unlike
@@ -95,7 +108,7 @@ seen unless the caller loaded them itself.)
 
 Defined in `distribution_agent/adapters/base.py`:
 
-- `local_path` — required by YouTube, Reddit, Bluesky, Pinterest,
+- `local_path` — required by YouTube, Reddit, Bluesky, Pinterest, X,
   LinkedIn, and TikTok (they all upload the file directly).
 - `public_url` — required by Instagram and Threads (both fetch the
   video server-side, they can't accept a local file); Facebook accepts
@@ -119,13 +132,6 @@ unattended from a backend. There is no programmatic organic-posting
 surface to build against at all. UploadPost doesn't list Snapchat
 either, independently confirming this. Unlike everything else on this
 list, this isn't a "not yet built" gap — there's nothing to build.
-
-X/Twitter (no approval gate, but real per-request cost — pay-per-usage
-credits, ~$0.015/post, no subscription; see `CURRENT_OBSTACLES.md` for
-the full cost comparison against routing it through UploadPost
-instead — decision not yet made) could follow either pattern already
-established — a native adapter, or a thin `UploadPostAdapter`
-subclass if UploadPost also covers it and the native path is gated.
 
 ## Related files
 

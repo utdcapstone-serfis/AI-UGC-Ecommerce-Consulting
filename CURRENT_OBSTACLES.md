@@ -35,9 +35,11 @@ Separately: Pinterest access tokens expire (historically ~30 days), and `Pintere
 
 Lower relevance for this use case: the data-privacy/CCPA/deletion obligations (Section 4 of their terms) govern *pulling* Pinterest Data (analytics, audience data) back out — since this pipeline only posts, never reads Pinterest Data, these mostly don't apply unless a future Pinterest analytics feature gets added. Same with the "publishing content" linking-back rules, which govern apps that *display* Pinterest content elsewhere, not apps that post content *into* Pinterest.
 
-## X (Twitter): not yet built, real pricing found, decision pending
+## X (Twitter): resolved — built natively (2026-09-27)
 
-X isn't implemented yet (no `XAdapter`, native or UploadPost-backed). Initial assumption going in — that X needed an expensive paid subscription tier like the old Free/Basic/Pro system — turned out to be stale. Confirmed via X's current docs (`docs.x.com`) and a pasted excerpt of their live pricing page:
+Decision made: **native**, after being asked twice and dismissed both times, then confirmed on the third ask. `XAdapter` (`adapters/x.py`) is built — OAuth 2.0 Authorization Code + PKCE, chunked media upload, refresh-token rotation handled defensively (writes a new token back to `.env` automatically if one is issued, since X's docs don't confirm whether rotation happens). Not yet exercised against a live account — `get_x_token.py` needs to be run and `X_CLIENT_ID`/`X_CLIENT_SECRET`/`X_REFRESH_TOKEN` populated before this can be verified end-to-end.
+
+Kept below for reference — the pricing research that drove the decision. Initial assumption going in — that X needed an expensive paid subscription tier like the old Free/Basic/Pro system — turned out to be stale. Confirmed via X's current docs (`docs.x.com`) and a pasted excerpt of their live pricing page:
 
 - **X now uses pay-per-usage credits, not subscriptions.** No monthly minimum, no approval process to get write access at all (unlike LinkedIn/TikTok). Fund a credit balance, pay per request.
 - **Post: Create costs $0.015/post** (jumps to $0.200 if the post text includes a URL). Other read/interaction operations are fractions of a cent.
@@ -47,7 +49,7 @@ X isn't implemented yet (no `XAdapter`, native or UploadPost-backed). Initial as
 - **Already paying UploadPost's Basic tier (~$16–24/mo) for LinkedIn/TikTok** → adding X there is **$0 marginal cost** (paid tiers include all supported platforms). Native X would mean standing up a second, separate billing relationship with no actual savings.
 - **X as the only reason to use UploadPost** → UploadPost's Free tier ($0, but capped at 10 uploads/month *total across all platforms on the account*) vs. native X (~$0.015/post, uncapped, but its own developer account + funded payment method to set up). Native is cheaper in absolute terms at any real volume; UploadPost is simpler/free at very low volume.
 
-**Decision status:** not made — asked the user twice (native vs. UploadPost) and both times the question was dismissed without an answer, so this is genuinely open rather than defaulted. Given LinkedIn/TikTok already route through UploadPost in this codebase, routing X there too is the practical recommendation, but nothing's been built pending an actual decision.
+**Decision status: resolved, native.** See above.
 
 ## `.env` / credentials management
 
