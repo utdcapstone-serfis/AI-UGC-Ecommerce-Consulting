@@ -1,13 +1,19 @@
-"""Instagram adapter (Meta Graph API — Content Publishing).
+"""Instagram adapter (Instagram API with Instagram Login — Content Publishing).
 
 Setup required before this works (see SETUP.md):
   1. Convert the target account to a Business or Creator account.
   2. Link it to a Facebook Page.
-  3. Create a Meta Developer App with the Instagram Graph API product.
-  4. Generate a long-lived access token with instagram_basic and
-     instagram_content_publish scopes.
+  3. Create a Meta Developer App, add the Instagram API use case, and
+     complete "API setup with Instagram login" (not the older
+     Facebook-Login-linked flow).
+  4. Generate an access token via that Instagram login consent screen,
+     granting instagram_business_basic and
+     instagram_business_content_publish.
 
 Requires IG_ACCESS_TOKEN and IG_BUSINESS_ACCOUNT_ID in the environment.
+Uses graph.instagram.com, not graph.facebook.com — tokens from Instagram
+Login are only valid against that host, confirmed by testing against a
+live account (2026-09-28).
 """
 
 import requests
@@ -15,7 +21,7 @@ import requests
 from ..config import require_env
 from .base import PlatformAdapter, PostResult, VideoAsset, poll_until
 
-GRAPH_API_BASE = "https://graph.facebook.com/v19.0"
+GRAPH_API_BASE = "https://graph.instagram.com/v22.0"
 
 
 class InstagramAdapter(PlatformAdapter):

@@ -1,19 +1,12 @@
-"""UploadPost.com-backed adapter — shared by LinkedIn and TikTok.
+"""UploadPost.com-backed adapter — fallback for LinkedIn and TikTok.
 
-Both platforms are gated behind an approval process we can't clear
-ourselves in reasonable time: LinkedIn requires applying for their
-Marketing/Community Management partner API, and TikTok requires a
-formal Content Posting API audit. UploadPost already holds an approved
-app for both — connecting an account is "click Connect, approve" in
-their dashboard (see SETUP.md), no app review of our own required.
-
-One shared implementation serves both platforms, since UploadPost
-exposes the identical endpoint and multipart shape for each — only the
-`platform` field value and a couple of platform-specific optional
-fields (not set here) differ. LinkedInAdapter and TikTokAdapter below
-are thin subclasses that exist only so ADAPTERS can register a
-zero-argument constructor for each platform key, same as every other
-adapter in this package.
+Superseded 2026-10-01 by native adapters (`linkedin.py`, `tiktok.py`) —
+see CURRENT_OBSTACLES.md for why native was pursued instead. This class
+is kept as a fallback path (not registered in ADAPTERS by default): if
+either native integration proves blocked long-term, instantiate
+`UploadPostAdapter("linkedin")` or `UploadPostAdapter("tiktok")`
+directly rather than resurrecting the thin per-platform subclasses that
+used to live here.
 
 Endpoint and field names are per https://docs.upload-post.com (checked
 Sep 2026) — unverified against a live account/API key in this codebase.
@@ -65,13 +58,3 @@ class UploadPostAdapter(PlatformAdapter):
 
     def verify_live(self, post_id: str) -> bool:
         return bool(post_id)
-
-
-class LinkedInAdapter(UploadPostAdapter):
-    def __init__(self) -> None:
-        super().__init__("linkedin")
-
-
-class TikTokAdapter(UploadPostAdapter):
-    def __init__(self) -> None:
-        super().__init__("tiktok")

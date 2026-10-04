@@ -7,7 +7,9 @@ from .reddit import RedditAdapter
 from .bluesky import BlueskyAdapter
 from .pinterest import PinterestAdapter
 from .x import XAdapter
-from .uploadpost import LinkedInAdapter, TikTokAdapter, UploadPostAdapter
+from .linkedin import LinkedInAdapter
+from .tiktok import TikTokAdapter
+from .uploadpost import UploadPostAdapter
 
 ADAPTERS: dict[str, type[PlatformAdapter]] = {
     "instagram": InstagramAdapter,

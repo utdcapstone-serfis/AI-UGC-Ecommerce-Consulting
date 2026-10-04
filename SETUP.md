@@ -100,9 +100,34 @@ Note: X's docs don't say whether refresh tokens rotate (a new one issued each ti
 
 `XAdapter.upload()` requires `VideoAsset.local_path` — it does a full chunked upload (INIT/APPEND/FINALIZE) directly to X, then polls for video processing before posting.
 
-## LinkedIn and TikTok — via UploadPost.com
+## LinkedIn
 
-Both platforms are gated behind an approval process that isn't self-serve: LinkedIn requires applying for their Marketing/Community Management partner API, and TikTok requires a formal Content Posting API audit that can take weeks. Rather than go through either, both are routed through [UploadPost.com](https://upload-post.com), which already holds an approved app for each.
+Native, as of 2026-10-01. Posts to a **personal profile**, not a Company Page — see `CURRENT_OBSTACLES.md` for why (Company Page creation needs a connections/profile-strength threshold on the account that wasn't met, and a LinkedIn developer app can't even be created without a Page attached either way).
+
+1. Go to **linkedin.com/developers/apps**, click "Create app." It requires a LinkedIn Page even for member-scope posting — attach whichever one the app is associated with.
+2. Under the app's **Products**, add **"Share on LinkedIn"** — this is self-serve, no partner review needed (confirmed via `developer.linkedin.com/documents/share-api`).
+3. Run the OAuth 2.0 three-legged consent flow yourself, granting `w_member_social`.
+4. Fill in `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`, `LINKEDIN_ACCESS_TOKEN`, and `LINKEDIN_PERSON_ID` (your own numeric LinkedIn member ID — build the `urn:li:person:{id}` yourself if you only have the raw ID).
+
+Note: access tokens from this flow last ~60 days. `LinkedInAdapter` doesn't refresh them automatically — LinkedIn's refresh-token support is a separate product requiring its own approval, not assumed granted here — so expiry means redoing step 3 manually.
+
+`LinkedInAdapter.upload()` requires `VideoAsset.local_path` — it uploads via LinkedIn's Videos API (chunked, capturing each part's ETag) then creates the post via the Posts API referencing the uploaded video.
+
+## TikTok
+
+Native, as of 2026-10-01, via the Content Posting API's Direct Post flow.
+
+1. Create an organization and app at **developers.tiktok.com**.
+2. Add the **Content Posting API** product with **Direct Post** enabled. Note: TikTok requires the **Login Kit** product too, as a platform-enforced dependency — even though we're only posting to our own account, Content Posting API's OAuth flow runs through Login Kit.
+3. Fill in the app's required URLs — Terms of Service, Privacy Policy, and Web/Desktop URL — all pointing at a real site you control (TikTok verifies domain ownership via a signature file; `localhost` is explicitly **not** accepted as a redirect URI, even in Sandbox).
+4. Run the OAuth flow yourself (scopes: `user.info.basic`, `video.publish`, `video.upload`) and fill in `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET`, `TIKTOK_ACCESS_TOKEN`.
+5. **Before this works for real posting**, the app needs to pass TikTok's formal review — which requires uploading a demo video showing the complete integration working end-to-end against the **Sandbox** environment (a separate target-user setup from Production). See `CURRENT_OBSTACLES.md` for the exact requirements; this is a real audit, not a toggle.
+
+`TikTokAdapter.upload()` requires `VideoAsset.local_path` — it does a chunked upload (`init` → `PUT` to the returned upload URL → poll `status/fetch` until `PUBLISH_COMPLETE`). Privacy level defaults to `SELF_ONLY`, since TikTok restricts unaudited apps to private/self-visible posts regardless of what's requested — don't change this until the app is actually approved.
+
+## LinkedIn and TikTok — UploadPost.com fallback (superseded)
+
+Both platforms were originally routed through [UploadPost.com](https://upload-post.com) to avoid each platform's own approval process, before switching to native above. `UploadPostAdapter` (in `adapters/uploadpost.py`) still exists as a fallback — it's just not registered in `ADAPTERS` by default anymore. If either native integration ends up blocked long-term, instantiate `UploadPostAdapter("linkedin")` or `UploadPostAdapter("tiktok")` directly rather than resurrecting a dedicated subclass.
 
 1. Create an UploadPost account and grab your API key from their dashboard.
 2. In the UploadPost dashboard, click **Connect** for LinkedIn and/or TikTok and approve the permissions in the popup that opens — no app of your own to create, no waiting on either platform's review.
