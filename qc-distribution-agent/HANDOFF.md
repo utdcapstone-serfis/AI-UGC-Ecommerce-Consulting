@@ -17,8 +17,11 @@ Pinterest, X, LinkedIn, TikTok). Every post needs explicit human approval.
   alena-qc-distribution-agent = this project snapshot (4d4ad2a) plus later commits.
 - Old repo: utdcapstone-serfis/aivideo, branch Alena, up to date at 212ce7d.
   Old Desktop folder "Distribution Quality Control Agent" is a backup.
-- To do: copy .env into qc-distribution-agent/ (user does this), read-only
-  test from the new folder, then archive aivideo LAST, after everyone has moved.
+- .env is in qc-distribution-agent/ (done 2026-10-05) and must stay there, NOT
+  at the repo's top level: only qc-distribution-agent/.gitignore covers it, so a
+  top-level .env would show up as untracked and could be committed by git add.
+  The X adapter also writes its refreshed token to qc-distribution-agent/.env.
+- To do: archive aivideo LAST, after everyone has moved.
 - Not merged into main yet. Team still has to agree on main's layout (one
   folder per project) and merge one project at a time via pull requests.
 - Branch protection is NOT enforced: GitHub says rulesets don't apply to a
@@ -29,9 +32,16 @@ Pinterest, X, LinkedIn, TikTok). Every post needs explicit human approval.
   so required approvals can't work either.
 
 ## Platform status
-- Working, verified live: YouTube, Bluesky, X, Instagram, Facebook.
-- TikTok: verified in Sandbox only (private account, SELF_ONLY). Open decision:
-  stay in Sandbox vs Production audit vs other posting approach.
+- Instagram: working, rechecked 2026-10-05 from this folder (read-only, HTTP 200).
+- YouTube, Bluesky, X: verified earlier, not rechecked from this folder (testing
+  X refreshes its token and rewrites .env; YouTube and Bluesky need a login).
+- Facebook: Page token is DEAD as of 2026-10-05 (Graph error 190, "user logged
+  out"). Needs a new Page token from Graph API Explorer with the Page selected.
+  The user puts it in .env.
+- TikTok: verified in Sandbox only (private account, SELF_ONLY). Access token is
+  invalid as of 2026-10-05 (likely expired, TikTok tokens are short-lived); a
+  refresh token exists, so renew before testing. Open decision: stay in Sandbox
+  vs Production audit vs other posting approach.
 - LinkedIn: native adapter written, never tested live. Blocked on Page
   requirement and ID verification decision.
 - Reddit: adapter untested, no credentials. Devvit checked and ruled out (no
