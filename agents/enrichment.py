@@ -1,7 +1,8 @@
 """Step 2: collect basic company info - industry, size, location, what they sell."""
 import config
 from agents import llm
-from agents.scraper import fetch_site_text
+from agents import classify
+from agents.scraper import fetch_company_text
 from models import Lead
 
 SYSTEM_PROMPT = """You are a B2B research analyst. Given raw text scraped from a
@@ -12,7 +13,7 @@ rather than guessing. Keep every field short (a phrase, not a paragraph)."""
 
 class EnrichmentAgent:
     def enrich(self, lead: Lead, funding_hint: str = "") -> Lead:
-        site_text = fetch_site_text(lead.website)
+        site_text = fetch_company_text(lead.website)
         lead.funding_notes = funding_hint
 
         if site_text and config.HAS_CLAUDE:
@@ -27,8 +28,12 @@ class EnrichmentAgent:
             f"Company: {lead.company_name}\nWebsite: {lead.website}\n\n"
             f"Scraped site text:\n{site_text}\n\n"
             "Return JSON with keys: industry, company_size, location, "
-            "what_they_sell. company_size should be a rough employee-count "
-            "band like '1-10', '11-50', '51-200' if inferable, else ''."
+            "what_they_sell.\n"
+            f"industry: pick exactly one of {list(classify.INDUSTRIES)} or ''.\n"
+            f"company_size: pick exactly one employee band of {classify.SIZE_BANDS} "
+            "only if the text states or clearly implies headcount (e.g. 'team of "
+            "40', '300+ employees', a Fortune 500 company); otherwise ''. Do not "
+            "guess from how polished the site looks."
         )
         try:
             data = llm.ask_claude_json(SYSTEM_PROMPT, user)
@@ -41,9 +46,8 @@ class EnrichmentAgent:
         lead.what_they_sell = data.get("what_they_sell", "") or lead.what_they_sell
 
     def _enrich_heuristic(self, lead: Lead, site_text: str) -> None:
-        """No-LLM fallback: crude keyword sniff so demo mode still produces
-        something without an Anthropic key. Real usage should set ANTHROPIC_API_KEY."""
-        lowered = site_text.lower()
-        if any(k in lowered for k in ["saas", "software", "platform", "api"]):
-            lead.industry = lead.industry or "Software / SaaS"
+        """No-LLM fallback: keyword and pattern rules (see agents/classify.py).
+        Leaves industry/size blank when the text doesn't support an answer."""
+        lead.industry = lead.industry or classify.classify_industry(site_text)
+        lead.company_size = lead.company_size or classify.estimate_size_label(site_text)
         lead.what_they_sell = lead.what_they_sell or site_text[:200]

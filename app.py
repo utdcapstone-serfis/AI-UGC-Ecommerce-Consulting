@@ -12,6 +12,7 @@ from flask import Flask, abort, redirect, render_template, request, send_file, u
 
 import storage
 from agents.reply_writer import ReplyDraftAgent
+from agents.send_agent import looks_like_opt_out
 from export_excel import export_to_excel
 
 app = Flask(__name__)
@@ -139,6 +140,11 @@ def log_reply(lead_id):
         abort(400)
 
     storage.log_inbound_message(lead_id, inbound_subject, inbound_body)
+
+    # A request to stop emailing is honored, not answered with another pitch.
+    if looks_like_opt_out(f"{inbound_subject} {inbound_body}"):
+        storage.add_suppression(lead.contact_email, "asked to unsubscribe")
+        return redirect(url_for("lead_detail", lead_id=lead_id))
 
     subject, body = ReplyDraftAgent().draft_reply(
         lead,

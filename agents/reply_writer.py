@@ -11,29 +11,41 @@ import config
 from agents import llm
 from models import Lead
 
-SYSTEM_PROMPT = """You write reply emails for Serfis, continuing an existing
+SYSTEM_PROMPT = """You write reply emails for Serfis AI, continuing an existing
 outreach conversation with a prospect.
 
-Serfis pitch: {pitch}
+What Serfis offers: {offer}
 
-You will be given the original outreach email Serfis already sent, and the
-prospect's reply to it. Write Serfis's next reply.
+This is the approved outreach message Serfis sends. Match its voice, its
+wording about what Serfis does, and its closing ask:
+---
+{reference}
+---
+
+You will be given the original outreach email already sent and the prospect's
+reply to it. Write the next reply.
 
 Rules:
-- Directly address what the prospect actually asked or said - don't ignore it
-  or pivot back to a generic pitch.
-- Keep it honest: don't invent case studies, pricing, or commitments that
-  aren't already implied by the Serfis pitch above.
-- If the prospect asked a question you don't have a real answer for (specific
-  pricing, contract terms, integration details), say a team member will
-  follow up with specifics rather than guessing.
-- This conversation stays entirely in email - Serfis does not call
-  prospects. Never suggest or offer a phone call, meeting, or demo.
-- Write like a person who works at Serfis, not like the product describing
-  itself. Never describe Serfis as "an autonomous AI" or "an AI pipeline" -
-  talk about the benefit to them, not how the system works internally.
-- Plain, human tone, no hype words. Short - 50-100 words.
-- Sign off as "The Serfis Team".
+- Answer what the prospect actually said or asked FIRST. Never ignore it or
+  paste the reference message back.
+- When the prospect asks what Serfis does, or shows interest, explain it using
+  the reference wording (short-form video ads and social content for TikTok,
+  Instagram, YouTube, Reddit, X and Pinterest, fresh creative per platform).
+- Where it fits, close with the same low-key ask: would they be open to a
+  couple of concepts sent over email. If they already said yes, confirm the
+  concepts will follow by email instead of asking again.
+- Be honest: don't invent case studies, results, pricing or turnaround times.
+  If they ask something you can't answer (pricing, contracts, specifics), say
+  a team member will follow up over email with specifics.
+- This conversation stays entirely in email. Never suggest or offer a phone
+  call, meeting or demo.
+- "Serfis AI" is the company name and is fine to use. Never describe the
+  system as "an autonomous AI" or "an AI pipeline" or explain how it works
+  internally - talk about the benefit to them.
+- Plain text only (no markdown, no bold, no bullets). Human tone, no hype
+  words. 60-120 words.
+- Sign off exactly as:
+{signoff}
 
 Return JSON with keys: subject (usually "Re: " + original subject), body (the
 full reply including greeting and sign-off)."""
@@ -64,21 +76,33 @@ class ReplyDraftAgent:
             f"Subject: {inbound_subject}\n{inbound_body}\n"
         )
         try:
-            data = llm.ask_claude_json(SYSTEM_PROMPT.format(pitch=config.SERFIS_PITCH), user)
+            data = llm.ask_claude_json(SYSTEM_PROMPT.format(
+                offer=config.EMAIL_OFFER.strip(),
+                reference=config.EMAIL_REFERENCE,
+                signoff=config.EMAIL_SIGNOFF,
+            ), user)
             return data["subject"], data["body"]
         except Exception:
             return None
 
     def _draft_template(self, lead: Lead, inbound_subject: str, inbound_body: str):
         """No-LLM fallback so the pipeline still produces a usable draft."""
-        first_name = (lead.contact_name or "there").split(" ")[0]
+        first_name = lead.first_name()
         subject = inbound_subject if inbound_subject.lower().startswith("re:") else f"Re: {inbound_subject}"
+        what = lead.product_phrase()
+        ideas = (
+            f"turn {what} into engaging social content"
+            if what else "turn what you do into engaging social content"
+        )
         body = (
             f"Hi {first_name},\n\n"
-            f"Thanks for the reply - great question. Let me get you a precise "
-            f"answer rather than guess; I'll have someone from the Serfis team "
-            f"follow up over email with specifics shortly.\n\n"
-            f"Happy to answer anything else here in the meantime.\n\n"
-            f"The Serfis Team"
+            f"Thanks for getting back to me. For context, at Serfis AI we create "
+            f"short-form video advertisements and social content for TikTok, Instagram, "
+            f"YouTube, Reddit, X, and Pinterest - fresh creative that fits the style and "
+            f"audience of each platform instead of the same content everywhere.\n\n"
+            f"I had a few ideas for how {lead.company_name} could {ideas}. Would you be "
+            f"open to me sending over a couple of concepts? If you had a specific question, "
+            f"I'll have someone from the team follow up over email with specifics.\n\n"
+            f"{config.EMAIL_SIGNOFF}"
         )
         return subject, body
