@@ -35,7 +35,7 @@ serfis-leadgen/
     scraper.py              Shared website-text fetcher
     enrichment.py           Step 2: industry/size/location/what-they-sell
     scoring.py               Step 3: ICP fit score 1-10 + reasoning
-    contact_finder.py       Step 4-5: point of contact (Apify/Hunter, or NEEDS_ENRICHMENT)
+    contact_finder.py       Step 4-5: point of contact (Apify, or NEEDS_ENRICHMENT)
     research.py              Step 6: 2-3 personalized observations + sources
     outreach_writer.py       Step 7: drafts the email (75-125 words)
     send_agent.py             Phase 2 stub - NOT wired up, sending is off by default
@@ -75,7 +75,7 @@ cp .env.example .env
 
 Edit `.env`:
 - `ANTHROPIC_API_KEY` - recommended even in demo mode, powers enrichment/research/email quality. Without it, the pipeline falls back to simple heuristic/template logic so it still runs end to end.
-- `APIFY_API_TOKEN` / `HUNTER_API_KEY` - add these to leave demo mode and do real company discovery + real contact lookup. Without them, the agent uses `data/seed_companies.csv` for discovery and marks contact fields `NEEDS_ENRICHMENT` rather than inventing a person's name/email. Discovery and contact-finding both run through Apify Actors by default - see "Apify integration" below for which ones and why.
+- `APIFY_API_TOKEN` - add this to leave demo mode and do real company discovery + real email lookup (Apify is the only email source). Without it, the agent uses `data/seed_companies.csv` for discovery and marks contact fields `NEEDS_ENRICHMENT` rather than inventing a person's name/email. Discovery and contact-finding both run through Apify Actors by default - see "Apify integration" below for which ones and why.
 
 ## Running the pipeline (unchanged)
 
@@ -270,7 +270,7 @@ future enhancement" below.
 
 ## Ethical/legal notes on contact data
 
-- No LinkedIn scraping - it violates LinkedIn's ToS. The Apify contact-finding Actor (`vdrmota/contact-info-scraper`) only extracts what a company has published on its own public site (contact/about pages) - it does not scrape LinkedIn profiles. Hunter.io, the fallback, is a licensed data provider.
+- No LinkedIn scraping - it violates LinkedIn's ToS. The Apify contact-finding Actor (`vdrmota/contact-info-scraper`) only extracts what a company has published on its own public site (contact/about pages) - it does not scrape LinkedIn profiles.
 - The pipeline never fabricates a real person's name/email. If no provider key is set, or a provider finds nothing, contact fields are explicitly marked `NEEDS_ENRICHMENT` instead of guessing.
 - Website scraping is limited to simple GETs on public marketing pages with a descriptive User-Agent - no bypassing auth, paywalls, or bot protection.
 

@@ -6,6 +6,10 @@ Usage:
     python main.py review                 # print pending leads for review
     python main.py approve <id>           # mark a lead approved
     python main.py reject <id>            # mark a lead rejected
+    python main.py send <id> --to a@b.com  # email an APPROVED lead's draft (test address)
+    python main.py send <id>              # email an APPROVED lead's draft to the lead
+    python main.py send-approved [--limit N] [--dry-run]   # email everything approved (daily cap)
+    python main.py suppress <email>       # never email this address again
     python main.py seed-demo              # add one fictional sample lead (with analytics)
     python main.py reset                  # delete ALL leads and analytics (asks to confirm)
 """
@@ -21,11 +25,18 @@ from orchestrator import LeadGenPipeline
 
 def cmd_run(args):
     if config.DEMO_MODE:
-        print("[demo mode] APIFY_API_TOKEN/HUNTER_API_KEY not set - using seed "
+        print("[demo mode] APIFY_API_TOKEN not set - using seed "
               "companies and marking contact fields NEEDS_ENRICHMENT.\n")
     pipeline = LeadGenPipeline()
     leads = pipeline.run(limit=args.limit)
-    print(f"Processed {len(leads)} leads.\n")
+    print(f"Processed {len(leads)} leads.")
+    if pipeline.dropped:
+        print(f"Cancelled {len(pipeline.dropped)} companies with no decision-maker email found: "
+              + ", ".join(pipeline.dropped))
+    if len(leads) < args.limit and not config.DEMO_MODE:
+        print(f"Only {len(leads)} of {args.limit} requested - ran out of candidates "
+              f"({pipeline.candidates_seen} checked). Run again to search further.")
+    print()
     for lead in leads:
         print(lead.print_block())
         print("-" * 60)
@@ -57,6 +68,42 @@ def cmd_approve(args):
 def cmd_reject(args):
     storage.set_approval_status(args.lead_id, "rejected")
     print(f"Lead {args.lead_id} rejected.")
+
+
+def cmd_send(args):
+    from agents.send_agent import send
+    lead = storage.get_lead(args.lead_id)
+    if lead is None:
+        print(f"No lead with id {args.lead_id}.")
+        return 1
+    try:
+        sent_to = send(lead, to_override=args.to)
+    except Exception as exc:
+        print(f"Send failed: {exc}")
+        return 1
+    print(f"Sent lead {lead.id} ({lead.company_name}) to {sent_to}.")
+
+
+def cmd_send_approved(args):
+    from agents.send_agent import send_approved
+    try:
+        result = send_approved(limit=args.limit, dry_run=args.dry_run)
+    except RuntimeError as exc:
+        print(f"Not sent: {exc}")
+        return 1
+    verb = "Would send" if args.dry_run else "Sent"
+    print(f"{verb} {len(result['sent'])} email(s):")
+    for company, to in result["sent"]:
+        print(f"  {company} -> {to}")
+    if result["skipped"]:
+        print(f"Skipped {len(result['skipped'])}:")
+        for company, why in result["skipped"]:
+            print(f"  {company}: {why}")
+
+
+def cmd_suppress(args):
+    storage.add_suppression(args.email, args.reason)
+    print(f"{args.email} added to the do-not-contact list.")
 
 
 def cmd_seed_demo(args):
@@ -99,6 +146,21 @@ def main():
     p_reject.add_argument("lead_id", type=int)
     p_reject.set_defaults(func=cmd_reject)
 
+    p_send = sub.add_parser("send", help="Email an approved lead's draft via Gmail")
+    p_send.add_argument("lead_id", type=int)
+    p_send.add_argument("--to", help="Send here instead of the lead's address (test send)")
+    p_send.set_defaults(func=cmd_send)
+
+    p_sa = sub.add_parser("send-approved", help="Email every approved, not-yet-contacted lead")
+    p_sa.add_argument("--limit", type=int, help="Send at most this many")
+    p_sa.add_argument("--dry-run", action="store_true", help="Show who would be emailed; send nothing")
+    p_sa.set_defaults(func=cmd_send_approved)
+
+    p_sup = sub.add_parser("suppress", help="Add an address to the do-not-contact list")
+    p_sup.add_argument("email")
+    p_sup.add_argument("--reason", default="manual")
+    p_sup.set_defaults(func=cmd_suppress)
+
     p_seed_demo = sub.add_parser("seed-demo", help="Add one fictional sample lead with analytics")
     p_seed_demo.set_defaults(func=cmd_seed_demo)
 
@@ -108,7 +170,7 @@ def main():
 
     args = parser.parse_args()
     storage.init_db()
-    args.func(args)
+    return args.func(args)
 
 
 if __name__ == "__main__":

@@ -98,6 +98,25 @@ _FIELDS = [
     "approval_status", "lead_status", "source", "created_at", "updated_at",
 ]
 
+SUPPRESSIONS_SCHEMA = """
+CREATE TABLE IF NOT EXISTS suppressions (
+    email TEXT PRIMARY KEY,
+    reason TEXT,
+    added_at TEXT NOT NULL
+)
+"""
+
+SENT_LOG_SCHEMA = """
+CREATE TABLE IF NOT EXISTS sent_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lead_id INTEGER,
+    to_email TEXT NOT NULL,
+    subject TEXT,
+    sent_at TEXT NOT NULL,
+    sent_on TEXT NOT NULL
+)
+"""
+
 APPROVAL_STATUSES = ["pending_review", "approved", "rejected"]
 LEAD_STATUSES = ["new", "contacted", "qualified", "disqualified", "converted"]
 
@@ -119,6 +138,8 @@ def init_db() -> None:
         conn.execute(SCHEMA)
         conn.execute(PLATFORM_ANALYTICS_SCHEMA)
         conn.execute(MESSAGES_SCHEMA)
+        conn.execute(SUPPRESSIONS_SCHEMA)
+        conn.execute(SENT_LOG_SCHEMA)
         existing_cols = {row["name"] for row in conn.execute("PRAGMA table_info(leads)")}
         for col_name, col_type, default in _MIGRATIONS:
             if col_name not in existing_cols:
@@ -367,3 +388,48 @@ def _row_to_lead(row: sqlite3.Row) -> Lead:
     lead = Lead(**data)
     lead.id = row["id"]
     return lead
+
+
+# ---- do-not-contact list and sent log (used by agents/send_agent.py) ----
+
+def normalize_email(email: str) -> str:
+    return (email or "").strip().lower()
+
+
+def add_suppression(email: str, reason: str = "") -> None:
+    """Never email this address again. Safe to call repeatedly."""
+    email = normalize_email(email)
+    if "@" not in email:
+        return
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT OR IGNORE INTO suppressions (email, reason, added_at) VALUES (?, ?, ?)",
+            (email, reason, datetime.now(timezone.utc).isoformat()),
+        )
+
+
+def is_suppressed(email: str) -> bool:
+    with get_conn() as conn:
+        row = conn.execute(
+            "SELECT 1 FROM suppressions WHERE email=?", (normalize_email(email),)
+        ).fetchone()
+    return row is not None
+
+
+def log_send(lead_id: int, to_email: str, subject: str) -> None:
+    """Records a real (non-test) send."""
+    now = datetime.now()
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO sent_log (lead_id, to_email, subject, sent_at, sent_on) VALUES (?, ?, ?, ?, ?)",
+            (lead_id, normalize_email(to_email), subject, now.isoformat(), now.date().isoformat()),
+        )
+
+
+def count_sent_today() -> int:
+    from datetime import date
+    with get_conn() as conn:
+        row = conn.execute(
+            "SELECT COUNT(*) AS n FROM sent_log WHERE sent_on=?", (date.today().isoformat(),)
+        ).fetchone()
+    return row["n"]

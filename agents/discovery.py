@@ -45,10 +45,6 @@ ICP_LOCATION = "United States"
 
 class DiscoveryAgent:
     def discover(self, limit: int = 10) -> list[DiscoveredCompany]:
-        # DEMO_MODE only requires ONE of Apify/Hunter to be set (see config.py).
-        # Discovery specifically needs Apify - if only a Hunter key was added,
-        # still fall back to the seed list here rather than calling Apify
-        # with a blank token.
         if config.DEMO_MODE or not config.APIFY_API_TOKEN:
             return self._discover_from_seed(limit)
         return self._discover_from_apify(limit)
