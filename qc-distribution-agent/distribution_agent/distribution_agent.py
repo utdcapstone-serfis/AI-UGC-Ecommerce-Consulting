@@ -13,6 +13,8 @@ import sys
 from dataclasses import dataclass
 from typing import Callable, Iterable, Optional
 
+from quality_control_agent.clearance import QCClearance
+
 from .adapters import ADAPTERS
 from .adapters.base import VideoAsset
 from .notifier import notify_poc
@@ -54,10 +56,19 @@ def distribute(
     platforms: Iterable[str],
     poc_email: Optional[str] = None,
     approve: ApprovalCallback = cli_approval,
+    *,
+    clearance: QCClearance,
 ) -> list[DistributionRecord]:
     """Post `asset` to each platform in `platforms`, verify it's live, and
-    email `poc_email` per platform once confirmed. Only pass a video here
-    that has already passed the Quality Control Agent.
+    email `poc_email` per platform once confirmed.
+
+    `clearance` is required: it's the proof, from
+    `quality_control_agent.clear_for_distribution()`, that this exact
+    file was confirmed as the final draft and passed QC. It's checked
+    against `asset.local_path` before anything else happens (before any
+    approval prompt, adapter, or credential), and a mismatch raises
+    `ClearanceMismatch`. Set `asset.local_path` even when a platform
+    also needs `public_url`; the public copy is assumed to be the same file.
 
     `approve(platform, asset)` is called before every single upload and
     must return True for that platform's post to happen; a platform that
@@ -67,6 +78,13 @@ def distribute(
     (a dashboard button, a Slack confirmation) instead of the terminal
     prompt default.
     """
+    if not isinstance(clearance, QCClearance):
+        raise TypeError(
+            "distribute() needs a QCClearance from clear_for_distribution(); "
+            "only a confirmed final draft that passed QC can be distributed."
+        )
+    clearance.ensure_matches(asset.local_path)
+
     records = []
 
     for platform in platforms:

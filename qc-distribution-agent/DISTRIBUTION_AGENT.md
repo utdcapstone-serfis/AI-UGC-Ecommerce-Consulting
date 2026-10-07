@@ -11,7 +11,26 @@ verifies it actually went live, and emails the client POC a
 confirmation. Never runs on a video that hasn't already passed the
 Quality Control Agent (see `QC_AGENT.md`).
 
-## The one invariant: approval before posting
+## Invariant 1: only a QC-passed final draft can be distributed
+
+`distribute()` requires a keyword-only `clearance=QCClearance`, issued by
+`quality_control_agent.clear_for_distribution(draft, evaluation)`. A
+clearance exists only when the user confirmed the file as their final
+draft (`confirm_final_draft`) and its QC evaluation is a real PASS: both
+hard gates evaluated and passed, composite at or above the threshold.
+
+- Checked first, before any approval prompt, adapter or credential.
+  Calling without one raises `TypeError`; a mismatch raises
+  `ClearanceMismatch`.
+- Tied to the file's SHA-256 and checked against `asset.local_path`. A
+  re-rendered or edited file, or a different file, is refused. Set
+  `local_path` even when a platform also needs `public_url`; the public
+  copy is assumed to be the same file and can't be checked.
+- A clearance is not permission to post. Invariant 2 still applies.
+- This stops accidents. It isn't a security boundary against code that
+  deliberately works around it.
+
+## Invariant 2: approval before posting
 
 `distribute()` in `distribution_agent/distribution_agent.py` calls
 `approve(platform, asset)` before every single upload. No approval

@@ -32,6 +32,7 @@ from typing import Optional
 import cv2
 import numpy as np
 
+from .intake import FinalDraft
 from .models import MetricResult, Verdict
 
 NORMALIZED_WIDTH = 640  # resize before scoring so thresholds don't depend on source resolution
@@ -133,15 +134,23 @@ def _sample_frames(video_path: Path, sample_count: int) -> list[np.ndarray]:
     return frames
 
 
-def analyze_technical_quality(video_path: Path | str, sample_count: int = 10) -> MetricResult:
+def analyze_technical_quality(draft: FinalDraft, sample_count: int = 10) -> MetricResult:
     """Samples `sample_count` frames evenly across the video and scores
     blur, noise, and compression blockiness. Returns a single
     MetricResult (verdict + 0-10 score + a note naming the actual
     measured values) ready to drop into QCEvaluation.metrics under the
     key "technical_quality".
+
+    Takes a `FinalDraft` (from `confirm_final_draft()`), not a path: QC
+    only runs on a video the user has declared final.
     """
-    video_path = Path(video_path)
-    frames = _sample_frames(video_path, sample_count)
+    if not isinstance(draft, FinalDraft):
+        raise TypeError(
+            "analyze_technical_quality() needs a FinalDraft from "
+            "confirm_final_draft(); paths and frames are not accepted."
+        )
+    draft.ensure_unchanged()
+    frames = _sample_frames(draft.video_path, sample_count)
 
     blur_vals, noise_vals, block_vals = [], [], []
     for frame in frames:

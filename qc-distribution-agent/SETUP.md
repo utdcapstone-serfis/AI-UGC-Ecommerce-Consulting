@@ -149,6 +149,11 @@ password, SendGrid SMTP relay, etc.).
 from pathlib import Path
 from distribution_agent import distribute
 from distribution_agent.adapters.base import VideoAsset
+from quality_control_agent import confirm_final_draft, clear_for_distribution
+
+draft = confirm_final_draft("video.mp4", title="New product")  # asks: is this the FINAL draft?
+# ... run QC on `draft`, building a QCEvaluation named `evaluation` ...
+clearance = clear_for_distribution(draft, evaluation)  # raises unless QC passed
 
 asset = VideoAsset(
     caption="Check out our new product!",
@@ -156,13 +161,19 @@ asset = VideoAsset(
     public_url="https://cdn.example.com/video.mp4",  # needed for Instagram and Threads, optional for Facebook
 )
 
-records = distribute(asset, platforms=["youtube", "instagram"], poc_email="client@example.com")
+records = distribute(
+    asset,
+    platforms=["youtube", "instagram"],
+    poc_email="client@example.com",
+    clearance=clearance,  # required: proof this exact file passed QC
+)
 for r in records:
     print(r)
 ```
 
-Only pass videos here that have already passed the Quality Control
-Agent (see `agent-prompts.md`).
+`clearance` is required and is checked against `local_path`, so set
+`local_path` even for Instagram and Threads. Only a confirmed final draft
+that passed the Quality Control Agent can get one (see `QC_AGENT.md`).
 
 ### Approval gate
 
@@ -181,5 +192,5 @@ that platform's post to go out.
 def approve_from_dashboard(platform: str, asset) -> bool:
     return get_human_decision(platform, asset.caption)  # your own approval UI
 
-records = distribute(asset, platforms=["youtube"], approve=approve_from_dashboard)
+records = distribute(asset, platforms=["youtube"], approve=approve_from_dashboard, clearance=clearance)
 ```

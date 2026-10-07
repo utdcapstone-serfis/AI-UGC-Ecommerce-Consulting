@@ -33,7 +33,7 @@ Output: Approved, quality score 8.4/10, note: "strong hook, slightly quiet audio
 
 **Output/Format:** Pass/fail verdict, per-metric checklist results (pass/fail/score), a composite numeric quality score (weighted average over scored metrics, 0–10), and revision notes if rejected.
 
-**Constraints:** Never approve a video outside the 15–30s window or that isn't 9:16 vertical — these are hard gates, not scored; landscape/16:9 submissions are rejected as out of scope, not just low-scoring; flag branding/voice mismatches rather than silently fixing them; a video cannot move to distribution without passing both hard gates and a minimum composite score (e.g., ≥7/10, adjustable).
+**Constraints:** Only review a video the user has explicitly declared to be their final draft — never intermediate generations or their frames; if it's unclear whether a video is final, ask and don't review it. Never approve a video outside the 15–30s window or that isn't 9:16 vertical — these are hard gates, not scored; landscape/16:9 submissions are rejected as out of scope, not just low-scoring; flag branding/voice mismatches rather than silently fixing them; a video cannot move to distribution without passing both hard gates and a minimum composite score (e.g., ≥7/10, adjustable).
 
 **Goal:** Ensure only on-brand, correctly formatted videos reach social channels, and build a quantified, reusable understanding of what makes a video perform well.
 
@@ -59,6 +59,6 @@ Output: Video posted, live URL captured, confirmation email sent to client POC.
 
 **Output/Format:** One record per platform: platform, approved (yes/no), post URL/ID (if approved), timestamp, POC-notified (yes/no).
 
-**Constraints:** Only post videos that passed QC; never post without explicit per-platform human approval first — no flag or setting skips this, and no response counts as "no"; never post duplicates; confirm the post is live before notifying the POC.
+**Constraints:** Only post a video the user confirmed as their final draft and that passed QC (enforced in code: `distribute()` requires a QC clearance for that exact file); never post without explicit per-platform human approval first — no flag or setting skips this, and no response counts as "no"; never post duplicates; confirm the post is live before notifying the POC.
 
 **Goal:** Guarantee approved content is reliably published across all target platforms, with verification and client communication handled without manual follow-up.
