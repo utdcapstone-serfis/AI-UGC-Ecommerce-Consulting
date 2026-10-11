@@ -42,8 +42,13 @@ Pinterest, X, LinkedIn, TikTok). Every post needs explicit human approval.
   invalid as of 2026-10-05 (likely expired, TikTok tokens are short-lived); a
   refresh token exists, so renew before testing. Open decision: stay in Sandbox
   vs Production audit vs other posting approach.
-- LinkedIn: native adapter written, never tested live. Blocked on Page
-  requirement and ID verification decision.
+- LinkedIn: native adapter written, never tested live. As of 2026-10-08 the
+  utdcapstone account is blocked: Company Page creation demands workplace
+  verification and LinkedIn offers no way to do it. But the user's older
+  personal account opened the Page setup form with no such prompt, so the gate
+  looks account-based. Best lead: create the Page and developer app from that
+  account (nothing created yet; check the owner is OK with it). Fallbacks:
+  support request (drafted, not sent) or park it. Details in CURRENT_OBSTACLES.md.
 - Reddit: adapter untested, no credentials. Devvit checked and ruled out (no
   way to supply a video). Commercial-use ticket pending since 2026-10-01.
   Support form is drafted but NOT submitted yet. developers.reddit.com/
