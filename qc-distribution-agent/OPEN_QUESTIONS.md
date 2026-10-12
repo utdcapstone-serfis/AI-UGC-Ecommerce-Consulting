@@ -87,7 +87,7 @@ Cheap to do now:
 - Put a client name on every QC evaluation and distribution record.
 
 Example, YouTube (added 2026-10-11): the Google OAuth app is External and in
-Testing. The plan under discussion is to make it Internal, which only lets accounts
+Testing. It was switched to Internal on 2026-10-11, which only lets accounts
 in the `serfis.ai` organization authorize it. That covers the company's own channel
 and nothing else, and it can be switched back. Routes for client channels later,
 none built or tested:
