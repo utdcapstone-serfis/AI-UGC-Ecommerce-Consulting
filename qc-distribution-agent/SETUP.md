@@ -145,7 +145,7 @@ Native, not via UploadPost — X has no approval gate at all (unlike LinkedIn/Ti
 4. Fill in `X_CLIENT_ID` and `X_CLIENT_SECRET` in `.env`.
 5. Run `python get_x_token.py` yourself — same pattern as YouTube/Pinterest: it opens your browser, you approve, and it prints a refresh token in your own terminal for you to copy into `.env` as `X_REFRESH_TOKEN`.
 
-Note: X's docs don't say whether refresh tokens rotate (a new one issued each time the old one's used, invalidating it). `XAdapter` handles this defensively — if a refresh ever returns a new token, it's written back into `.env` automatically, so this shouldn't silently break even if rotation turns out to be real.
+Note: X refresh tokens rotate on use (confirmed 2026-10-11): each refresh issues a new one and invalidates the old one. `XAdapter` writes the new token back into `.env` automatically, so keep that write-back in place and don't keep copies of an old `X_REFRESH_TOKEN`; they stop working after the next refresh. If saving to `.env` ever fails, the new value is parked in `x_refresh_token.pending` (gitignored) with a warning: copy it into `.env` and delete that file. In a deployment with no `.env` file, store the rotated token in your secrets store.
 
 `XAdapter.upload()` requires `VideoAsset.local_path` — it does a full chunked upload (INIT/APPEND/FINALIZE) directly to X, then polls for video processing before posting.
 

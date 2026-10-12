@@ -66,7 +66,7 @@ No answer means no post — full stop:
 | Threads | `adapters/threads.py` | `THREADS_ACCESS_TOKEN`, `THREADS_USER_ID` | Same Meta Developer App as Facebook/Instagram + Threads API product + its own OAuth scopes | Not yet characterized against a live account |
 | Pinterest | `adapters/pinterest.py` | `PINTEREST_ACCESS_TOKEN`, `PINTEREST_BOARD_ID` | Pinterest Developer app + one-time OAuth consent. New app is waiting on **Trial access** (app secret withheld until approved); real posting needs Standard access, and ToS 2.3 requires Pinterest's app review before use; see `CURRENT_OBSTACLES.md` | Not yet characterized against a live account |
 | Instagram | `adapters/instagram.py` | `IG_ACCESS_TOKEN`, `IG_BUSINESS_ACCOUNT_ID` | Meta Developer App + Business/Creator account + linked Page — the most setup steps of the native adapters | Long-lived token expires **~60 days** — must be refreshed before it lapses, or the OAuth consent flow has to be redone from scratch |
-| X | `adapters/x.py` | `X_CLIENT_ID`, `X_CLIENT_SECRET`, `X_REFRESH_TOKEN` | Native — confidential client + OAuth 2.0 PKCE consent; no approval gate, but needs a funded pay-per-usage credit balance | Access tokens short-lived, refreshed per call. Refresh token itself expires in **~6 months** (per X's console UI at generation time) — longest-lived of any credential in this pipeline. Rotation-on-use still unconfirmed by X's docs, handled defensively regardless (see below) |
+| X | `adapters/x.py` | `X_CLIENT_ID`, `X_CLIENT_SECRET`, `X_REFRESH_TOKEN` | Native — confidential client + OAuth 2.0 PKCE consent; no approval gate, but needs a funded pay-per-usage credit balance | Access tokens short-lived, refreshed per call. Refresh token itself expires in **~6 months** (per X's console UI at generation time) — longest-lived of any credential in this pipeline. **Refresh tokens rotate on use** (confirmed 2026-10-11: a refresh returned a new one, which the adapter wrote back into `.env`), so the old value stops working after each refresh (see below) |
 | LinkedIn | `adapters/linkedin.py` | `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`, `LINKEDIN_ACCESS_TOKEN`, `LINKEDIN_PERSON_ID` | Native as of 2026-10-01 — posts to a **personal profile** (`w_member_social`), not a Company Page; see `CURRENT_OBSTACLES.md` for why (Company Page creation hit a connections/profile-strength gate this account hadn't cleared) | Access tokens last ~60 days; this adapter doesn't refresh them (LinkedIn's refresh-token support is its own separate approved product, not assumed granted) — expiry means redoing the OAuth flow manually |
 | TikTok | `adapters/tiktok.py` | `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET`, `TIKTOK_ACCESS_TOKEN` | Native as of 2026-10-01, via the Content Posting API (Direct Post) — requires the Login Kit product as a platform-enforced dependency even for posting to your own account, and a formal app review (demo video against Sandbox required) before it works beyond Sandbox test accounts; see `CURRENT_OBSTACLES.md` | Verified end-to-end in Sandbox only (2026-10-02): private account, posts forced to `SELF_ONLY`. Access tokens are short-lived and the last one is expired, so refresh before testing. App review not submitted. Direct Post's UX requirements aren't met by this headless pipeline; see `CURRENT_OBSTACLES.md` |
 
@@ -111,12 +111,20 @@ account in this codebase yet.
 1.0a since it matches the refresh-token pattern already used for
 YouTube). Endpoint/field names for chunked media upload
 (INIT/APPEND/FINALIZE/STATUS) and the token endpoint were confirmed
-against X's current docs before writing this. One thing the docs
-didn't confirm: whether refresh tokens rotate on use. Handled
-defensively regardless — `_get_access_token()` writes any new
-`refresh_token` a refresh response includes back into `.env`
-automatically (via `python-dotenv`'s `set_key()`), so this doesn't
-silently break if rotation turns out to be real.
+against X's current docs before writing this. The docs didn't say whether refresh tokens rotate on use. Confirmed by a
+live check on 2026-10-11: they do. A refresh returns a new `refresh_token`
+and the old one stops working. `_get_access_token()` writes the new one
+back into `.env` automatically (via `python-dotenv`'s `set_key()`), which is
+why that write-back must not be removed. Any copy of the old value (a
+backup of `.env`, a credentials sheet) is dead after the next refresh.
+The save is hardened (2026-10-11): it goes through `persist_env_value()` in
+`config.py`. If writing `.env` fails, or there is no `.env` (credentials from
+real environment variables), the new value is parked in
+`x_refresh_token.pending` next to `.env` (gitignored) and a warning says so,
+without printing the token; the next start warns again until the file is
+dealt with. If even that fails, the warning says the credential has to be
+re-created with `get_x_token.py`.
+Posting, the video upload and the `media.write` scope are still untested.
 
 In practice, the first real credential was generated through X's
 console UI directly ("Generate OAuth 2.0 Access Token" on the app's

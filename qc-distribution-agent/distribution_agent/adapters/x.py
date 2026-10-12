@@ -24,13 +24,12 @@ the next run. If X's tokens turn out not to rotate, this is a no-op.
 """
 
 import base64
-import os
+import warnings
 from pathlib import Path
 
 import requests
-from dotenv import set_key
 
-from ..config import require_env
+from ..config import pending_path, persist_env_value, require_env
 from .base import PlatformAdapter, PostResult, VideoAsset, poll_until
 
 API_BASE = "https://api.x.com/2"
@@ -45,6 +44,14 @@ class XAdapter(PlatformAdapter):
         self.client_id = require_env("X_CLIENT_ID")
         self.client_secret = require_env("X_CLIENT_SECRET")
         self.refresh_token = require_env("X_REFRESH_TOKEN")
+        parked = pending_path(ENV_PATH, "X_REFRESH_TOKEN")
+        if parked.exists():
+            warnings.warn(
+                f"A rotated X_REFRESH_TOKEN is waiting in {parked}: the value in .env is probably "
+                "dead. Copy the new value into .env and delete that file.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
 
     def _basic_auth_header(self) -> dict:
         token = base64.b64encode(f"{self.client_id}:{self.client_secret}".encode()).decode()
@@ -63,9 +70,9 @@ class XAdapter(PlatformAdapter):
         new_refresh = body.get("refresh_token")
         if new_refresh and new_refresh != self.refresh_token:
             self.refresh_token = new_refresh
-            if ENV_PATH.exists():
-                set_key(str(ENV_PATH), "X_REFRESH_TOKEN", new_refresh)
-                os.environ["X_REFRESH_TOKEN"] = new_refresh
+            # X invalidated the old token the moment it issued this one, so a
+            # failed save must not lose it. See persist_env_value().
+            persist_env_value("X_REFRESH_TOKEN", new_refresh, ENV_PATH)
 
         return body["access_token"]
 
