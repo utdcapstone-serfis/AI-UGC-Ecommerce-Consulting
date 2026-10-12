@@ -200,7 +200,7 @@ Free tier: UploadPost's $0 plan excludes TikTok entirely and caps at 10 uploads/
 
 ## Automatic token refresh
 
-Added 2026-10-11. Endpoints were checked against each platform's docs; the code is tested with faked responses only, not yet against the live APIs.
+Added 2026-10-11. Endpoints were checked against each platform's docs. Tested with faked responses (19 checks) and then live on 2026-10-11: Instagram's refresh returned a renewed token that worked (HTTP 200) and `IG_TOKEN_REFRESHED_AT` was written into `.env`; TikTok's refresh replaced the previously dead access token with one that worked (HTTP 200). Uploads were not tested, only the logins. The 30-day Instagram schedule has not played out yet.
 
 - **Instagram:** the 60-day token is renewed (Instagram's `refresh_access_token` endpoint) when the adapter is created and 30 days have passed since the date in `IG_TOKEN_REFRESHED_AT`. The token must be at least 24 hours old and not yet expired; an expired token can't be refreshed and needs a new sign-in. The new token and date are saved into `.env`.
 - **TikTok:** the 24-hour access token is swapped for a fresh one from `TIKTOK_REFRESH_TOKEN` each time the adapter is created (needs `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET` and the refresh token in `.env`). TikTok may return a new refresh token; it is saved. The refresh token lasts 365 days, then `get_tiktok_token.py` has to be re-run. The new access token is held in memory, so the `TIKTOK_ACCESS_TOKEN` line in `.env` goes stale.
