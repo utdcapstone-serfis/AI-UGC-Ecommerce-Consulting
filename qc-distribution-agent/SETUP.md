@@ -25,12 +25,61 @@ fetches the video from that URL itself.
 ## Facebook
 
 1. Same Meta Developer App as above.
-2. Generate a **Page access token** with `pages_manage_posts` and
-   `pages_read_engagement`.
-3. Fill in `FB_PAGE_ACCESS_TOKEN` and `FB_PAGE_ID`.
+2. Get a **long-lived Page access token** (steps below). A token made the quick
+   way, by picking the Page directly in Graph API Explorer, comes from a
+   short-lived user token and stops working within hours (error 190, "the session
+   is invalid because the user logged out").
+3. Fill in `FB_PAGE_ACCESS_TOKEN` and `FB_PAGE_ID`. Edit `.env` in your editor.
+   Never paste tokens or the app secret into chat, screenshots or the repo.
 
 `FacebookAdapter.upload()` accepts either `VideoAsset.local_path` or
 `VideoAsset.public_url`.
+
+### Getting a long-lived Page token
+
+The app can stay in Development mode. You need a role on the app (admin,
+developer or tester) and admin access to the Page. Run the commands in your own
+PowerShell window, in any folder.
+
+1. **Short-lived user token.** Open developers.facebook.com/tools/explorer, choose
+   the app, and in the "User or Page" dropdown choose **Get User Access Token**
+   (not the Page entry). Make sure these permissions are listed:
+   `pages_show_list`, `pages_read_engagement`, `pages_manage_posts`. Click
+   **Generate Access Token**, sign in, and tick the Page when asked which Pages to
+   allow. The token appears in the Access Token box and lasts about an hour.
+2. **Long-lived user token (about 60 days).** The app ID and app secret are in
+   App settings, Basic. This copies the token to the clipboard without printing it:
+   ```powershell
+   $appId = Read-Host "App ID"
+   $secret = Read-Host "App secret"
+   $short = Read-Host "Short-lived token"
+   $r = Invoke-RestMethod "https://graph.facebook.com/v19.0/oauth/access_token?grant_type=fb_exchange_token&client_id=$appId&client_secret=$secret&fb_exchange_token=$short"
+   $r.access_token | Set-Clipboard
+   "Copied. Length: " + $r.access_token.Length
+   ```
+   Do not print the token to the screen: PowerShell cuts long values off with
+   "...", and a cut-off token does not work.
+3. **Page token (does not expire on a timer).** Paste the long-lived token when asked:
+   ```powershell
+   $long = Read-Host "Long-lived user token (paste from clipboard)"
+   $pages = (Invoke-RestMethod "https://graph.facebook.com/v19.0/me/accounts?access_token=$long").data
+   $pages | ForEach-Object { $_.name + "  id=" + $_.id }
+   $p = $pages | Where-Object { $_.name -eq "Serfis" }   # change to your Page's name
+   $p.access_token | Set-Clipboard
+   "Copied. Length: " + $p.access_token.Length
+   ```
+   The printed `id` is `FB_PAGE_ID`; the clipboard holds `FB_PAGE_ACCESS_TOKEN`. An
+   empty list means the Page wasn't ticked in step 1, so repeat it.
+4. **Check it.** Paste the Page token into the Access Token Debugger
+   (developers.facebook.com/tools/debug/accesstoken). It should show **Type: Page**,
+   **Expires: Never** and the three scopes. A date means it came from a short-lived
+   token.
+
+A Page token can still stop working if the user logs out everywhere, changes their
+password, or removes the app from their account, so "never expires" means no timer,
+not permanent. If the app ever goes Live, Meta's App Review and the app icon, privacy
+policy URL and category fields apply; for posting to your own Page in Development
+mode they are not needed.
 
 ## Threads
 
