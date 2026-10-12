@@ -58,7 +58,7 @@ see `SETUP.md`; for what is currently blocked, see `CURRENT_OBSTACLES.md`.
 2. Build the `VideoAsset`:
    - Set `local_path` always (needed to check the clearance).
    - Also set `public_url` for Instagram and Threads, and optionally Facebook.
-3. Check each target platform's status in `CURRENT_OBSTACLES.md` and `HANDOFF.md`.
+3. Check each target platform's status in `CURRENT_OBSTACLES.md`.
    Don't try a platform that is marked blocked or has an expired token.
 
 ### 6. Get approval and post
@@ -82,7 +82,7 @@ see `SETUP.md`; for what is currently blocked, see `CURRENT_OBSTACLES.md`.
    `poc_notified`. Tell the user which posts went out and which were skipped or failed.
 
 ### 8. Record it
-1. Update `CURRENT_OBSTACLES.md` or `HANDOFF.md` if a platform's status changed
+1. Update `CURRENT_OBSTACLES.md` if a platform's status changed
    (token expired, post failed, approval came through).
 2. Commit doc changes only after the user says to, on the user's own branch.
 

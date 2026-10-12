@@ -95,5 +95,5 @@ To decide:
 ## Decided
 (none yet)
 
-Other open decisions are tracked in `HANDOFF.md` (TikTok Sandbox vs Production,
-Reddit, LinkedIn) and `CURRENT_OBSTACLES.md`.
+Other open decisions are tracked in `CURRENT_OBSTACLES.md` (TikTok Sandbox vs Production,
+Reddit, LinkedIn).
