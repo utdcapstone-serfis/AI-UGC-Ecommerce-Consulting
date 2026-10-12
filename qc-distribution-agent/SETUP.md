@@ -83,9 +83,17 @@ mode they are not needed.
 
 ## Threads
 
-1. Same Meta Developer App as Facebook/Instagram — add the **Threads API** product to it.
-2. Run the OAuth flow yourself, granting `threads_basic` and `threads_content_publish`.
-3. Fill in `THREADS_ACCESS_TOKEN` and `THREADS_USER_ID` — this is a **separate id from the Instagram Business Account ID**, even though it's tied to the same underlying account.
+Walked through and verified on 2026-10-11 with a separate personal test account (see the experiment note in `CURRENT_OBSTACLES.md`). Do the steps in order and keep tokens and the app secret out of chat and screenshots.
+
+1. **The account.** Use a Threads account that is not banned, set to **public** (Meta's token generator only works for public accounts). A brand-new account is the highest-risk case for Meta's automated disabling, so use it normally for a few days first, and don't try to hide the setup across accounts or devices.
+2. **The Meta app.** Create a Meta app (development mode is enough for posting to your own account) with the **Access the Threads API** use case. In the use case's **Settings** tab the Threads app has its **own app ID and app secret**, separate from any other Meta app. The Threads adapter doesn't need either in `.env`.
+3. **Permissions.** In the use case's permissions, `threads_basic` (required for everything) and `threads_content_publish` (for posting) should both show "Ready for testing".
+4. **Add the account as a tester.** In the app: **App roles**, **Roles**, **Add People**, role **Threads Tester**, enter the Threads username. Then, signed in as that Threads account (threads.com or the app), open **Settings**, **Account**, **Website permissions**, and **accept the invite**. The Threads app's own settings hold the invite, not Meta's Accounts Center.
+5. **Generate the token.** In the use case's **Settings** tab, **User Token Generator** lists the testers. Click **Generate Access Token** for the account (the button stays greyed out until the invite is accepted and the account is public). The page says these tokens are **long-lived (about 60 days)**, so no separate exchange step was needed. Don't change or save anything else on that page.
+6. **Fill in `.env` yourself:** `THREADS_ACCESS_TOKEN` and `THREADS_USER_ID`. The user ID is the **account's** ID. It is **not** the Threads app ID, and it is a separate number from the Instagram Business Account ID. Get it with a read-only call: `GET https://graph.threads.net/v1.0/me?fields=id,username&access_token=...` (HTTP 200 with the username means the token works).
+7. **Keep it alive.** Meta's docs: a long-lived token can be refreshed (`GET https://graph.threads.net/refresh_access_token?grant_type=th_refresh_token&access_token=...`) once it is at least 24 hours old and before it expires, which restarts the 60 days; one that lapses can't be refreshed. The adapter has no refresh yet.
+
+The long-lived exchange, if a token ever comes back short-lived (one hour): `GET https://graph.threads.net/access_token?grant_type=th_exchange_token&client_secret=<Threads app secret>&access_token=<short-lived token>`, run server-side only.
 
 Like Instagram, `ThreadsAdapter.upload()` needs a **publicly reachable video URL** (`VideoAsset.public_url`), not a local file. A container that isn't published within 24 hours expires and has to be recreated — not a concern for normal use, but worth knowing if a post gets stuck for other reasons.
 
