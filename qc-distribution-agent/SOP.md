@@ -72,7 +72,10 @@ see `SETUP.md`; for what is currently blocked, see `CURRENT_OBSTACLES.md`.
 1. `distribute()` re-checks each post on the platform itself. `is_live` is set only
    after that check.
 2. When live, it emails the client contact (needs the SMTP settings in `.env`).
-3. Read the returned records: platform, approved, post id, URL, `is_live`,
+3. To send one summary email with the video attached, build a draft with
+   `draft_distribution_email()` and `save_draft()` (see `SETUP.md`). It is only a
+   draft. The user opens it, reviews it and sends it.
+4. Read the returned records: platform, approved, post id, URL, `is_live`,
    `poc_notified`. Tell the user which posts went out and which were skipped or failed.
 
 ### 8. Record it

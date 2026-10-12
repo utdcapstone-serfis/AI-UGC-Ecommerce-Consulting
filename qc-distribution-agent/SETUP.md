@@ -143,6 +143,28 @@ Standard SMTP — `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`,
 `SMTP_PASSWORD`, `SMTP_FROM_ADDRESS`. Any provider works (Gmail app
 password, SendGrid SMTP relay, etc.).
 
+### Summary email draft (video attached)
+
+After `distribute()`, build one summary email listing every platform the video
+is live on, with the video attached. It only creates a draft; nothing is sent
+and no SMTP settings are needed.
+
+```python
+from distribution_agent.notifier import draft_distribution_email, save_draft
+
+message = draft_distribution_email(
+    records, asset, poc_email="client@example.com",
+    video_title="Spring Launch", qc_score=evaluation.composite_score(),
+)
+path = save_draft(message)  # writes drafts/<timestamp>-<subject>.eml; open it in a mail app to review and send
+```
+
+- Only platforms confirmed live are listed. It raises `ValueError` if none are.
+- The video must be at most 20 MB to attach (`ValueError` otherwise). Pass
+  `attach_video=False` to send links only.
+- `drafts/` is gitignored because the draft holds the video.
+- Sending is a separate step the user does themselves from the mail app.
+
 ## Usage
 
 ```python
