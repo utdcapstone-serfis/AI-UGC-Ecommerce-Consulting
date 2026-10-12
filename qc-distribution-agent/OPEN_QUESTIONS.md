@@ -110,6 +110,16 @@ To decide:
 - Does the Reddit and TikTok position (single company vs agency) change what we
   apply for, and when?
 
+### 3. Keep trying Reddit, or drop it?
+Added 2026-10-11.
+
+Reddit denied the data-access request on 2026-10-05 (generic reason: not in compliance with the Responsible Builder Policy and/or lacks details). No Reddit API use is allowed without written approval, so the pipeline cannot post there today.
+
+To decide:
+- Drop Reddit from the platform list, or keep it as a manual (outside-the-pipeline) channel?
+- Reply on the ticket to learn what was missing, or resubmit a fuller request? Neither is expected to succeed, since new Data API access may be moderation-only (unconfirmed).
+- The Reddit adapter code stays in the repo unused; keep it or remove it?
+
 ## Decided
 (none yet)
 
