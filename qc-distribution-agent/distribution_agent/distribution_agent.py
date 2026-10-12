@@ -4,9 +4,14 @@ verifies it went live, and notifies the client POC.
 Matches the Distribution Agent prompt in agent-prompts.md — this module
 is the actual implementation of that spec.
 
-Posting is never automatic: distribute() asks for explicit human
-approval, per platform, before it uploads anything. No approval means
-no post — there is no flag to skip this.
+Posting is never automatic: distribute() shows the user the full list of
+platforms and waits for an explicit answer before it uploads anything.
+All platforms are preselected, so one confirmation approves them all, and
+the user can narrow the list. No answer means no post — there is no flag
+to skip this.
+
+This is the development-time approval step. The final product may be
+fully automated; see OPEN_QUESTIONS.md.
 """
 
 import sys
@@ -19,26 +24,81 @@ from .adapters import ADAPTERS
 from .adapters.base import VideoAsset
 from .notifier import notify_poc
 
-ApprovalCallback = Callable[[str, VideoAsset], bool]
+# approve(platforms, asset) -> the platforms the user approved (a subset).
+ApprovalCallback = Callable[[list[str], VideoAsset], Iterable[str]]
+
+_ALL_WORDS = {"", "y", "yes", "all"}
+_NONE_WORDS = {"n", "no", "none", "cancel"}
 
 
-def cli_approval(platform: str, asset: VideoAsset) -> bool:
-    """Default approval gate: asks on the terminal. Refuses (returns
-    False) whenever a real answer can't be read — stdin isn't a TTY, or
-    `input()` hits EOF because there's nothing to read from it anyway —
-    rather than assuming consent. A non-interactive run (a cron job, a
-    CI step) must pass its own `approve` callback wired to a real human
-    decision instead; the failure mode here is always "no post", never
-    a crash or a silent yes.
+def parse_platform_selection(answer: str, platforms: list[str]) -> Optional[list[str]]:
+    """Turns the user's answer into the approved platforms, or None if the
+    answer can't be understood (the caller must then treat it as no).
+
+    - Enter, "y", "yes", "all": every listed platform.
+    - "n", "no", "none", "cancel": no platform.
+    - Numbers or names ("1 3", "youtube, x"): only those platforms.
+    - Numbers or names with a leading dash ("-2", "-x"): all except those.
+    Mixing the last two forms, or naming something not listed, is invalid.
+    """
+    text = answer.strip().lower()
+    if text in _ALL_WORDS:
+        return list(platforms)
+    if text in _NONE_WORDS:
+        return []
+
+    names = {p.lower(): p for p in platforms}
+    tokens = [t for t in text.replace(",", " ").split() if t]
+    excluding = [t.startswith("-") for t in tokens]
+    if any(excluding) and not all(excluding):
+        return None
+
+    chosen = []
+    for token in tokens:
+        token = token.lstrip("-")
+        if token.isdigit() and 1 <= int(token) <= len(platforms):
+            chosen.append(platforms[int(token) - 1])
+        elif token in names:
+            chosen.append(names[token])
+        else:
+            return None
+    if not chosen:
+        return None
+    if all(excluding):
+        return [p for p in platforms if p not in chosen]
+    return [p for p in platforms if p in chosen]
+
+
+def cli_approval(platforms: list[str], asset: VideoAsset) -> list[str]:
+    """Default approval step: lists every platform, all preselected, and
+    asks on the terminal. Enter approves them all; typing numbers or names
+    posts only to those, and a leading dash removes platforms ("-2").
+
+    Fails safe: returns [] (no post) whenever a real answer can't be read —
+    stdin isn't a TTY, `input()` hits EOF, or the answer is not understood
+    after three tries. A non-interactive run must pass its own `approve`
+    callback wired to a real human decision instead.
     """
     if not sys.stdin.isatty():
-        return False
+        return []
     caption_preview = (asset.caption or "").strip()[:60]
-    prompt = f"Post \"{caption_preview}\" to {platform}? [y/N] "
-    try:
-        return input(prompt).strip().lower() in ("y", "yes")
-    except EOFError:
-        return False
+    print(f'Video: "{caption_preview}"')
+    print("Post to these platforms:")
+    for number, platform in enumerate(platforms, start=1):
+        print(f"  {number}. {platform}")
+    prompt = (
+        'Press Enter to post to ALL, type numbers or names for only those '
+        '(e.g. "1 3"), "-2" to leave one out, or "n" to cancel: '
+    )
+    for _ in range(3):
+        try:
+            selected = parse_platform_selection(input(prompt), platforms)
+        except EOFError:
+            return []
+        if selected is not None:
+            return selected
+        print("Sorry, I didn't understand that.")
+    return []
 
 
 @dataclass
@@ -70,13 +130,17 @@ def distribute(
     `ClearanceMismatch`. Set `asset.local_path` even when a platform
     also needs `public_url`; the public copy is assumed to be the same file.
 
-    `approve(platform, asset)` is called before every single upload and
-    must return True for that platform's post to happen; a platform that
+    `approve(platforms, asset)` is called once, with the full list of
+    platforms, before anything is uploaded. It returns the platforms the
+    user approved. The default shows all platforms preselected: Enter
+    approves them all, and the user can narrow the list. A platform that
     isn't approved is skipped (recorded with approved=False) and no
     adapter call — no credentials touched, no API request made — happens
     for it. Pass a custom `approve` to wire this to a real approval UI
-    (a dashboard button, a Slack confirmation) instead of the terminal
-    prompt default.
+    (a dashboard button, a Slack confirmation) instead of the terminal.
+    A callback that returns a bool is rejected: it is the old
+    per-platform signature, and silently treating it as "approve all"
+    would be unsafe.
     """
     if not isinstance(clearance, QCClearance):
         raise TypeError(
@@ -85,16 +149,27 @@ def distribute(
         )
     clearance.ensure_matches(asset.local_path)
 
-    records = []
-
-    for platform in platforms:
-        adapter_cls = ADAPTERS.get(platform)
-        if adapter_cls is None:
+    requested = list(dict.fromkeys(platforms))  # keep order, drop duplicates
+    for platform in requested:
+        if platform not in ADAPTERS:
             raise ValueError(f"Unknown platform: {platform!r}. Known platforms: {sorted(ADAPTERS)}")
 
-        if not approve(platform, asset):
+    answer = approve(requested, asset)
+    if isinstance(answer, bool):
+        raise TypeError(
+            "approve() must return the list of approved platforms, not a bool. "
+            "Per-platform approve(platform, asset) callbacks are no longer supported."
+        )
+    approved = set(answer)  # anything not in `requested` is ignored below
+
+    records = []
+
+    for platform in requested:
+        if platform not in approved:
             records.append(DistributionRecord(platform=platform, approved=False))
             continue
+
+        adapter_cls = ADAPTERS[platform]
 
         adapter = adapter_cls()
         result = adapter.upload(asset)

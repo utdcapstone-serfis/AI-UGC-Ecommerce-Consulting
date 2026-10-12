@@ -33,20 +33,27 @@ hard gates evaluated and passed, composite at or above the threshold.
 ## Invariant 2: approval before posting
 
 `distribute()` in `distribution_agent/distribution_agent.py` calls
-`approve(platform, asset)` before every single upload. No approval
-means no post — full stop:
+`approve(platforms, asset)` once, with the full list of platforms,
+before anything is uploaded. It returns the platforms the user approved.
+No answer means no post — full stop:
 
 - No flag or setting bypasses this.
+- The default `cli_approval()` lists every platform, all preselected.
+  Enter (or "y", "all") approves them all. Numbers or names ("1 3",
+  "youtube, x") post only to those. A leading dash leaves platforms out
+  ("-2", "-x"). "n" cancels.
 - An unapproved platform is skipped entirely — its adapter is never
   even instantiated, so no credentials are touched and no API request
   is made for it.
-- The default `cli_approval()` prompts on the terminal and **fails
-  safe (denies)** on anything short of an explicit "y" — including a
-  non-interactive terminal, silence, or EOF. It never crashes and
-  never defaults to yes.
+- `cli_approval()` **fails safe (approves nothing)** when there is no
+  terminal, on EOF, or after three answers it can't understand. It never
+  crashes, and silence is never approval: the user must press Enter.
 - To wire approval to something other than a terminal prompt (a
   dashboard button, a Slack confirmation), pass a custom
-  `approve: (platform, asset) -> bool` callable to `distribute()`.
+  `approve: (platforms, asset) -> list of approved platforms`. A callback
+  that returns a bool (the old per-platform signature) raises `TypeError`.
+- Development-time step. The final product may be automated, which would
+  change or remove this gate; see `OPEN_QUESTIONS.md`.
 
 ## Supported platforms
 

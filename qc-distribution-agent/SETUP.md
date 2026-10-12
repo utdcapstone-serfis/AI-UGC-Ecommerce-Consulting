@@ -199,20 +199,31 @@ that passed the Quality Control Agent can get one (see `QC_AGENT.md`).
 
 ### Approval gate
 
-`distribute()` never posts without asking first. By default it prompts
-on the terminal per platform (`Post "..." to instagram? [y/N]`) and
-skips (`approved=False` in the returned record) on anything other than
-an explicit yes — including when there's no terminal to prompt on at
-all, so an unattended run can't accidentally post.
+`distribute()` never posts without asking first. By default it prints
+the full list of platforms with all of them preselected:
+
+```
+Video: "Spring"
+Post to these platforms:
+  1. instagram
+  2. youtube
+  3. x
+Press Enter to post to ALL, type numbers or names for only those ("1 3"), "-2" to leave one out, or "n" to cancel:
+```
+
+Enter approves every listed platform. Anything not approved is skipped
+(`approved=False` in the returned record). With no terminal, EOF, or an
+answer it can't understand three times, nothing is approved, so an
+unattended run can't accidentally post.
 
 To wire approval to something other than a terminal prompt — a
 dashboard button, a Slack confirmation — pass your own `approve`
-callback: it receives `(platform, asset)` and must return `True` for
-that platform's post to go out.
+callback: it receives `(platforms, asset)` and must return the list of
+platforms to post to. Returning a bool raises `TypeError`.
 
 ```python
-def approve_from_dashboard(platform: str, asset) -> bool:
-    return get_human_decision(platform, asset.caption)  # your own approval UI
+def approve_from_dashboard(platforms: list[str], asset) -> list[str]:
+    return get_human_selection(platforms, asset.caption)  # your own approval UI
 
 records = distribute(asset, platforms=["youtube"], approve=approve_from_dashboard, clearance=clearance)
 ```

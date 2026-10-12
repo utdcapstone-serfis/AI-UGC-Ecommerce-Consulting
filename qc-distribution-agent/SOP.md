@@ -8,7 +8,8 @@ see `SETUP.md`; for what is currently blocked, see `CURRENT_OBSTACLES.md`.
 - Only a video the user has confirmed as the final draft goes to QC. Never
   send intermediate generations or their frames.
 - Only a video that passed QC can be distributed.
-- Every post needs the user's explicit yes, per platform. No yes means no post.
+- Every post needs the user's explicit confirmation of the platform list (all
+  preselected, narrowable). No answer means no post.
 - Never read, print or paste credentials. The user edits `.env`. Never commit `.env`.
 - Never submit a paid generation without approval of that exact generation.
 - Confirm before any git change or outward-facing action.
@@ -62,11 +63,13 @@ see `SETUP.md`; for what is currently blocked, see `CURRENT_OBSTACLES.md`.
 
 ### 6. Get approval and post
 1. Run `distribute(asset, platforms=[...], poc_email="...", clearance=clearance)`.
-2. For each platform it asks "Post ... to <platform>? [y/N]". The user answers per
-   platform. Anything other than yes skips that platform with no upload and no
-   credentials touched.
+2. It lists every platform with all of them preselected. The user presses Enter to
+   post to all, types numbers or names to post to only those ("1 3"), uses a leading
+   dash to leave one out ("-2"), or types "n" to cancel. Platforms not approved are
+   skipped with no upload and no credentials touched.
 3. Never answer on the user's behalf, and never pass an `approve` function that
-   returns True automatically.
+   approves platforms automatically. This approval step is for development; the final
+   automated pipeline may handle it differently (see `OPEN_QUESTIONS.md`).
 
 ### 7. Confirm it is live and notify
 1. `distribute()` re-checks each post on the platform itself. `is_live` is set only
@@ -100,7 +103,7 @@ see `SETUP.md`; for what is currently blocked, see `CURRENT_OBSTACLES.md`.
 - [ ] QC composite 7.0 or higher, evaluation saved to the dashboard
 - [ ] Clearance issued
 - [ ] `local_path` set (and `public_url` where needed)
-- [ ] User approved each platform
+- [ ] User confirmed the platform list (or narrowed it)
 - [ ] Each post confirmed live
 - [ ] Client contact notified
 - [ ] Docs updated if a platform's status changed

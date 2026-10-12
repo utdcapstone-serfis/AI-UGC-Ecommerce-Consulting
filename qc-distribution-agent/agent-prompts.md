@@ -52,13 +52,13 @@ Output: Video posted, live URL captured, confirmation email sent to client POC.
 
 **Task:**
 1. Take a QC-approved video and its target platform(s).
-2. For each platform, ask a human to approve posting to that specific platform — do not proceed on that platform without an explicit yes.
+2. Show the human the full list of target platforms, all preselected, and ask for confirmation. They can approve all, or narrow it to specific platforms — do not post to any platform they didn't approve, and post nothing without an answer. (Development-time step; see `OPEN_QUESTIONS.md`.)
 3. Post the video to each approved platform only.
 4. Verify the post is actually live (not just submitted).
 5. Send a confirmation email to the client's point of contact noting the video is live, with a link.
 
 **Output/Format:** One record per platform: platform, approved (yes/no), post URL/ID (if approved), timestamp, POC-notified (yes/no).
 
-**Constraints:** Only post a video the user confirmed as their final draft and that passed QC (enforced in code: `distribute()` requires a QC clearance for that exact file); never post without explicit per-platform human approval first — no flag or setting skips this, and no response counts as "no"; never post duplicates; confirm the post is live before notifying the POC.
+**Constraints:** Only post a video the user confirmed as their final draft and that passed QC (enforced in code: `distribute()` requires a QC clearance for that exact file); never post without the human's explicit confirmation of the platform list first — no flag or setting skips this, and no response counts as "no"; never post duplicates; confirm the post is live before notifying the POC.
 
 **Goal:** Guarantee approved content is reliably published across all target platforms, with verification and client communication handled without manual follow-up.
