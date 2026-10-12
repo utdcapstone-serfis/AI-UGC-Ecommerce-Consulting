@@ -174,6 +174,18 @@ Native, as of 2026-10-01, via the Content Posting API's Direct Post flow.
 
 `TikTokAdapter.upload()` requires `VideoAsset.local_path` — it does a chunked upload (`init` → `PUT` to the returned upload URL → poll `status/fetch` until `PUBLISH_COMPLETE`). Privacy level defaults to `SELF_ONLY`, since TikTok restricts unaudited apps to private/self-visible posts regardless of what's requested — don't change this until the app is actually approved.
 
+### TikTok Sandbox limits
+
+While the app is unaudited (Sandbox, or Production before TikTok's review passes):
+- **Posts are private to the poster.** Only `SELF_ONLY` works, whatever privacy level is requested. Nothing can be published publicly.
+- **The TikTok account itself must be private.** Set the Sandbox target account to a private account in the TikTok app (Settings, Privacy, Private account). Without it the upload fails with `unaudited_client_can_only_post_to_private_accounts`, even with `SELF_ONLY` on the post. Repeat this for any new target account.
+- **Only target users can authorize.** Add each account to the app's Target User list in the Sandbox settings first.
+- **User cap.** Unaudited clients are limited to about 5 users per 24 hours.
+- **Separate credentials.** Sandbox has its own client key and secret, different from Production's. `.env` holds whichever one you are testing against; don't mix them.
+- **Short-lived access token.** It expires quickly (about a day, from memory) and the adapter does not refresh it yet, so renew it with the refresh token before testing.
+
+Sandbox is enough for private test posts and a demo, not for public posting. Going public needs TikTok's review and the Direct Post interface requirements in `CURRENT_OBSTACLES.md`.
+
 ## LinkedIn and TikTok — UploadPost.com fallback (superseded)
 
 Both platforms were originally routed through [UploadPost.com](https://upload-post.com) to avoid each platform's own approval process, before switching to native above. `UploadPostAdapter` (in `adapters/uploadpost.py`) still exists as a fallback — it's just not registered in `ADAPTERS` by default anymore. If either native integration ends up blocked long-term, instantiate `UploadPostAdapter("linkedin")` or `UploadPostAdapter("tiktok")` directly rather than resurrecting a dedicated subclass.

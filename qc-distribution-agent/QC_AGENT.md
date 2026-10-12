@@ -54,7 +54,7 @@ of how well everything else scored — see `final_verdict()` in
 |---|---|---|
 | Hook (first 3s) | 20% | Most scroll-away happens in the first 3s, and it has to work muted |
 | Captions | 15% | Feed viewing defaults to sound off; N/A (not scored) for genuinely non-verbal content |
-| Branding & consistency | 15% | Logo/colors/watermark presence, plus consistent wording, font, and background/foreground/middle-ground treatment throughout the clip |
+| Branding & consistency | 15% | The advertised company's own logo/colors/watermark presence in the video as made (QC checks it; neither QC nor the pipeline adds any), plus consistent wording, font, and background/foreground/middle-ground treatment throughout the clip |
 | Technical quality | 10% | Blur, sensor/compression noise, and blocking artifacts — measured directly via OpenCV, not judged by eye |
 | Safe zone | 10% | Key text/branding must clear platform UI overlays (top ~10%, bottom ~15–20%, sides ~5%) |
 | Audio quality | 10% | Target -14 LUFS ±2, no clipping, no dead air >1.5s |
