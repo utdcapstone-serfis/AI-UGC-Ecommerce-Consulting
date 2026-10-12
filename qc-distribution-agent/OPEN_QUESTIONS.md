@@ -86,6 +86,24 @@ Cheap to do now:
   not in code.
 - Put a client name on every QC evaluation and distribution record.
 
+Example, YouTube (added 2026-10-11): the Google OAuth app is External and in
+Testing. The plan under discussion is to make it Internal, which only lets accounts
+in the `serfis.ai` organization authorize it. That covers the company's own channel
+and nothing else, and it can be switched back. Routes for client channels later,
+none built or tested:
+1. Switch the app to External and publish it. Each client authorizes it once and we
+   store their refresh token. `youtube.upload` is a sensitive permission, so Google
+   verification is needed (privacy policy, demo video, review); until then there is an
+   unverified-app warning and a 100-user cap.
+2. Keep the internal app for the company's channel and create a second Google Cloud
+   project for clients (External, verified).
+3. Each client creates their own credentials. More work for them, separate credential
+   sets for us.
+Also unverified: YouTube may lock uploads from an unaudited API project to private,
+which could apply to client channels too. The same pattern (our own accounts now,
+client accounts through a different path later) applies to Meta, LinkedIn, TikTok
+and the other platforms.
+
 To decide:
 - Is expansion a real goal, or a possibility to keep in mind?
 - If it is, who owns each client's platform accounts and approvals?
