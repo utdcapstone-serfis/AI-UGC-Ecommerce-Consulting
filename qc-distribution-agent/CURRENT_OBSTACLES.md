@@ -35,7 +35,17 @@ Originally routed through UploadPost.com (see `DISTRIBUTION_AGENT.md`) to avoid 
 5. Fill in the "explain how each product and scope works" text field on Production with real detail, upload the genuine demo video in place of the placeholder, and click "Submit for review."
 6. Separately, decide whether to pursue the $1,000 porting bounty / long-term Data API registration path mentioned elsewhere for other platforms — not yet investigated for TikTok specifically, since TikTok's Content Posting API is a different product line from the moderation-focused Data API deprecation that applies to Reddit.
 
-## Snapchat: not viable — resolved, no action needed
+## Snapchat: ruled out 2026-09-25, but a restricted route may exist (rechecked 2026-10-11)
+
+**Update 2026-10-11, from Snap's own developer docs: possibly viable, not usable yet, and unconfirmed.** The sections below are the original 2026-09-25 finding, kept for the record.
+- **What the docs show:** Snap's Public Profile API (part of the Marketing API family) documents creating media on a public profile (`POST https://businessapi.snapchat.com/v1/public_profiles/{profile_id}/media`, video or image, with a base64 encryption key and IV, uploaded to a returned path and split into chunks over 32 MB) and then using it to post to a Story. Media objects expire 24 hours after creation (a story post using expired media fails with `MEDIA_EXPIRED`). Spotlights are documented as saved stories, and a posted Spotlight starts as `SUBMITTED` and must pass review before it is `LIVE`. Spotlight media must be 9:16 vertical, 5 to 60 seconds, without Snap Library music, which our videos fit. Several third-party posting services (Ayrshare, Late, bundle.social, Sprout Social) also advertise Spotlight publishing, which suggests it exists, but those are secondhand.
+- **Access is the blocker:** the Public Profile API is **allowlist-only**, so Snap must approve our client ID, and posting needs a **Public Profile** (creator or business account), not a personal account. The Marketing API home page describes paid advertising and business tooling and does not mention organic publishing.
+- **Docs conflict:** the Profiles page says the public profile APIs are read-only, while the Profile Asset Management page documents write operations. The write documentation may be newer or limited to partners. Confirm with Snap before building anything.
+- **Not found:** the exact Spotlight create/publish endpoint (probably on a Spotlights page in the Public Profile API reference).
+- **Next step, if Snapchat matters:** apply for allowlist access through Snap's business help site, then read the Public Profile API reference for the Spotlight endpoint. Nothing is built, and nothing should be until access is confirmed. Low priority; it does not block the other platforms.
+- **Creative Kit is unchanged:** it still requires a person to open Snapchat and send manually.
+
+**Original finding, 2026-09-25 (now incomplete):**
 
 **Closed, not open** — included here for the record since it looked like a normal "not yet built" gap until checked. Verified against Snap's current docs (2026-09-25): there is no way for an unattended backend to post organic content to Snapchat, full stop.
 

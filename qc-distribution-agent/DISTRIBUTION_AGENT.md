@@ -176,15 +176,19 @@ successful upload response alone doesn't count as confirmation.
 
 ## Not yet built
 
-**Snapchat — confirmed not possible, not just unbuilt.** Verified
-against Snap's current docs (2026-09-25): their Marketing/Ads API is
-paid-campaigns-only, and Creative Kit (the other candidate) is
-client-side-only — it opens the Snapchat app on a real person's own
-device for them to manually review and send, and cannot be triggered
-unattended from a backend. There is no programmatic organic-posting
-surface to build against at all. UploadPost doesn't list Snapchat
-either, independently confirming this. Unlike everything else on this
-list, this isn't a "not yet built" gap — there's nothing to build.
+**Snapchat — not built, and not possible today without Snap's approval.**
+Checked against Snap's docs on 2026-09-25 and again on 2026-10-11. The
+Marketing/Ads API is for paid campaigns, and Creative Kit (the Snap Kit
+option, the only thing the developer portal offers) is client-side-only: it
+opens the Snapchat app on a real person's own device for them to review
+and send manually, so it can't run unattended from a backend. The
+2026-10-11 recheck found a possible route: the Public Profile API
+documents creating media on a public profile and posting it to a Story,
+with Spotlights going through review before going live. It is
+**allowlist-only** (Snap must approve our client ID), needs a Public
+Profile account, and Snap's own pages conflict on whether it can write at
+all, so treat it as unconfirmed. Nothing is built. UploadPost's docs still
+don't list Snapchat. Details and next steps are in `CURRENT_OBSTACLES.md`.
 
 ## Related files
 
