@@ -182,7 +182,7 @@ While the app is unaudited (Sandbox, or Production before TikTok's review passes
 - **Only target users can authorize.** Add each account to the app's Target User list in the Sandbox settings first.
 - **User cap.** Unaudited clients are limited to about 5 users per 24 hours.
 - **Separate credentials.** Sandbox has its own client key and secret, different from Production's. `.env` holds whichever one you are testing against; don't mix them.
-- **Short-lived access token.** It expires quickly (about a day, from memory) and the adapter does not refresh it yet, so renew it with the refresh token before testing.
+- **Short-lived access token** (24 hours). The adapter now refreshes it automatically from `TIKTOK_REFRESH_TOKEN` each time it is created (see "Automatic token refresh" below).
 
 Sandbox is enough for private test posts and a demo, not for public posting. Going public needs TikTok's review and the Direct Post interface requirements in `CURRENT_OBSTACLES.md`.
 
@@ -197,6 +197,17 @@ Both platforms were originally routed through [UploadPost.com](https://upload-po
 Note: `UploadPostAdapter.verify_live()` can only trust the upload response itself — UploadPost's docs don't expose a separate get-post/status endpoint, so this is a genuinely weaker live-confirmation guarantee than the native adapters, which always re-check the post via the platform's own API. Also note the endpoint/field names here were taken from UploadPost's docs but not exercised against a live account in this codebase — confirm against their current docs before relying on this in production.
 
 Free tier: UploadPost's $0 plan excludes TikTok entirely and caps at 10 uploads/month. The Basic plan (~$16–24/mo) is needed for TikTok and unlimited uploads.
+
+## Automatic token refresh
+
+Added 2026-10-11. Endpoints were checked against each platform's docs; the code is tested with faked responses only, not yet against the live APIs.
+
+- **Instagram:** the 60-day token is renewed (Instagram's `refresh_access_token` endpoint) when the adapter is created and 30 days have passed since the date in `IG_TOKEN_REFRESHED_AT`. The token must be at least 24 hours old and not yet expired; an expired token can't be refreshed and needs a new sign-in. The new token and date are saved into `.env`.
+- **TikTok:** the 24-hour access token is swapped for a fresh one from `TIKTOK_REFRESH_TOKEN` each time the adapter is created (needs `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET` and the refresh token in `.env`). TikTok may return a new refresh token; it is saved. The refresh token lasts 365 days, then `get_tiktok_token.py` has to be re-run. The new access token is held in memory, so the `TIKTOK_ACCESS_TOKEN` line in `.env` goes stale.
+- **X:** unchanged, refreshed on every use.
+- **Not refreshed by code:** Facebook (the Page token doesn't expire), Bluesky (app password), YouTube (the library handles access tokens), LinkedIn (its refresh tokens are limited to approved partners, so expect to re-authorize about every 60 days), Pinterest (no usable token yet).
+- **Gaps:** adapters only refresh when they are created, so a long stretch with no posts can let a token lapse. Run `python refresh_tokens.py` at least every 30 days. It refreshes Instagram, TikTok and X and prints only a status line each, never a token. A failed refresh warns and keeps the old token; it doesn't stop a post.
+- **Where rotated tokens go:** into `.env`. If `.env` can't be written, the new value is parked in a gitignored `*.pending` file next to it, with a warning. The pipeline editing `.env` is a change from "the user edits `.env`"; it was approved for X, and for Instagram and TikTok on 2026-10-11.
 
 ## Email notifications
 

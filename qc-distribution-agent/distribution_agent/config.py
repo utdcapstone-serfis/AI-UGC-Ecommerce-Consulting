@@ -31,7 +31,7 @@ def pending_path(env_path: Path, name: str) -> Path:
     return Path(env_path).with_name(f"{name.lower()}.pending")
 
 
-def persist_env_value(name: str, value: str, env_path: Path) -> str:
+def persist_env_value(name: str, value: str, env_path: Path, critical: bool = True) -> str:
     """Saves a rotated credential so it is not lost. Never prints the value.
 
     Returns where it ended up:
@@ -44,9 +44,22 @@ def persist_env_value(name: str, value: str, env_path: Path) -> str:
       (os.environ), and the credential must be re-created by the user.
 
     The process environment is always updated, so the rest of this run works.
+
+    `critical=False` is for harmless bookkeeping values (a "last refreshed"
+    date): it tries to write .env, returns "env" or "none", and stays quiet
+    on failure (no pending file, no warning).
     """
     os.environ[name] = value
     env_path = Path(env_path)
+
+    if not critical:
+        if env_path.exists():
+            try:
+                set_key(str(env_path), name, value)
+                return "env"
+            except Exception:
+                return "none"
+        return "none"
 
     if env_path.exists():
         try:

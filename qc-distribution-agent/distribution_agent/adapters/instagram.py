@@ -16,20 +16,89 @@ Login are only valid against that host, confirmed by testing against a
 live account (2026-09-28).
 """
 
+import os
+import warnings
+from datetime import date
+from pathlib import Path
+
 import requests
 
-from ..config import require_env
+from ..config import persist_env_value, require_env
 from .base import PlatformAdapter, PostResult, VideoAsset, poll_until
 
 GRAPH_API_BASE = "https://graph.instagram.com/v22.0"
+REFRESH_URL = "https://graph.instagram.com/refresh_access_token"
+REFRESH_AFTER_DAYS = 30  # long-lived tokens last 60 days; refresh well before that
+ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
 
 
 class InstagramAdapter(PlatformAdapter):
     platform_name = "instagram"
 
-    def __init__(self) -> None:
+    def __init__(self, auto_refresh: bool = True) -> None:
         self.access_token = require_env("IG_ACCESS_TOKEN")
         self.ig_user_id = require_env("IG_BUSINESS_ACCOUNT_ID")
+        if auto_refresh:
+            self.refresh_credentials()
+
+    def _refresh_due(self) -> bool:
+        last = os.environ.get("IG_TOKEN_REFRESHED_AT")
+        if not last:
+            return True  # age unknown: try; a too-young token just fails harmlessly
+        try:
+            return (date.today() - date.fromisoformat(last)).days >= REFRESH_AFTER_DAYS
+        except ValueError:
+            return True
+
+    def refresh_credentials(self, force: bool = False) -> bool:
+        """Renews the long-lived token for another 60 days (Instagram's
+        refresh_access_token endpoint, confirmed against Meta's docs). The
+        token must be at least 24 hours old and not yet expired; one that has
+        already expired cannot be refreshed and needs a new sign-in.
+
+        The refresh date is kept in IG_TOKEN_REFRESHED_AT, so by default this
+        only refreshes when REFRESH_AFTER_DAYS have passed. Returns True if it
+        refreshed. Never raises on a failed refresh: it warns and keeps the
+        existing token. A refresh only happens when this adapter is created or
+        refresh_tokens.py is run, so run that script at least every 60 days.
+        """
+        if not force and not self._refresh_due():
+            return False
+
+        try:
+            resp = requests.get(
+                REFRESH_URL,
+                params={"grant_type": "ig_refresh_token", "access_token": self.access_token},
+                timeout=15,
+            )
+            body = resp.json()
+        except Exception as exc:  # type only: messages can contain the request URL
+            warnings.warn(
+                f"Instagram token refresh could not be completed ({type(exc).__name__}); "
+                "keeping the existing token.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            return False
+
+        if resp.status_code != 200 or "access_token" not in body:
+            err = body.get("error") if isinstance(body, dict) else None
+            code = err.get("code", resp.status_code) if isinstance(err, dict) else resp.status_code
+            warnings.warn(
+                f"Instagram token refresh failed (error {code}); keeping the existing token. "
+                "A token under 24 hours old cannot be refreshed yet; one that has expired "
+                "needs a new sign-in (see SETUP.md).",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            return False
+
+        new_token = body["access_token"]
+        if new_token != self.access_token:
+            self.access_token = new_token
+            persist_env_value("IG_ACCESS_TOKEN", new_token, ENV_PATH)
+        persist_env_value("IG_TOKEN_REFRESHED_AT", date.today().isoformat(), ENV_PATH, critical=False)
+        return True
 
     def upload(self, asset: VideoAsset) -> PostResult:
         if not asset.public_url:

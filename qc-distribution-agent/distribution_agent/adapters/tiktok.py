@@ -29,23 +29,83 @@ app risks the post being rejected outright rather than just scoped down.
 """
 
 import math
+import os
+import warnings
 from pathlib import Path
 
 import requests
 
-from ..config import require_env
+from ..config import persist_env_value, require_env
 from .base import PlatformAdapter, PostResult, VideoAsset, poll_until
 
 API_BASE = "https://open.tiktokapis.com/v2"
 SINGLE_CHUNK_MAX_BYTES = 60 * 1024 * 1024  # upload as one chunk below this size
 CHUNK_SIZE = 10 * 1024 * 1024  # 10 MiB per chunk above that
+ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
 
 
 class TikTokAdapter(PlatformAdapter):
     platform_name = "tiktok"
 
-    def __init__(self) -> None:
+    def __init__(self, auto_refresh: bool = True) -> None:
         self.access_token = require_env("TIKTOK_ACCESS_TOKEN")
+        if auto_refresh:
+            self.refresh_credentials()
+
+    def refresh_credentials(self) -> bool:
+        """Swaps TIKTOK_REFRESH_TOKEN for a fresh access token (TikTok access
+        tokens last 24 hours; the refresh token lasts 365 days). Endpoint and
+        fields confirmed against TikTok's token-management docs.
+
+        TikTok says the returned refresh token "may be different", so a new one
+        is saved (see persist_env_value). The new access token is kept in memory
+        only; the TIKTOK_ACCESS_TOKEN line in .env goes stale and is not used
+        while a refresh token is set. Returns True if refreshed. Never raises
+        on a failed refresh: it warns and keeps the existing access token.
+        """
+        refresh_token = os.environ.get("TIKTOK_REFRESH_TOKEN")
+        client_key = os.environ.get("TIKTOK_CLIENT_KEY")
+        client_secret = os.environ.get("TIKTOK_CLIENT_SECRET")
+        if not (refresh_token and client_key and client_secret):
+            return False  # nothing to refresh with: use the access token as given
+
+        try:
+            resp = requests.post(
+                f"{API_BASE}/oauth/token/",
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                data={
+                    "client_key": client_key,
+                    "client_secret": client_secret,
+                    "grant_type": "refresh_token",
+                    "refresh_token": refresh_token,
+                },
+                timeout=15,
+            )
+            body = resp.json()
+        except Exception as exc:  # type only: messages can contain request details
+            warnings.warn(
+                f"TikTok token refresh could not be completed ({type(exc).__name__}); using "
+                "TIKTOK_ACCESS_TOKEN from .env, which may be expired.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            return False
+
+        if resp.status_code != 200 or "access_token" not in body:
+            warnings.warn(
+                f"TikTok token refresh failed ({body.get('error', resp.status_code)}); using "
+                "TIKTOK_ACCESS_TOKEN from .env, which may be expired. If the refresh token "
+                "itself has expired or been revoked, re-run get_tiktok_token.py.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            return False
+
+        self.access_token = body["access_token"]
+        new_refresh = body.get("refresh_token")
+        if new_refresh and new_refresh != refresh_token:
+            persist_env_value("TIKTOK_REFRESH_TOKEN", new_refresh, ENV_PATH)
+        return True
 
     def _headers(self) -> dict:
         return {
