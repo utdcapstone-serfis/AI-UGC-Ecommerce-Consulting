@@ -222,6 +222,19 @@ Fix: a long-lived Page token made from a long-lived user token (steps in `SETUP.
 
 It can still stop working if the user logs out everywhere, changes their password, or removes the app from their account. The app can stay in Development mode for posting to the team's own Page; the "ineligible for submission" notice (app icon, privacy policy URL, category) only matters for App Review or Live mode, which matters if other clients' Pages ever connect through this app (see `OPEN_QUESTIONS.md`).
 
+## YouTube: token works, but its lifetime is unresolved (checked 2026-10-11)
+
+**Token check, 2026-10-11 (read-only, nothing uploaded, no token printed):** the refresh token exchanges for an access token (HTTP 200), the grant is `youtube.upload`, Google's tokeninfo says the token belongs to this OAuth client, and no new refresh token was issued. The token was created on 2026-09-24, so it has lasted 17 days.
+
+**Why that is surprising:** the Google Cloud project that owns the OAuth client (project ID `agile-falcon-509701-i2`, matched by project number to the client ID, renamed "Distribution Agent" on 2026-10-11; the account's other three projects are all still named "My First Project") has Publishing status **Testing** and User type **External**. Google documents a 7-day refresh-token limit for that combination with a sensitive scope such as `youtube.upload`. Unexplained: the app may have had a different status when the token was issued, or Google does not always enforce the limit. Not knowable from the console. Treat the lifetime as unpredictable; a failure would show up as `invalid_grant`.
+
+**Options, no decision made:**
+1. **Make the app Internal** (Google Auth Platform, Audience, Make internal). The project belongs to the `serfis.ai` organization and the YouTube channel is owned by the `serfis.ai` account, so it should qualify. No verification, no unverified-app warning, no 7-day limit. Re-run `get_youtube_token.py` afterwards. Reversible with "Make external", which probably returns the app to Testing. Internal apps cannot be used by accounts outside the organization, which conflicts with the multi-client question in `OPEN_QUESTIONS.md`.
+2. **Publish the app** (needs the Branding page completed first). Works for any account, but shows an unverified-app warning and has a 100-user cap until Google verifies it.
+3. **Leave it and recheck every few days.** If it fails, do option 1 and re-authorize.
+
+**Not tested: an actual upload.** The adapter hardcodes `privacyStatus: "public"`, so a test video would be public (YouTube may force it private for an unaudited API project; unverified). A test also has to pass QC first. `woof-rainy-puppy-draft 1.mp4` was checked on 2026-10-11 and **fails the aspect/resolution gate** (768×1344, needs 9:16 at 1080×1920 or larger; duration 15.1 s passes), so it cannot be cleared for distribution. The other two videos in `AI Generated Videos Final` have not been checked. The adapter's `verify_live()` reads processing status with an upload-only token and may be refused; unverified.
+
 ## `.env` / credentials management
 
 Current state: each machine running this code needs its own `.env`, created locally from `.env.example` and filled in by hand (never committed — `.gitignore` covers it, and `distribution_agent/__init__.py` auto-loads it via `load_dotenv()` as of 2026-09-24). This works for a single person on a single machine, but doesn't yet have an answer for:
