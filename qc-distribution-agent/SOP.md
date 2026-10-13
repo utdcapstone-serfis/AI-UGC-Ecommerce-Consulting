@@ -67,8 +67,14 @@ see `SETUP.md`; for what is currently blocked, see `CURRENT_OBSTACLES.md`.
    post to all, types numbers or names to post to only those ("1 3"), uses a leading
    dash to leave one out ("-2"), or types "n" to cancel. Platforms not approved are
    skipped with no upload and no credentials touched.
-3. Never answer on the user's behalf, and never pass an `approve` function that
-   approves platforms automatically. This approval step is for development; the final
+3. When the agent runs this in chat, it shows the approval widget (`approval_widget.html`,
+   tick the platforms, Approve selected or Deny all) built from an `ApprovalRequest`, and
+   passes the user's widget message to `request.approver(...)`. It then records the decision
+   for the dashboard with `request.log_record(...)`. An editor can instead approve on the
+   dashboard itself: store `request.pending_record()` in the `approval_requests` collection, and
+   pass the resulting `distribution_decisions` record to `request.approver_from_record(...)`.
+4. Never answer on the user's behalf, never write or paste a widget message itself, and never
+   pass an `approve` function that approves platforms automatically. This approval step is for development; the final
    automated pipeline may handle it differently (see `OPEN_QUESTIONS.md`).
 
 ### 7. Confirm it is live and notify

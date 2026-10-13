@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 # only fills in what isn't already there.
 load_dotenv()
 
+from .approval import ApprovalRequest, parse_decision
 from .distribution_agent import ApprovalCallback, cli_approval, distribute, DistributionRecord
 
-__all__ = ["distribute", "DistributionRecord", "ApprovalCallback", "cli_approval"]
+__all__ = ["distribute", "DistributionRecord", "ApprovalCallback", "cli_approval", "ApprovalRequest", "parse_decision"]

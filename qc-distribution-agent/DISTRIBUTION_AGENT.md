@@ -52,6 +52,12 @@ No answer means no post — full stop:
   dashboard button, a Slack confirmation), pass a custom
   `approve: (platforms, asset) -> list of approved platforms`. A callback
   that returns a bool (the old per-platform signature) raises `TypeError`.
+- In chat, the agent can show an approval widget (checkbox per platform, all ticked by
+  default, Approve selected / Deny all) and pass the user's click through
+  `ApprovalRequest.approver()` (`distribution_agent/approval.py`; fail-safe, one use, tied to
+  the exact video and platform list; see `SETUP.md`). Editors can also approve on the QC Review
+  Desk dashboard (a combined QC and approvals view; only people with edit access can write
+  decisions, see `SETUP.md`), and decisions are listed there.
 - Development-time step. The final product may be automated, which would
   change or remove this gate; see `OPEN_QUESTIONS.md`.
 

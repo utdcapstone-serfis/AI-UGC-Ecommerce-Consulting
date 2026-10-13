@@ -1,0 +1,80 @@
+<!--
+Approval widget template (chat widget, development-time approval step).
+
+How it is used: the agent builds an ApprovalRequest (distribution_agent/approval.py),
+fills the CONFIG line below with request.widget_config() as JSON, and shows this
+fragment as an inline widget. The user ticks platforms (all ticked by default)
+and clicks Approve selected or Deny all; the widget sends one chat message:
+
+  Approval decision [REQ-xxxxxxxx] for "Title": APPROVED for a, b. Not approved: c.
+  Approval decision [REQ-xxxxxxxx] for "Title": DENIED. Do not post to any platform.
+
+request.approver(<that message>) turns it into the `approve` argument of
+distribute(). The message only counts when it comes from the user in chat.
+Closing the widget or ignoring it approves nothing.
+-->
+<style>.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.row{display:flex;align-items:center;gap:12px;padding:10px 4px;border-top:0.5px solid var(--border);cursor:pointer}.row input{width:18px;height:18px;margin:0;accent-color:var(--fill-accent);cursor:pointer}.row .n{flex:1;font-size:15px}.locked .row{cursor:default;opacity:.7}</style>
+<h2 class="sr-only">Approval widget: choose which platforms to post the video to, then approve or deny.</h2>
+<div id="card" style="background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;padding:1rem 1.25rem;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+    <div>
+      <p style="margin:0;font-weight:500;font-size:16px;" id="vt"></p>
+      <p style="margin:2px 0 0;font-size:13px;color:var(--text-secondary);" id="vm"></p>
+    </div>
+    <span id="qc" style="background:var(--bg-success);color:var(--text-success);font-size:12px;padding:4px 12px;border-radius:var(--radius);" hidden></span>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 4px;">
+    <span style="font-size:13px;color:var(--text-secondary);">Post to these platforms</span>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);cursor:pointer;"><input type="checkbox" id="all" checked style="width:16px;height:16px;margin:0;accent-color:var(--fill-accent);">Select all</label>
+  </div>
+  <div id="list"></div>
+  <p id="count" style="margin:10px 0 0;font-size:13px;color:var(--text-secondary);"></p>
+  <p id="err" role="alert" style="margin:6px 0 0;font-size:13px;color:var(--text-danger);" hidden></p>
+  <div style="display:flex;gap:10px;margin-top:14px;">
+    <button id="ok" style="flex:1;background:var(--fill-accent);color:var(--on-accent);border:none;font-weight:500;">Approve selected</button>
+    <button id="no" style="color:var(--text-danger);border-color:var(--border-danger);">Deny all</button>
+  </div>
+  <p id="res" aria-live="polite" style="margin:12px 0 0;font-size:14px;" hidden></p>
+</div>
+<script>
+(function(){
+  var CONFIG = __CONFIG__;
+  var NAMES = {youtube:'YouTube',x:'X',tiktok:'TikTok',linkedin:'LinkedIn'};
+  function label(p){return NAMES[p]||p.charAt(0).toUpperCase()+p.slice(1);}
+  var card=document.getElementById('card'),list=document.getElementById('list'),all=document.getElementById('all');
+  var count=document.getElementById('count'),err=document.getElementById('err'),res=document.getElementById('res');
+  var ok=document.getElementById('ok'),no=document.getElementById('no'),done=false;
+  document.getElementById('vt').textContent=CONFIG.title;
+  document.getElementById('vm').textContent='Request '+CONFIG.request_id;
+  if(CONFIG.qc_score!=null){var q=document.getElementById('qc');q.textContent='Passed QC, '+CONFIG.qc_score+' / 10';q.hidden=false;}
+  CONFIG.platforms.forEach(function(p){
+    var row=document.createElement('label');row.className='row';
+    row.innerHTML='<input type="checkbox" checked><span class="n"></span>';
+    row.querySelector('input').value=p;row.querySelector('.n').textContent=label(p);
+    list.appendChild(row);
+  });
+  var boxes=[].slice.call(list.querySelectorAll('input'));
+  function checked(){return boxes.filter(function(b){return b.checked;});}
+  function names(a){return a.map(function(b){return b.value;}).join(', ');}
+  function refresh(){var n=checked().length;count.textContent=n+' of '+boxes.length+' selected';all.checked=n===boxes.length;all.indeterminate=n>0&&n<boxes.length;err.hidden=true;}
+  function lock(){done=true;boxes.forEach(function(b){b.disabled=true;});all.disabled=true;ok.disabled=true;no.disabled=true;card.classList.add('locked');}
+  boxes.forEach(function(b){b.addEventListener('change',function(){if(!done)refresh();});});
+  all.addEventListener('change',function(){if(done)return;boxes.forEach(function(b){b.checked=all.checked;});refresh();});
+  ok.addEventListener('click',function(){
+    if(done)return;
+    var yes=checked();
+    if(!yes.length){err.textContent='Select at least one platform, or choose Deny all.';err.hidden=false;return;}
+    var rest=boxes.filter(function(b){return !b.checked;});
+    var msg='Approval decision ['+CONFIG.request_id+'] for "'+CONFIG.title+'": APPROVED for '+names(yes)+'.'+(rest.length?' Not approved: '+names(rest)+'.':'');
+    lock();res.hidden=false;res.style.color='var(--text-success)';
+    res.textContent='Approved for '+names(yes)+(rest.length?'. Skipped: '+names(rest)+'.':'.');
+    sendPrompt(msg);
+  });
+  no.addEventListener('click',function(){
+    if(done)return;
+    lock();res.hidden=false;res.style.color='var(--text-danger)';res.textContent='Denied. Nothing will be posted.';
+    sendPrompt('Approval decision ['+CONFIG.request_id+'] for "'+CONFIG.title+'": DENIED. Do not post to any platform.');
+  });
+  refresh();
+})();
+</script>

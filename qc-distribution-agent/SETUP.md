@@ -309,3 +309,23 @@ def approve_from_dashboard(platforms: list[str], asset) -> list[str]:
 
 records = distribute(asset, platforms=["youtube"], approve=approve_from_dashboard, clearance=clearance)
 ```
+
+### Approval widget (when the agent runs the pipeline in chat)
+
+Added 2026-10-13. Instead of the terminal prompt, the agent shows an inline widget with a checkbox per platform (all ticked by default) and two buttons, **Approve selected** and **Deny all**. Your click comes back to the agent as one chat message, and the code turns that message into the `approve` argument:
+
+```python
+from distribution_agent import ApprovalRequest, distribute
+
+request = ApprovalRequest.create("Spring Launch", asset, ["facebook", "youtube", "x"], qc_score=8.4)
+# the agent shows approval_widget.html with request.widget_config(), you click, and the message comes back:
+records = distribute(asset, request.platforms, clearance=clearance, approve=request.approver(decision_message))
+log = request.log_record(decision_message)   # for the dashboard's Distribution decisions panel
+```
+
+- **Fail-safe:** anything that can't be confirmed approves nothing. The message must carry this request's id (`REQ-xxxxxxxx`), the video must be the same file (SHA-256), the platform list must be the one shown, every approved platform must have been on it, and a decision works once. Unknown platform names, garbage, "DENIED", or an ignored or closed widget all mean no post.
+- The message only counts when it comes from you in chat. The agent must never write or paste one itself.
+- The template is `approval_widget.html`; it is a chat widget, not a page for an unattended pipeline. Development-time step, see `OPEN_QUESTIONS.md` question 1.
+- **Dashboard (combined view, 2026-10-13):** the QC Review Desk shows QC results and the approvals in one page. Its "Distribution approvals" panel lists requests waiting for a decision, with a checkbox per platform (all ticked by default) and **Approve selected** / **Deny all**, plus the three latest decisions. Flow: the agent stores `request.pending_record()` in the page's database (collection `approval_requests`); an editor approves on the page, which writes a decision document (collection `distribution_decisions`, id = request id, with who decided and when); the agent reads it and passes it to `request.approver_from_record(record)`, which applies the same checks as the chat widget plus: the record must name who decided, be less than 24 hours old, and approve only platforms on the request.
+- **Who can approve on the dashboard:** the page's database rules make both approval collections writable only by people with edit access to the artifact ("Can edit", Editor or Manager, or the owner), and readable by signed-in members of the organization. Anyone else, including visitors who only have the link, can't write them and the page shows no approve buttons for them (checked 2026-10-13 with the access-level test: editors write, a signed-in viewer reads but can't write, a view-only visitor can't read). Keep edit access limited to the people who should be able to approve posts: an editor can approve any pending request.
+- **Not yet exercised end to end:** the click-to-record flow on the live dashboard hasn't been run with a real request, and the page code can't run without the database, so it was only loaded for script errors. Decisions on a request older than 24 hours are ignored by the agent and the page.
