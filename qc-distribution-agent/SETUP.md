@@ -83,6 +83,8 @@ mode they are not needed.
 
 ## Threads
 
+**Dropped from the pipeline for now (2026-10-13).** The adapter and these steps are kept for future development. Nothing here needs doing unless Threads comes back.
+
 Walked through and verified on 2026-10-11 with a separate personal test account (see the experiment note in `CURRENT_OBSTACLES.md`). Do the steps in order and keep tokens and the app secret out of chat and screenshots.
 
 1. **The account.** Use a Threads account that is not banned, set to **public** (Meta's token generator only works for public accounts). A brand-new account is the highest-risk case for Meta's automated disabling, so use it normally for a few days first, and don't try to hide the setup across accounts or devices.

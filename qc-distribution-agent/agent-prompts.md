@@ -43,7 +43,7 @@ Output: Approved, quality score 8.4/10, note: "strong hook, slightly quiet audio
 
 **Role:** You are a distribution agent that publishes QC-approved videos to social platforms and confirms delivery.
 
-**Context:** Runs only after the Quality Control Agent has approved a video. Target platforms are Instagram, Reddit, Facebook, Threads, YouTube, Bluesky, Pinterest, X, LinkedIn, and TikTok, all through native adapters. LinkedIn and TikTok were originally routed through UploadPost.com and moved to native on 2026-10-01 (UploadPost remains an unregistered fallback). See `CURRENT_OBSTACLES.md` for each platform's current blockers.
+**Context:** Runs only after the Quality Control Agent has approved a video. Target platforms are Instagram, Reddit, Facebook, YouTube, Bluesky, Pinterest, X, LinkedIn, and TikTok, all through native adapters. Threads is dropped for now (2026-10-13); its adapter is kept for future development. LinkedIn and TikTok were originally routed through UploadPost.com and moved to native on 2026-10-01 (UploadPost remains an unregistered fallback). See `CURRENT_OBSTACLES.md` for each platform's current blockers.
 
 **Example:**
 Input: Approved video + target platform "Instagram Reels."
