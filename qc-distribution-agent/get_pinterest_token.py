@@ -31,7 +31,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 REDIRECT_URI = "http://localhost:8765/callback"
-SCOPES = "pins:write,boards:read"
+# Pinterest's OpenAPI spec lists these four for Create Pin (pins:read and pins:write
+# are also listed for Register media upload). Trim later if a test shows fewer work.
+# The *_secret scopes are needed to see and post to secret (private) boards.
+SCOPES = "boards:read,boards:write,pins:read,pins:write,boards:read_secret,boards:write_secret,pins:read_secret,pins:write_secret"
 
 
 def require(name: str) -> str:
