@@ -2,6 +2,23 @@
 
 Open risks and blockers that need a human decision or real-world action — not code bugs (those live in `QC_AGENT.md` / `DISTRIBUTION_AGENT.md` as "known gaps"). This is a running list; update it as items get resolved or new ones surface.
 
+## Demo videos needed: TikTok and Pinterest (summary, 2026-10-15)
+
+Both platforms want a screen recording of the real integration working before they will lift the current limit. Neither has been recorded. Details are in each platform's section below.
+
+| | TikTok | Pinterest |
+|---|---|---|
+| What it unlocks | Leaving Sandbox for public posting (app review) | Trial to Standard access; Trial cannot create pins in production at all (HTTP 403, 2026-10-14) |
+| Where it is submitted | Production tab, "Submit for review" | My apps, the **Upgrade** button on the app card (shows only when eligible) |
+| What it must show | The complete end-to-end flow working in Sandbox; real UI; the domain shown must match the submitted URL; every checked scope demonstrated. Format mp4/mov, up to 50 MB | The OAuth login and approval working, and a real API action (terminal recordings are accepted). A community thread reports a denial because the demo did not show the Pinterest integration. Pinterest publishes no length or size limit that we found |
+| Status | Not recorded (paused 2026-10-02). A placeholder "puppy" video sits in the Production field only to let the form save. A recording plan exists (below) | Not recorded. A script was drafted in chat 2026-10-14 and is not saved in the repo |
+| Known problem | The Direct Post UX requirements our headless pipeline does not meet (see the TikTok section); a demo of the app as it is would probably fail | A pin cannot be created yet, so the demo can show the login, the approval step and a read-only board lookup only; ask Pinterest what they accept for a video-pin app |
+
+Shared rules for both recordings:
+- **Never show a secret.** No `.env`, no client secret, no access or refresh token on screen (pause the recording or cut the moment a token prints), no other platforms' credentials.
+- **Show the app as it really works today, and say so.** The approval step is currently the chat widget or the QC Review Desk dashboard; email approval is not built (the review email only links to the dashboard). Do not demo a flow that does not exist, and keep the app description consistent with what the video shows. If the approval step changes later (see the open question on full automation in `OPEN_QUESTIONS.md`), update the description and ask the platform whether a new review is needed (not confirmed either way).
+- **Showing Claude and the approval step is acceptable as far as we found.** Neither platform's published rules that we read restrict it, and the human approval step is what Pinterest's "the end user must choose each Pin" guideline asks for. This is our reading, not a stated position from either platform.
+
 ## TikTok: switched from UploadPost to native, formal audit requires a working demo video
 
 Originally routed through UploadPost.com (see `DISTRIBUTION_AGENT.md`) to avoid TikTok's own Content Posting API audit. Switched to building it natively on 2026-10-01. Organization ("Serfis") and app ("Distribution Agent") created at developers.tiktok.com, with a real Terms of Service and Privacy Policy page published (`utdcapstone-serfis.github.io/serfis-site/terms/` and `.../privacy/`).

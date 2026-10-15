@@ -53,6 +53,13 @@ see `SETUP.md`; for what is currently blocked, see `CURRENT_OBSTACLES.md`.
 2. If it raises `QCNotPassed` or `FinalDraftChanged`, stop and go back to the
    step it names.
 
+### 4b. Send the review email (optional)
+1. With the clearance in hand, build `ApprovalRequest.create(...)`, store `request.pending_record()`
+   in the dashboard's `approval_requests` collection, and build `draft_review_email(...)` with the
+   dashboard link. Show the user the email and send it with `send_message()` only after they say
+   yes to that exact email.
+2. The email approves nothing. Approval happens on the dashboard (or the chat widget); see step 6.
+
 ### 5. Prepare the post
 1. Decide the platforms and the caption.
 2. Build the `VideoAsset`:

@@ -225,6 +225,20 @@ Standard SMTP — `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`,
 `SMTP_PASSWORD`, `SMTP_FROM_ADDRESS`. Any provider works (Gmail app
 password, SendGrid SMTP relay, etc.).
 
+### Review email after QC (with a link to approve on the dashboard)
+
+Added 2026-10-14. When a video passes QC and has its clearance, the agent can email a review request to a team or client address (for now the company's own): which video passed and its score, which platforms it would be posted to, the video attached (up to 20 MB, otherwise just the link), and a link to the dashboard's Distribution approvals panel. **The email approves nothing.** Replying to it or forwarding it has no effect; someone with edit access approves on the dashboard (see "Approval widget" above), and the agent only posts after that decision comes back. Approving by replying to the email is not built (it needs a mailbox the pipeline can read and a one-time code; see `OPEN_QUESTIONS.md`).
+
+```python
+from distribution_agent.notifier import draft_review_email, send_message
+
+message = draft_review_email(request, asset, to_email="team@example.com", dashboard_url=os.environ["DASHBOARD_URL"])
+send_message(message)   # asks "Send ... to ...? [y/N]" first; declines without a terminal
+```
+
+- **You fill in these `.env` settings yourself** (never paste them into chat): `SMTP_HOST`, `SMTP_PORT` (587), `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_ADDRESS`, plus `DASHBOARD_URL` (the dashboard's https link, not a secret). For a Google mailbox (including Google Workspace): host `smtp.gmail.com`, port `587`, username and from address the full mailbox address, and for the password an **app password** (it needs 2-Step Verification, and a Workspace admin can block app passwords; use a dedicated address if you can). For Microsoft 365: host `smtp.office365.com`, port `587`, and SMTP sign-in may be disabled by the admin.
+- **Sending is an outward action:** `send_message()` only sends if its `confirm` step says yes, touches no credentials or network if it declines, and raises before connecting if a setting is missing. The agent sends only after you say yes in chat to that exact email.
+
 ### Summary email draft (video attached)
 
 After `distribute()`, build one summary email listing every platform the video
