@@ -13,6 +13,7 @@ import { buildTikTokPayload } from "../api/tiktok.ts";
 import { buildXPayload } from "../api/x.ts";
 import { buildPinterestPayload } from "../api/pinterest.ts";
 import { buildSnapchatPayload } from "../api/snapchat.ts";
+import { buildLinkedInPayload } from "../api/linkedin.ts";
 import { buildBlueskyPayload } from "../api/bluesky.ts";
 
 const WARN_DAYS = 14;
@@ -24,6 +25,7 @@ const LABEL: Record<string, string> = {
   twitter: "Twitter / X",
   pinterest: "Pinterest",
   snapchat: "Snapchat",
+  linkedin: "LinkedIn",
   bluesky: "Bluesky",
 };
 const FIX: Record<string, string> = {
@@ -34,6 +36,7 @@ const FIX: Record<string, string> = {
   twitter: 'Run "Set X Account.bat"; for 401/403 regenerate X_BEARER_TOKEN; for 402 add credits',
   pinterest: 'Run "Connect Pinterest.bat"',
   snapchat: 'Run "Connect Snapchat.bat" (also check SNAPCHAT_AD_ACCOUNT_ID)',
+  linkedin: 'Run "Connect LinkedIn.bat" (also check LINKEDIN_ORGANIZATION_ID)',
   bluesky: "Set BLUESKY_HANDLE in .env.local",
 };
 
@@ -53,6 +56,7 @@ const results = (await Promise.all([
   buildXPayload(today),
   buildPinterestPayload(today),
   buildSnapchatPayload(today),
+  buildLinkedInPayload(today),
   buildBlueskyPayload(today),
 ])) as Result[];
 
@@ -79,6 +83,6 @@ for (const r of results) {
     }
   }
 }
-console.log(`\nLinkedIn, Threads and Reddit have no API integration yet (demo data).`);
+console.log(`\nThreads and Reddit have no API integration yet (demo data).`);
 console.log(problems === 0 ? "All keys OK." : `${problems} need attention.`);
 process.exit(0);

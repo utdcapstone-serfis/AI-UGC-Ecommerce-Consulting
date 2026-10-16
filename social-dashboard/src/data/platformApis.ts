@@ -148,6 +148,22 @@ export const PLATFORM_APIS: Partial<Record<PlatformName, PlatformApiProfile>> = 
       "Copy the SNAPCHAT_* values from .env.local into Vercel and redeploy, then press Reload.",
     ],
   },
+  LinkedIn: {
+    api: "LinkedIn Community Management API",
+    window: "daily",
+    windowLabel: "Daily Company Page post stats",
+    views: "Post impressions",
+    retention: null,
+    likes: "Likes ÷ impressions",
+    share: "Shares ÷ impressions",
+    envVars: ["LINKEDIN_REFRESH_TOKEN", "LINKEDIN_CLIENT_ID", "LINKEDIN_CLIENT_SECRET", "LINKEDIN_ORGANIZATION_ID"],
+    keyLifetime: "Refresh token: 365 days, not rotated",
+    fix: [
+      "Not connected yet, or expired: fill in LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET, then double-click 'Connect LinkedIn.bat' (npm run linkedin:auth) and approve access as an administrator of the Serfis Company Page.",
+      "403 errors: the app needs the Community Management API product approved, and the authorizing member must be a page ADMINISTRATOR.",
+      "Copy the LINKEDIN_* values (including LINKEDIN_REFRESH_TOKEN_EXPIRES_AT) from .env.local into Vercel and redeploy, then press Reload.",
+    ],
+  },
   Bluesky: {
     api: "Bluesky public AppView",
     window: "lifetime",
