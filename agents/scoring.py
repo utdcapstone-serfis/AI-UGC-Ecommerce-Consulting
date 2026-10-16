@@ -2,6 +2,7 @@
 import re
 
 import config
+from agents import icp
 from agents import llm
 from models import Lead
 
@@ -22,6 +23,12 @@ specific facts given, not generic praise."""
 
 class ScoringAgent:
     def score(self, lead: Lead) -> Lead:
+        rating = (lead.serfis_fit or "").strip().lower()
+        if rating in icp.FIT_SCORE:
+            # The tracker's (or classifier's) fit rating decides the score.
+            lead.icp_fit_score = icp.FIT_SCORE[rating]
+            lead.why_it_fits = lead.why_it_fits or f"Rated '{lead.serfis_fit}' fit."
+            return lead
         if config.HAS_CLAUDE:
             self._score_with_claude(lead)
         else:

@@ -32,11 +32,19 @@
     <section class="panel">
       <h2>Company</h2>
       <dl>
+        <dt>Priority / Fit</dt><dd>{{ lead.priority or "-" }}{% if lead.serfis_fit %} &middot; {{ lead.serfis_fit }}{% endif %}</dd>
+        <dt>Category</dt><dd>{{ lead.category or "-" }}</dd>
+        <dt>Market</dt><dd>{{ lead.market or "-" }}</dd>
         <dt>Industry</dt><dd>{{ lead.industry or "-" }}</dd>
         <dt>Company Size</dt><dd>{{ lead.company_size or "-" }}</dd>
         <dt>Location</dt><dd>{{ lead.location or "-" }}</dd>
         <dt>What They Sell</dt><dd>{{ lead.what_they_sell or "-" }}</dd>
         <dt>Funding Notes</dt><dd>{{ lead.funding_notes or "-" }}</dd>
+        {% if lead.yc_batch or lead.yc_profile_url %}
+        <dt>Y Combinator</dt>
+        <dd>{{ lead.yc_batch or "-" }}{% if lead.yc_profile_url %} &middot; <a href="{{ lead.yc_profile_url }}" target="_blank" rel="noopener">profile</a>{% endif %}</dd>
+        {% endif %}
+        {% if lead.founders %}<dt>Founders</dt><dd class="preline">{{ lead.founders }}</dd>{% endif %}
       </dl>
     </section>
 
@@ -45,6 +53,8 @@
       <dl>
         <dt>ICP Fit Score (1-10)</dt><dd>{{ lead.icp_fit_score if lead.icp_fit_score is not none else "-" }}</dd>
         <dt>Why It Fits</dt><dd>{{ lead.why_it_fits or "-" }}</dd>
+        <dt>Suggested Ad / Content Angle</dt><dd>{{ lead.content_angle or "-" }}</dd>
+        <dt>Best Ad Type</dt><dd>{{ lead.best_ad_type or "-" }}</dd>
       </dl>
     </section>
 
@@ -53,7 +63,10 @@
       <dl>
         <dt>Contact Name</dt><dd>{{ lead.contact_name or "-" }}</dd>
         <dt>Contact Title</dt><dd>{{ lead.contact_title or "-" }}</dd>
-        <dt>Contact Email</dt><dd>{{ lead.contact_email or "-" }}</dd>
+        <dt>Contact Email</dt><dd>{{ lead.contact_email or "-" }}{% if lead.email_status == "guessed" %} <span class="hint">(guessed from founder name &mdash; unverified, will not send until confirmed)</span>{% elif lead.email_status == "confirmed" %} <span class="hint">(confirmed)</span>{% elif lead.email_status == "found" %} <span class="hint">(found by Apify)</span>
+          {% elif lead.email_status == "published" %} <span class="hint">(published on their website)</span>
+          {% elif lead.email_status == "linkedin" %} <span class="hint">(listed on their LinkedIn profile)</span>{% endif %}
+          {% if lead.contact_check %}<br><span class="hint">Verified: {{ lead.contact_check }}</span>{% endif %}</dd>
         <dt>Contact/Profile URL</dt>
         <dd>
           {% if lead.contact_profile_url and lead.contact_profile_url.startswith('http') %}
@@ -111,15 +124,44 @@
     {% endif %}
   </section>
 
+  <section class="panel guard-panel {% if blocking %}guard-flag{% endif %}">
+    <h2>Guardrail Checks</h2>
+    {% if sending_state %}
+    <p class="pause-banner"><strong>Sending is paused.</strong> {{ sending_state.split('  ', 1)[-1] }}</p>
+    {% endif %}
+    {% set labels = {'draft': 'Draft email', 'region': 'Location'} %}
+    {% for cat, issues in checks.items() %}
+    <div class="guard-row">
+      <span class="guard-name">{{ labels[cat] }}</span>
+      {% if not issues %}
+        <span class="badge badge-check-ok">Clear</span>
+      {% else %}
+        {% if cat in acknowledged %}<span class="badge badge-check-reviewed">Reviewed</span>
+        {% else %}<span class="badge badge-check-flag">&#9888; Needs review</span>{% endif %}
+        <ul class="guard-issues">{% for i in issues %}<li>{{ i }}</li>{% endfor %}</ul>
+      {% endif %}
+    </div>
+    {% endfor %}
+    <p class="actions-note">Also enforced when sending: one email per company every 90 days, and an automatic pause if emails bounce or anyone complains.</p>
+  </section>
+
   <section class="panel actions-panel">
     <h2>Review This Outreach</h2>
     <p class="actions-note">
       Approving or rejecting only updates this record in the database - it does not send an email or text.
     </p>
     <div class="action-row">
+      {% if blocking %}
+      <form method="post" action="{{ url_for('approve_lead', lead_id=lead.id) }}"
+            onsubmit="return confirm('This lead has guardrail flags (see Guardrail Checks above). Approve it anyway?');">
+        <input type="hidden" name="override" value="1">
+        <button type="submit" class="btn btn-approve btn-warn">Approve anyway</button>
+      </form>
+      {% else %}
       <form method="post" action="{{ url_for('approve_lead', lead_id=lead.id) }}">
         <button type="submit" class="btn btn-approve">Approve Outreach</button>
       </form>
+      {% endif %}
       <form method="post" action="{{ url_for('reject_lead', lead_id=lead.id) }}">
         <button type="submit" class="btn btn-reject">Reject Outreach</button>
       </form>

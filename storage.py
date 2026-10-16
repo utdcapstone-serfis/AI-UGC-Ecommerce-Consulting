@@ -1,7 +1,7 @@
 """SQLite persistence for leads. One table, simple CRUD, no ORM needed at MVP scale."""
 import sqlite3
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Iterator, Optional
 
 import config
@@ -87,15 +87,24 @@ MESSAGE_DIRECTIONS = ["inbound", "outbound"]
 _MIGRATIONS = [
     ("research_sources", "TEXT", "''"),
     ("lead_status", "TEXT", "'new'"),
+    ("priority", "TEXT", "''"), ("category", "TEXT", "''"), ("market", "TEXT", "''"),
+    ("best_ad_type", "TEXT", "''"), ("serfis_fit", "TEXT", "''"), ("content_angle", "TEXT", "''"),
+    ("yc_profile_url", "TEXT", "''"), ("yc_batch", "TEXT", "''"), ("founders", "TEXT", "''"),
+    ("email_status", "TEXT", "''"),
+    ("overrides", "TEXT", "''"),
+    ("contact_check", "TEXT", "''"),
+    ("decided_at", "TEXT", "''"),
 ]
 
 _FIELDS = [
     "company_name", "website", "industry", "company_size", "location",
     "what_they_sell", "funding_notes", "icp_fit_score", "why_it_fits",
-    "contact_name", "contact_title", "contact_email", "contact_profile_url",
+    "contact_name", "contact_title", "contact_email", "email_status", "contact_profile_url", "contact_check",
+    "priority", "category", "market", "best_ad_type", "serfis_fit", "content_angle",
+    "yc_profile_url", "yc_batch", "founders", "overrides",
     "research_notes", "research_sources", "outreach_angle",
     "draft_email_subject", "draft_email_body",
-    "approval_status", "lead_status", "source", "created_at", "updated_at",
+    "approval_status", "decided_at", "lead_status", "source", "created_at", "updated_at",
 ]
 
 SUPPRESSIONS_SCHEMA = """
@@ -114,6 +123,32 @@ CREATE TABLE IF NOT EXISTS sent_log (
     subject TEXT,
     sent_at TEXT NOT NULL,
     sent_on TEXT NOT NULL
+)
+"""
+
+# Shared memory of every paid contact lookup. The contact finder writes it,
+# discovery reads it: never pay twice for the same company, and rank new
+# candidates by how often similar ones (same batch / size / market) yielded a
+# verified decision-maker email.
+LOOKUP_HISTORY_SCHEMA = """
+CREATE TABLE IF NOT EXISTS lookup_history (
+    domain TEXT PRIMARY KEY,
+    company TEXT,
+    outcome TEXT NOT NULL,          -- hit | miss | unverified
+    batch TEXT,
+    size_band TEXT,
+    market TEXT,
+    checked_at TEXT NOT NULL
+)
+"""
+
+RISK_EVENTS_SCHEMA = """
+CREATE TABLE IF NOT EXISTS risk_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    address TEXT NOT NULL,
+    kind TEXT NOT NULL,            -- bounce | complaint
+    reason TEXT,
+    logged_at TEXT NOT NULL
 )
 """
 
@@ -140,6 +175,8 @@ def init_db() -> None:
         conn.execute(MESSAGES_SCHEMA)
         conn.execute(SUPPRESSIONS_SCHEMA)
         conn.execute(SENT_LOG_SCHEMA)
+        conn.execute(LOOKUP_HISTORY_SCHEMA)
+        conn.execute(RISK_EVENTS_SCHEMA)
         existing_cols = {row["name"] for row in conn.execute("PRAGMA table_info(leads)")}
         for col_name, col_type, default in _MIGRATIONS:
             if col_name not in existing_cols:
@@ -296,10 +333,11 @@ def get_summary_stats() -> dict:
 
 def set_approval_status(lead_id: int, status: str) -> None:
     assert status in APPROVAL_STATUSES, f"invalid approval_status: {status}"
+    now = datetime.now(timezone.utc).isoformat()
     with get_conn() as conn:
         conn.execute(
-            "UPDATE leads SET approval_status=?, updated_at=? WHERE id=?",
-            (status, datetime.now(timezone.utc).isoformat(), lead_id),
+            "UPDATE leads SET approval_status=?, decided_at=?, updated_at=? WHERE id=?",
+            (status, "" if status == "pending_review" else now, now, lead_id),
         )
 
 
@@ -433,3 +471,99 @@ def count_sent_today() -> int:
             "SELECT COUNT(*) AS n FROM sent_log WHERE sent_on=?", (date.today().isoformat(),)
         ).fetchone()
     return row["n"]
+
+
+# ---- lookup history (contact finder -> discovery feedback) ----
+
+def domain_of(url: str) -> str:
+    import re
+    return re.sub(r"^https?://(www\.)?", "", (url or "").strip().lower()).split("/")[0]
+
+
+def record_lookup(website: str, company: str, outcome: str, batch: str = "",
+                  size_band: str = "", market: str = "") -> None:
+    domain = domain_of(website)
+    if not domain:
+        return
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT OR REPLACE INTO lookup_history (domain, company, outcome, batch, size_band, market, checked_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (domain, company, outcome, batch, size_band, market, datetime.now(timezone.utc).isoformat()),
+        )
+
+
+def looked_up_domains() -> set:
+    with get_conn() as conn:
+        return {r["domain"] for r in conn.execute("SELECT domain FROM lookup_history")}
+
+
+def lookup_stats() -> list[dict]:
+    """[{batch, size_band, market, outcome}] for every past lookup."""
+    with get_conn() as conn:
+        return [dict(r) for r in conn.execute(
+            "SELECT batch, size_band, market, outcome FROM lookup_history")]
+
+
+# ---- sending guardrails (agents/guardrails.py) ----
+
+def set_overrides(lead_id: int, categories: str) -> None:
+    with get_conn() as conn:
+        conn.execute("UPDATE leads SET overrides=?, updated_at=? WHERE id=?",
+                     (categories, datetime.now(timezone.utc).isoformat(), lead_id))
+
+
+def log_risk_event(address: str, kind: str, reason: str = "") -> None:
+    with get_conn() as conn:
+        conn.execute("INSERT INTO risk_events (address, kind, reason, logged_at) VALUES (?, ?, ?, ?)",
+                     (normalize_email(address), kind, reason, datetime.now(timezone.utc).isoformat()))
+
+
+def risk_event_addresses(kind: str) -> set:
+    with get_conn() as conn:
+        return {r["address"] for r in conn.execute("SELECT address FROM risk_events WHERE kind=?", (kind,))}
+
+
+def count_risk_events_since(kind: str, days: int) -> int:
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    with get_conn() as conn:
+        return conn.execute("SELECT COUNT(*) AS n FROM risk_events WHERE kind=? AND logged_at>=?", (kind, cutoff)).fetchone()["n"]
+
+
+def count_sends_since(days: int) -> int:
+    cutoff = (datetime.now() - timedelta(days=days)).isoformat()
+    with get_conn() as conn:
+        return conn.execute("SELECT COUNT(*) AS n FROM sent_log WHERE sent_at>=?", (cutoff,)).fetchone()["n"]
+
+
+def recent_sends(days: int) -> list:
+    """Real sends in the last `days` days, with the lead's website for company matching."""
+    cutoff = (datetime.now() - timedelta(days=days)).isoformat()
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT s.lead_id, s.to_email, s.sent_at, l.website FROM sent_log s LEFT JOIN leads l ON l.id = s.lead_id WHERE s.sent_at>=?",
+            (cutoff,)).fetchall()
+    return [dict(r) for r in rows]
+
+
+# ---- dashboard panel helpers ----
+
+def get_sends_for_lead(lead_id: int) -> list:
+    with get_conn() as conn:
+        return [dict(r) for r in conn.execute(
+            "SELECT to_email, subject, sent_at FROM sent_log WHERE lead_id=? ORDER BY sent_at", (lead_id,))]
+
+
+def get_lookup_row(website: str) -> Optional[dict]:
+    domain = domain_of(website)
+    if not domain:
+        return None
+    with get_conn() as conn:
+        row = conn.execute("SELECT * FROM lookup_history WHERE domain=?", (domain,)).fetchone()
+    return dict(row) if row else None
+
+
+def get_risk_events_for(address: str) -> list:
+    with get_conn() as conn:
+        return [dict(r) for r in conn.execute(
+            "SELECT kind, reason, logged_at FROM risk_events WHERE address=? ORDER BY logged_at", (normalize_email(address),))]
