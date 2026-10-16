@@ -265,6 +265,14 @@ Kept below for reference — the pricing research that drove the decision. Initi
 
 **Decision status: resolved, native.** See above.
 
+## Instagram: posting needs a public video link (checked 2026-10-16)
+
+**Status:** connected (token checks passed 2026-10-11, auto-refresh verified), but **no video has been posted**, and posting is not possible from a local file with the current login type.
+- **Why a public link:** `InstagramAdapter` publishes a Reel by giving Instagram a `video_url` that Meta's servers download; `VideoAsset.public_url` must be set (the adapter raises without it). Our files are only on a local drive and on the QC Review Desk dashboard, which is organization-only, so Instagram cannot fetch either.
+- **Direct upload tried 2026-10-16, did not work.** Meta documents a resumable upload (`upload_type=resumable`, file sent to `rupload.facebook.com`) that would need no public link, but it appears to be offered only to apps using Facebook Login for Business. With our Instagram Login token on `graph.instagram.com`, the first call (`POST /{ig-id}/media` with `media_type=REELS` and `upload_type=resumable`, no `video_url`) failed: HTTP 400, "The parameter video_url is required" (code 100). No container was created and nothing was posted. Only that one host was tried.
+- **Test post plan:** post `woof-rainy-puppy-draft 1.mp4` as a public Reel to the account behind `IG_BUSINESS_ACCOUNT_ID`, caption "Connection test - please ignore.", by direct adapter call with the QC clearance skipped by the user's choice, using a public link the user provides. The video has to stay reachable at that link until Instagram finishes processing (a few minutes). Not done yet: no link yet.
+- **For next time (user note 2026-10-16): switch the app's login type to Facebook Login for Business** (the Instagram account linked to a Facebook Page, tokens from Facebook, calls on `graph.facebook.com`), which may allow direct upload of a local file and so keep videos private. Unverified for our app, and it means redoing the Instagram setup and rewriting `InstagramAdapter`, so only worth it if the public-link step proves a nuisance in the real pipeline (the pipeline would otherwise need somewhere to host each approved video temporarily).
+
 ## Threads: serfisai2026 permanently banned — not a config issue
 
 **DROPPED FOR NOW, adapter kept (decided 2026-10-13).** Status update from the user: Threads is out of the pipeline for now. `ThreadsAdapter` and its setup steps (`SETUP.md`) stay in the repo for future development. The reason was not recorded here.
