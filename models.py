@@ -18,10 +18,25 @@ class Lead:
     icp_fit_score: Optional[int] = None
     why_it_fits: str = ""
 
+    # Prospect-tracker fields (from data/target_companies.csv, YC profiles, or
+    # the rule-based classifier in agents/icp.py)
+    priority: str = ""          # P1 | P2 | P3
+    category: str = ""
+    market: str = ""            # B2C | B2C / Prosumer | B2B | B2B Infrastructure
+    best_ad_type: str = ""
+    serfis_fit: str = ""        # Very High | High | Medium-High | Medium | Strategic Comparable
+    content_angle: str = ""     # suggested ad / content angle
+    yc_profile_url: str = ""
+    yc_batch: str = ""
+    founders: str = ""          # "Name (title)" per line
+    overrides: str = ""         # guardrail categories a person acknowledged at approval ("draft,region")
+
     contact_name: str = ""
     contact_title: str = ""
     contact_email: str = ""
+    email_status: str = ""      # "found" (published/provider), "guessed" (pattern from founder name), "confirmed" (human checked)
     contact_profile_url: str = ""
+    contact_check: str = ""     # how the contact was verified (shown on the lead page)
 
     research_notes: str = ""
     research_sources: str = ""
@@ -30,6 +45,7 @@ class Lead:
     draft_email_body: str = ""
 
     approval_status: str = "pending_review"  # pending_review | approved | rejected
+    decided_at: str = ""        # when a person approved or rejected it (empty while pending)
     lead_status: str = "new"  # new | contacted | qualified | disqualified
     source: str = ""
 
@@ -72,7 +88,7 @@ class Lead:
         """
         text = (self.what_they_sell or "").strip()
         text = re.sub(r"^(sells|what they sell)\s*:\s*", "", text, flags=re.I)
-        text = re.split(r"[,;:|\u2013\u2014]| - | sold | with | that | which |\. ",
+        text = re.split(r"[,;:|\u2013\u2014]| - | sold | with | that | which | including | connected to |\. ",
                         text, maxsplit=1)[0].strip().rstrip(".")
         low = text.lower()
         junk = ("skip to", "cookie", "install", "sign in", "log in", "get started",
@@ -82,6 +98,9 @@ class Lead:
             return ""
         if sum(w[:1].isupper() for w in text.split()) >= 3:  # Title Case heading
             return text.lower()
+        first = text.split()[0] if text.split() else ""
+        if first[:2].isupper() or first.lower() in ("ai", "ios", "api", "b2b", "b2c"):   # keep AI, iOS, API...
+            return text
         return text[:1].lower() + text[1:]
 
     def print_block(self) -> str:
@@ -95,7 +114,7 @@ class Lead:
             f"Why It Fits: {self.why_it_fits}\n"
             f"Contact Name: {self.contact_name}\n"
             f"Contact Title: {self.contact_title}\n"
-            f"Contact Email: {self.contact_email}\n"
+            f"Contact Email: {self.contact_email}" + (f" ({self.email_status})" if self.email_status else "") + "\n"
             f"Contact/Profile URL: {self.contact_profile_url}\n"
             f"Research Notes: {self.research_notes}\n"
             f"Research Sources: {self.research_sources}\n"

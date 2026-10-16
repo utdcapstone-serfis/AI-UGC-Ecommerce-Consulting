@@ -1,7 +1,7 @@
 """Step 2: collect basic company info - industry, size, location, what they sell."""
 import config
 from agents import llm
-from agents import classify
+from agents import classify, icp, yc
 from agents.scraper import fetch_company_text
 from models import Lead
 
@@ -14,14 +14,35 @@ rather than guessing. Keep every field short (a phrase, not a paragraph)."""
 class EnrichmentAgent:
     def enrich(self, lead: Lead, funding_hint: str = "") -> Lead:
         site_text = fetch_company_text(lead.website)
+        self.last_site_text = site_text
         lead.funding_notes = funding_hint
+        self._apply_yc_profile(lead)
 
         if site_text and config.HAS_CLAUDE:
             self._enrich_with_claude(lead, site_text)
         elif site_text:
             self._enrich_heuristic(lead, site_text)
         # else: leave fields for manual entry - we don't fabricate company facts.
+
+        icp.classify(lead, site_text)       # market / fit / ad type for companies not on the tracker
         return lead
+
+    def _apply_yc_profile(self, lead: Lead) -> None:
+        """Team size, location, batch and founders from the company's YC profile -
+        facts that are stated outright, so they beat anything inferred from a website."""
+        profile = yc.fetch_profile(lead.yc_profile_url) if lead.yc_profile_url else None
+        if not profile:
+            return
+        lead.website = lead.website or profile["website"]
+        if profile["team_size"]:
+            lead.company_size = classify.band_for(int(profile["team_size"]))
+        lead.location = lead.location or profile["location"]
+        lead.yc_batch = profile["batch"]
+        lead.what_they_sell = lead.what_they_sell or profile["one_liner"]
+        lead.industry = lead.industry or lead.category or ", ".join(profile["tags"][:3])
+        lead.founders = "\n".join(
+            f"{f['name']} ({f['title']})" if f["title"] else f["name"] for f in profile["founders"]
+        )
 
     def _enrich_with_claude(self, lead: Lead, site_text: str) -> None:
         user = (

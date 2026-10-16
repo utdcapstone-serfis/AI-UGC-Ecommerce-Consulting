@@ -1,0 +1,331 @@
+{# Everything we know about one company, shown at the very top of the dashboard. Used by dashboard.html and /panel/<id>. #}
+{% set parts = lead.company_name.split() %}
+{% set initials = (parts[0][0] ~ (parts[1][0] if parts|length > 1 and parts[1][0].isalnum() else ''))|upper %}
+{% set score = lead.icp_fit_score %}
+{% set ring_class = 'high' if (score is not none and score >= 7) else ('mid' if (score is not none and score >= 4) else 'low') %}
+<article class="lead-panel" data-lead-id="{{ lead.id }}">
+
+  {# ======== slim approval strip: always visible while you scroll the record ======== #}
+  <div class="strip strip-{{ lead.approval_status }}">
+    <span class="strip-dot {{ 'pulse' if lead.approval_status == 'pending_review' else '' }}"></span>
+    <span class="strip-name">{{ lead.company_name }}</span>
+    <span class="strip-state">
+      {% if lead.approval_status == 'pending_review' %}AWAITING YOUR APPROVAL{% elif lead.approval_status == 'approved' %}APPROVED BY YOU{% else %}REJECTED BY YOU{% endif %}
+    </span>
+    <span class="strip-actions">
+      {% if blocking %}
+      <form method="post" action="{{ url_for('approve_lead', lead_id=lead.id) }}" onsubmit="return confirm('This lead has guardrail flags (see Guardrail checks). Approve it anyway?');">
+        <input type="hidden" name="back" value="dashboard"><input type="hidden" name="override" value="1">
+        <button type="submit" class="btn btn-approve btn-warn btn-sm">Approve anyway</button></form>
+      {% else %}
+      <form method="post" action="{{ url_for('approve_lead', lead_id=lead.id) }}"><input type="hidden" name="back" value="dashboard">
+        <button type="submit" class="btn btn-approve btn-sm">Approve</button></form>
+      {% endif %}
+      <form method="post" action="{{ url_for('reject_lead', lead_id=lead.id) }}"><input type="hidden" name="back" value="dashboard">
+        <button type="submit" class="btn btn-reject btn-sm">Reject</button></form>
+      <button type="button" class="strip-close" data-close-panel aria-label="Close company record">&times;</button>
+    </span>
+  </div>
+
+  {# ======== hero ======== #}
+  <header class="hero">
+    <div class="avatar" style="--h: {{ (lead.id * 47) % 360 }}">{{ initials }}</div>
+    <div class="hero-main">
+      <div class="lp-eyebrow">Company record #{{ lead.id }}{% if lead.source %} &middot; source: {{ lead.source }}{% endif %}</div>
+      <h2 class="lp-title">{{ lead.company_name }}</h2>
+      <div class="chips">
+        {% if lead.priority %}<span class="chip chip-priority">{{ lead.priority }}</span>{% endif %}
+        {% if lead.market %}<span class="chip">{{ lead.market }}</span>{% endif %}
+        {% if lead.company_size %}<span class="chip">&#128101; {{ lead.company_size }} people</span>{% endif %}
+        {% if lead.location %}<span class="chip">&#128205; {{ lead.location }}</span>{% endif %}
+        {% if lead.yc_batch %}<span class="chip chip-yc">YC {{ lead.yc_batch }}</span>{% endif %}
+        {% if lead.category %}<span class="chip">{{ lead.category }}</span>{% endif %}
+        <span class="badge badge-status-{{ lead.lead_status }}">{{ lead_status_labels.get(lead.lead_status, lead.lead_status) }}</span>
+      </div>
+      <div class="hero-links">
+        {% if lead.website %}<a class="link-btn" href="{{ lead.website }}" target="_blank" rel="noopener">&#8599; {{ lead.website|replace('https://','')|replace('http://','')|trim('/') }}</a>{% endif %}
+        {% if lead.yc_profile_url %}<a class="link-btn" href="{{ lead.yc_profile_url }}" target="_blank" rel="noopener">&#8599; YC profile</a>{% endif %}
+        {% if lead.contact_profile_url and lead.contact_profile_url.startswith('http') %}<a class="link-btn" href="{{ lead.contact_profile_url }}" target="_blank" rel="noopener">&#8599; {{ lead.contact_name or 'Contact' }} on LinkedIn</a>{% endif %}
+      </div>
+    </div>
+    <div class="ring-wrap">
+      <div class="ring ring-{{ ring_class }}" style="--p: {{ (score or 0) * 10 }}"></div>
+      <span class="ring-num">{{ score if score is not none else '-' }}</span><span class="ring-of">/10</span>
+      <div class="ring-label">ICP fit</div>
+    </div>
+  </header>
+
+  {% if lead.source == 'demo_sample' %}
+  <div class="sample-banner"><strong>Sample data.</strong> A fictional lead used to demonstrate the converted-lead view. Not a real prospect.</div>
+  {% endif %}
+  {% if sending_state %}<p class="pause-banner"><strong>Sending is paused.</strong> {{ sending_state.split('  ', 1)[-1] }}</p>{% endif %}
+
+  {# ======== MANUAL APPROVAL ======== #}
+  <section class="approval approval-{{ lead.approval_status }}">
+    <div class="approval-top">
+      <div class="approval-icon">{% if lead.approval_status == 'pending_review' %}&#9203;{% elif lead.approval_status == 'approved' %}&#10003;{% else %}&times;{% endif %}</div>
+      <div class="approval-text">
+        <div class="approval-kicker">{{ 'Manual approval required' if lead.approval_status == 'pending_review' else 'Manual decision recorded' }}</div>
+        <div class="approval-headline">
+          {% if lead.approval_status == 'pending_review' %}AWAITING YOUR APPROVAL{% elif lead.approval_status == 'approved' %}APPROVED BY YOU{% else %}REJECTED BY YOU{% endif %}
+        </div>
+        <div class="approval-sub">
+          {% if lead.approval_status == 'pending_review' %}Nothing is emailed until you approve this lead <em>and</em> run the send step.
+          {% elif lead.approval_status == 'approved' %}{{ (lead.decided_at or '')[:16].replace('T', ' ') or 'Time not recorded' }} UTC.
+            {% if sends %}Sent {{ sends[-1].sent_at[:16].replace('T', ' ') }} to {{ sends[-1].to_email }}.{% else %}Not sent yet: run <code>python main.py send-approved</code>.{% endif %}
+          {% else %}{{ (lead.decided_at or '')[:16].replace('T', ' ') }} UTC. This lead will not be emailed.{% endif %}
+        </div>
+      </div>
+      <div class="approval-actions">
+        {% if blocking %}
+        <form method="post" action="{{ url_for('approve_lead', lead_id=lead.id) }}" onsubmit="return confirm('This lead has guardrail flags (see Guardrail checks below). Approve it anyway?');">
+          <input type="hidden" name="back" value="dashboard"><input type="hidden" name="override" value="1">
+          <button type="submit" class="btn btn-approve btn-warn">Approve anyway</button></form>
+        {% else %}
+        <form method="post" action="{{ url_for('approve_lead', lead_id=lead.id) }}"><input type="hidden" name="back" value="dashboard">
+          <button type="submit" class="btn btn-approve">Approve outreach</button></form>
+        {% endif %}
+        <form method="post" action="{{ url_for('reject_lead', lead_id=lead.id) }}"><input type="hidden" name="back" value="dashboard">
+          <button type="submit" class="btn btn-reject">Reject outreach</button></form>
+      </div>
+    </div>
+
+    <ol class="stepper" aria-label="Path from discovery to sent">
+      {% for st in steps %}
+      <li class="step step-{{ st.state }}{% if st.manual %} step-manual{% endif %}">
+        <span class="step-mark">{% if st.state == 'done' %}&#10003;{% elif st.state == 'fail' %}!{% elif st.state == 'rejected' %}&times;{% elif st.state == 'current' %}&#9679;{% else %}&middot;{% endif %}</span>
+        <span class="step-label">{{ st.label }}</span>
+        <span class="step-note">{{ st.note }}</span>
+      </li>
+      {% endfor %}
+    </ol>
+
+    <div class="readiness-head">
+      <strong>Readiness for approval</strong>
+      <span class="readiness-count {{ 'all-ok' if ready_count == readiness|length else 'some-open' }}">{{ ready_count }} of {{ readiness|length }} checks passed</span>
+    </div>
+    <div class="check-tiles">
+      {% for r in readiness %}
+      <div class="check-tile {{ 'ok' if r.ok else 'open' }}">
+        <div class="check-icon">{{ '&#10003;'|safe if r.ok else '&#9888;'|safe }}</div>
+        <div class="check-title">{{ r.label }}</div>
+        <div class="check-detail">{{ r.detail or ('passed' if r.ok else 'needs attention') }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  {# ======== guardrails detail ======== #}
+  <section class="lp-section guard-panel {% if blocking %}guard-flag{% endif %}">
+    <h3><span class="h-ico">&#128737;</span> Guardrail checks</h3>
+    {% set labels = {'draft': 'Draft email', 'region': 'Location'} %}
+    {% for cat, issues in checks.items() %}
+    <div class="guard-row">
+      <span class="guard-name">{{ labels[cat] }}</span>
+      {% if not issues %}<span class="badge badge-check-ok">&#10003; Clear</span>
+      {% else %}
+        {% if cat in acknowledged %}<span class="badge badge-check-reviewed">Reviewed</span>
+        {% else %}<span class="badge badge-check-flag">&#9888; Needs review</span>{% endif %}
+        <ul class="guard-issues">{% for i in issues %}<li>{{ i }}</li>{% endfor %}</ul>
+      {% endif %}
+    </div>
+    {% endfor %}
+    <p class="actions-note">Also enforced when sending: one email per company every 90 days, and an automatic pause if emails bounce or anyone complains.</p>
+  </section>
+
+  {# ======== at a glance ======== #}
+  <div class="glance">
+    <div class="tile"><div class="tile-k">Serfis fit</div><div class="tile-v">{{ lead.serfis_fit or '-' }}</div></div>
+    <div class="tile"><div class="tile-k">Best ad type</div><div class="tile-v">{{ lead.best_ad_type or '-' }}</div></div>
+    <div class="tile"><div class="tile-k">Industry</div><div class="tile-v">{{ lead.industry or '-' }}</div></div>
+    <div class="tile"><div class="tile-k">Email status</div><div class="tile-v">{{ lead.email_status or '-' }}</div></div>
+    <div class="tile"><div class="tile-k">Sent to them</div><div class="tile-v">{{ sends|length }}</div></div>
+  </div>
+
+  {# ======== contact + company ======== #}
+  <div class="lp-grid">
+    <section class="lp-section contact-card">
+      <h3><span class="h-ico">&#128100;</span> Point of contact</h3>
+      <div class="contact-top">
+        <div class="avatar avatar-sm" style="--h: {{ ((lead.id * 47) + 130) % 360 }}">{{ ((lead.contact_name or '?').split()[0][0] ~ ((lead.contact_name or '').split()[-1][0] if (lead.contact_name or '').split()|length > 1 else ''))|upper }}</div>
+        <div>
+          <div class="contact-name">{{ lead.contact_name or '-' }}</div>
+          <div class="contact-title">{{ lead.contact_title or '-' }}</div>
+        </div>
+      </div>
+      <div class="email-row">
+        <span class="email-addr">{{ lead.contact_email or '-' }}</span>
+        {% if lead.has_email() %}<button type="button" class="copy-btn" data-copy="{{ lead.contact_email }}">Copy</button>{% endif %}
+      </div>
+      <div class="badges-row">
+        {% if lead.email_status == 'published' %}<span class="vbadge vb-ok">&#10003; Published on their website</span>
+        {% elif lead.email_status == 'linkedin' %}<span class="vbadge vb-ok">&#10003; Written on their LinkedIn</span>
+        {% elif lead.email_status == 'confirmed' %}<span class="vbadge vb-ok">&#10003; Confirmed by a person</span>
+        {% elif lead.email_status == 'found' %}<span class="vbadge vb-warn">&#9888; From a data provider, not verified</span>
+        {% elif lead.email_status == 'guessed' %}<span class="vbadge vb-bad">&#9888; Guessed, will not send</span>
+        {% else %}<span class="vbadge vb-bad">&#9888; No verified email</span>{% endif %}
+        {% if lead.contact_check and 'LinkedIn: confirmed' in lead.contact_check %}<span class="vbadge vb-ok">&#10003; LinkedIn role confirmed</span>{% endif %}
+      </div>
+      <dl>
+        <dt>How it was verified</dt><dd>{{ lead.contact_check or "-" }}</dd>
+        <dt>Email status</dt><dd>{{ lead.email_status or "-" }}</dd>
+        <dt>LinkedIn / profile</dt>
+        <dd>{% if lead.contact_profile_url and lead.contact_profile_url.startswith('http') %}<a href="{{ lead.contact_profile_url }}" target="_blank" rel="noopener">{{ lead.contact_profile_url }}</a>{% else %}{{ lead.contact_profile_url or "-" }}{% endif %}</dd>
+        <dt>Founders</dt>
+        <dd class="preline">{{ lead.founders or "-" }}</dd>
+      </dl>
+    </section>
+
+    <section class="lp-section">
+      <h3><span class="h-ico">&#127970;</span> Company</h3>
+      <dl>
+        <dt>Company</dt><dd>{{ lead.company_name }}</dd>
+        <dt>Website</dt><dd>{% if lead.website %}<a href="{{ lead.website }}" target="_blank" rel="noopener">{{ lead.website }}</a>{% else %}-{% endif %}</dd>
+        <dt>What they sell</dt><dd>{{ lead.what_they_sell or "-" }}</dd>
+        <dt>Industry</dt><dd>{{ lead.industry or "-" }}</dd>
+        <dt>Category</dt><dd>{{ lead.category or "-" }}</dd>
+        <dt>Market</dt><dd>{{ lead.market or "-" }}</dd>
+        <dt>Company size</dt><dd>{{ lead.company_size or "-" }}</dd>
+        <dt>Location</dt><dd>{{ lead.location or "-" }}</dd>
+        <dt>Funding notes</dt><dd>{{ lead.funding_notes or "-" }}</dd>
+        <dt>Y Combinator batch</dt><dd>{{ lead.yc_batch or "-" }}</dd>
+        <dt>Y Combinator profile</dt><dd>{% if lead.yc_profile_url %}<a href="{{ lead.yc_profile_url }}" target="_blank" rel="noopener">{{ lead.yc_profile_url }}</a>{% else %}-{% endif %}</dd>
+      </dl>
+    </section>
+
+    <section class="lp-section">
+      <h3><span class="h-ico">&#127919;</span> ICP fit and content</h3>
+      <dl>
+        <dt>ICP fit score (1-10)</dt><dd>{{ lead.icp_fit_score if lead.icp_fit_score is not none else "-" }}</dd>
+        <dt>Priority</dt><dd>{{ lead.priority or "-" }}</dd>
+        <dt>Serfis fit rating</dt><dd>{{ lead.serfis_fit or "-" }}</dd>
+        <dt>Why it fits</dt><dd>{{ lead.why_it_fits or "-" }}</dd>
+        <dt>Suggested ad / content angle</dt><dd>{{ lead.content_angle or "-" }}</dd>
+        <dt>Best ad type</dt><dd>{{ lead.best_ad_type or "-" }}</dd>
+        <dt>Recommended outreach angle</dt><dd>{{ lead.outreach_angle or "-" }}</dd>
+      </dl>
+    </section>
+
+    <section class="lp-section">
+      <h3><span class="h-ico">&#128270;</span> Research</h3>
+      <dl>
+        <dt>Research notes</dt><dd class="preline">{{ lead.research_notes or "-" }}</dd>
+        <dt>Research sources</dt>
+        <dd>{% if lead.research_sources %}<div class="source-chips">{% for src in lead.research_sources.split(';') %}{% if src.strip() %}<span class="source-chip">{{ src.strip() }}</span>{% endif %}{% endfor %}</div>{% else %}-{% endif %}</dd>
+      </dl>
+    </section>
+
+    <section class="lp-section lp-wide email-mock">
+      <h3><span class="h-ico">&#9993;</span> Draft email <span class="hint">what is sent if you approve</span></h3>
+      <div class="mock">
+        <div class="mock-head">
+          <div><span class="mock-k">To</span> {{ lead.contact_name or '-' }} &lt;{{ lead.contact_email or '-' }}&gt;</div>
+          <div><span class="mock-k">Subject</span> <strong>{{ lead.draft_email_subject or "-" }}</strong></div>
+        </div>
+        <pre class="mock-body">{{ lead.draft_email_body or "-" }}</pre>
+        <div class="mock-foot">An opt-out line and your mailing address are added automatically when it is sent.</div>
+      </div>
+    </section>
+
+    <section class="lp-section lp-wide">
+      <h3><span class="h-ico">&#128337;</span> Activity and history</h3>
+      <ol class="timeline">
+        <li class="tl-done"><span class="tl-dot"></span><div><strong>Company added</strong><span>{{ (lead.created_at or '-')[:16].replace('T', ' ') }}</span></div></li>
+        <li class="{{ 'tl-done' if lead.decided_at else 'tl-open' }}"><span class="tl-dot"></span><div><strong>{{ 'Your decision: ' ~ approval_labels.get(lead.approval_status, lead.approval_status) if lead.decided_at else 'Waiting for your decision' }}</strong><span>{{ (lead.decided_at or '')[:16].replace('T', ' ') }}</span></div></li>
+        <li class="{{ 'tl-done' if sends else 'tl-open' }}"><span class="tl-dot"></span><div><strong>{{ 'Email sent' if sends else 'Not sent yet' }}</strong><span>{% if sends %}{{ sends[-1].sent_at[:16].replace('T', ' ') }} &middot; to {{ sends[-1].to_email }}{% endif %}</span></div></li>
+      </ol>
+      <dl class="lp-cols">
+        <div><dt>Last updated</dt><dd>{{ (lead.updated_at or '-')[:16].replace('T', ' ') }}</dd></div>
+        <div><dt>Approval status</dt><dd>{{ approval_labels.get(lead.approval_status, lead.approval_status) }}</dd></div>
+        <div><dt>Decision recorded</dt><dd>{{ (lead.decided_at or 'not yet')[:16].replace('T', ' ') }}</dd></div>
+        <div><dt>Lead status</dt><dd>{{ lead_status_labels.get(lead.lead_status, lead.lead_status) }}</dd></div>
+        <div><dt>Guardrail flags acknowledged</dt><dd>{{ lead.overrides or 'none' }}</dd></div>
+        <div><dt>On the do-not-contact list</dt><dd>{{ 'YES' if suppressed else 'no' }}</dd></div>
+        <div><dt>Emailed in the last 90 days</dt><dd>{{ cooldown or 'no' }}</dd></div>
+        <div><dt>Contact lookup history</dt><dd>{% if lookup %}{{ lookup.outcome }} ({{ lookup.checked_at[:10] }}){% else %}none{% endif %}</dd></div>
+        <div><dt>Emails sent to this lead</dt><dd>{{ sends|length }}</dd></div>
+      </dl>
+      {% if sends %}<ul class="plain-list">{% for s in sends %}<li>{{ s.sent_at[:16].replace('T', ' ') }} &middot; to {{ s.to_email }} &middot; &ldquo;{{ s.subject }}&rdquo;</li>{% endfor %}</ul>{% endif %}
+      {% if risk_events %}<ul class="plain-list">{% for e in risk_events %}<li><strong>{{ e.kind }}</strong> &middot; {{ e.logged_at[:16].replace('T', ' ') }} &middot; {{ e.reason }}</li>{% endfor %}</ul>{% endif %}
+    </section>
+  </div>
+
+  <section class="lp-section">
+    <h3><span class="h-ico">&#128200;</span> Content performance analytics</h3>
+    {% if analytics %}
+      <p class="analytics-note">Engagement on content Serfis produced for this account, by platform.{% if lead.source == 'demo_sample' %} Sample numbers for demo purposes.{% endif %}</p>
+      <div class="analytics-grid">
+        {% for row in analytics %}
+        <div class="platform-card platform-{{ row.platform }}">
+          <div class="platform-name">{{ platform_labels.get(row.platform, row.platform) }}</div>
+          <dl class="platform-metrics">
+            <div><dt>Views</dt><dd>{{ "{:,}".format(row.views) }}</dd></div>
+            <div><dt>Likes</dt><dd>{{ "{:,}".format(row.likes) }}</dd></div>
+            <div><dt>Shares</dt><dd>{{ "{:,}".format(row.shares) }}</dd></div>
+            <div><dt>Comments</dt><dd>{{ "{:,}".format(row.comments) }}</dd></div>
+          </dl>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}<p class="analytics-empty">No published content yet for this lead.</p>{% endif %}
+  </section>
+
+  <section class="lp-section">
+    <h3><span class="h-ico">&#128260;</span> Lead status</h3>
+    <form method="post" action="{{ url_for('update_lead_status', lead_id=lead.id) }}" class="status-form">
+      <input type="hidden" name="back" value="dashboard">
+      <label for="lead_status_{{ lead.id }}">Lead status</label>
+      <select name="lead_status" id="lead_status_{{ lead.id }}">
+        {% for value in lead_statuses %}<option value="{{ value }}" {% if lead.lead_status == value %}selected{% endif %}>{{ lead_status_labels[value] }}</option>{% endfor %}
+      </select>
+      <button type="submit" class="btn btn-secondary">Update status</button>
+    </form>
+  </section>
+
+  <section class="lp-section conversation-panel">
+    <h3><span class="h-ico">&#128172;</span> Conversation</h3>
+    <p class="actions-note">There is no live inbox connection yet, so replies are logged by pasting them in. Draft replies wait for your approval, just like the first email.</p>
+    {% if messages %}
+    <div class="thread">
+      {% for m in messages %}
+      <div class="thread-message thread-{{ m.direction }}">
+        <div class="thread-meta">
+          <span class="thread-who">{{ "Prospect" if m.direction == "inbound" else "Serfis (draft)" }}</span>
+          {% if m.direction == "outbound" %}<span class="badge badge-approval-{{ m.approval_status }}">{{ approval_labels.get(m.approval_status, m.approval_status) }}</span>{% endif %}
+          <span class="thread-date">{{ m.created_at[:16].replace("T", " ") if m.created_at else "" }}</span>
+        </div>
+        <div class="thread-subject"><strong>Subject:</strong> {{ m.subject or "-" }}</div>
+        <pre class="thread-body">{{ m.body }}</pre>
+        {% if m.direction == "outbound" and m.approval_status == "pending_review" %}
+        <div class="action-row">
+          <form method="post" action="{{ url_for('approve_message', message_id=m.id) }}"><input type="hidden" name="back" value="dashboard"><button type="submit" class="btn btn-approve">Approve reply</button></form>
+          <form method="post" action="{{ url_for('reject_message', message_id=m.id) }}"><input type="hidden" name="back" value="dashboard"><button type="submit" class="btn btn-reject">Reject reply</button></form>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}<p class="analytics-empty">No messages yet.</p>{% endif %}
+    <form method="post" action="{{ url_for('log_reply', lead_id=lead.id) }}" class="log-reply-form">
+      <input type="hidden" name="back" value="dashboard">
+      <h3>Log a reply from this prospect</h3>
+      <label for="inbound_subject_{{ lead.id }}">Subject</label>
+      <input type="text" name="inbound_subject" id="inbound_subject_{{ lead.id }}" placeholder="Re: {{ lead.draft_email_subject }}">
+      <label for="inbound_body_{{ lead.id }}">What did they write?</label>
+      <textarea name="inbound_body" id="inbound_body_{{ lead.id }}" rows="4" placeholder="Paste the prospect's reply here..." required></textarea>
+      <button type="submit" class="btn btn-secondary">Generate draft reply</button>
+    </form>
+  </section>
+
+  {# ======== nothing omitted: every stored field, verbatim (collapsed to keep the page calm) ======== #}
+  <details class="lp-section complete-record">
+    <summary><span class="h-ico">&#128209;</span> Complete record <span class="hint">all {{ all_fields|length }} stored fields, verbatim &middot; click to expand</span></summary>
+    <table class="record-table">
+      <tbody>
+      {% for key, value in all_fields %}
+        <tr><th scope="row">{{ key }}</th><td class="{{ 'empty' if value in (none, '') else '' }}">{{ '(empty)' if value in (none, '') else value }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </details>
+</article>

@@ -1,7 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Dashboard - Serfis Lead Dashboard{% endblock %}
 {% block content %}
+  <section id="lead-panel" class="lead-panel-slot" aria-live="polite">
+    {% if selected %}{% include "_lead_panel.html" %}
+    {% else %}<div class="lead-panel-hint">Click any company below to see everything we have on it here, with its manual approval status.</div>{% endif %}
+  </section>
 
+
+  {% if sending_state %}
+  <p class="pause-banner"><strong>Sending is paused.</strong> {{ sending_state.split('  ', 1)[-1] }} &middot; resume with <code>python main.py resume</code> after fixing the cause.</p>
+  {% endif %}
   <section class="cards">
     <div class="card">
       <div class="card-value">{{ stats.total }}</div>
@@ -25,6 +33,21 @@
     </div>
   </section>
 
+  <section class="funnel" aria-label="Manual approval queue">
+    <div class="funnel-head">
+      <strong>Manual approval queue</strong>
+      <span class="funnel-waiting {{ 'is-zero' if funnel.waiting == 0 else '' }}">
+        {% if funnel.waiting %}{{ funnel.waiting }} lead{{ '' if funnel.waiting == 1 else 's' }} waiting for your approval{% else %}Nothing waiting for approval{% endif %}
+      </span>
+    </div>
+    <div class="funnel-bar" role="img" aria-label="{% for g in funnel.segments %}{{ g.n }} {{ g.label }}{{ ', ' if not loop.last }}{% endfor %}">
+      {% for g in funnel.segments %}{% if g.n %}<span class="funnel-seg seg-{{ g.key }}" style="flex: {{ g.n }}" title="{{ g.label }}: {{ g.n }}">{{ g.n }}</span>{% endif %}{% endfor %}
+      {% if funnel.total == 0 %}<span class="funnel-seg seg-empty" style="flex:1">no leads yet</span>{% endif %}
+    </div>
+    <ul class="funnel-legend">
+      {% for g in funnel.segments %}<li><span class="swatch seg-{{ g.key }}"></span>{{ g.label }} <strong>{{ g.n }}</strong> <span class="pct">{{ g.pct }}%</span></li>{% endfor %}
+    </ul>
+  </section>
   {% if stats.sample_count > 0 %}
   <p class="sample-note">
     Includes {{ stats.sample_count }} fictional sample lead ("Serfis Sample") used to demonstrate the converted-lead / content-analytics view - not a real prospect.
@@ -88,13 +111,14 @@
           <th>Contact</th>
           <th>Lead Status</th>
           <th>Approval</th>
+          <th>Checks</th>
           <th>Date Added</th>
         </tr>
       </thead>
       <tbody>
         {% for lead in leads %}
-        <tr class="lead-row" onclick="window.location='{{ url_for('lead_detail', lead_id=lead.id) }}'">
-          <td class="company-cell">{{ lead.company_name }}</td>
+        <tr class="lead-row {{ 'row-pending' if lead.approval_status == 'pending_review' else '' }} {{ 'row-selected' if selected_id == lead.id else '' }}" data-lead-id="{{ lead.id }}">
+          <td class="company-cell"><a class="row-link" href="{{ url_for('dashboard', lead=lead.id) }}#lead-panel"><span class="mini-avatar" style="--h: {{ (lead.id * 47) % 360 }}">{{ lead.company_name[:2]|upper }}</span>{{ lead.company_name }}</a></td>
           <td>{{ lead.industry or "-" }}</td>
           <td>{{ lead.company_size or "-" }}</td>
           <td>
@@ -107,13 +131,53 @@
           <td>{{ lead.contact_name or "-" }}</td>
           <td><span class="badge badge-status-{{ lead.lead_status }}">{{ lead_status_labels.get(lead.lead_status, lead.lead_status) }}</span></td>
           <td><span class="badge badge-approval-{{ lead.approval_status }}">{{ approval_labels.get(lead.approval_status, lead.approval_status) }}</span></td>
+          <td>
+            {% set chk = check_summary(lead) %}
+            {% if chk[0] == 'ok' %}<span class="badge badge-check-ok">Clear</span>
+            {% elif chk[0] == 'reviewed' %}<span class="badge badge-check-reviewed">Reviewed</span>
+            {% else %}<span class="badge badge-check-flag">&#9888; {{ chk[1] }} to review</span>{% endif %}
+          </td>
           <td>{{ lead.created_at[:10] if lead.created_at else "-" }}</td>
         </tr>
         {% else %}
-        <tr><td colspan="8" class="empty-state">No leads match these filters.</td></tr>
+        <tr><td colspan="9" class="empty-state">No leads match these filters.</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </section>
 
+<script>
+(function () {
+  var slot = document.getElementById('lead-panel');
+  var rows = document.querySelectorAll('.lead-row');
+  function mark(id) { rows.forEach(function (r) { r.classList.toggle('row-selected', String(r.dataset.leadId) === String(id)); }); }
+  function setUrl(id) {
+    var u = new URL(window.location.href);
+    if (id) { u.searchParams.set('lead', id); } else { u.searchParams.delete('lead'); }
+    u.hash = ''; history.replaceState(null, '', u);
+  }
+  function openLead(id) {
+    slot.classList.add('is-loading');
+    fetch('/panel/' + id, { headers: { 'X-Requested-With': 'fetch' } })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(function (html) { slot.innerHTML = html; slot.classList.remove('is-loading'); mark(id); setUrl(id); window.scrollTo({ top: 0, behavior: 'smooth' }); })
+      .catch(function () { slot.classList.remove('is-loading'); window.location = '/?lead=' + id + '#lead-panel'; });
+  }
+  function closePanel() {
+    slot.innerHTML = '<div class="lead-panel-hint">Click any company below to see everything we have on it here, with its manual approval status.</div>';
+    mark(null); setUrl(null);
+  }
+  rows.forEach(function (row) {
+    row.addEventListener('click', function (e) {
+      if (e.metaKey || e.ctrlKey || e.shiftKey) { return; }      // let a modified click open the link normally
+      e.preventDefault(); openLead(row.dataset.leadId);
+    });
+  });
+  slot.addEventListener('click', function (e) {
+    if (e.target.closest('[data-close-panel]')) { closePanel(); return; }
+    var c = e.target.closest('[data-copy]');
+    if (c && navigator.clipboard) { navigator.clipboard.writeText(c.dataset.copy).then(function () { var t = c.textContent; c.textContent = 'Copied'; setTimeout(function () { c.textContent = t; }, 1400); }); }
+  });
+})();
+</script>
 {% endblock %}

@@ -19,6 +19,7 @@ from typing import Optional
 
 import config
 import storage
+from agents import guardrails
 from models import Lead
 
 UNSUBSCRIBE_LINE = 'If you\'d rather not hear from me again, just reply "unsubscribe" and I\'ll take you off my list.'
@@ -50,11 +51,26 @@ def blocker(lead: Lead) -> Optional[str]:
         return "no drafted email"
     if not lead.has_email():
         return "no usable email address"
+    if config.REQUIRE_VERIFIED_CONTACT and lead.email_status not in config.VERIFIED_EMAIL_STATUSES:
+        return (f"contact is not verified (email status '{lead.email_status or 'from a data provider'}'): only an address the company "
+                "or the founder published, or one a person confirmed, may be emailed")
+    if lead.email_status == "guessed":
+        return (f"email {lead.contact_email} is a guess from the founder's name, not confirmed - "
+                f"verify it, then run: python main.py confirm-email {lead.id}")
     email = storage.normalize_email(lead.contact_email)
     if email.endswith(RESERVED_DOMAINS):
         return "reserved/example email domain"
     if storage.is_suppressed(email):
         return "on the do-not-contact list"
+    paused = guardrails.sending_block_reason()
+    if paused:
+        return paused
+    cooldown = guardrails.company_cooldown(lead)
+    if cooldown:
+        return cooldown
+    for category, issues in guardrails.blocking(lead):
+        return (f"flagged by the {category} check and not yet acknowledged: {issues[0]} "
+                f"(open the lead in the dashboard and choose 'Approve anyway', or fix it)")
     return None
 
 
@@ -111,6 +127,9 @@ def send_approved(limit: Optional[int] = None, dry_run: bool = False,
     where each entry is (company, address-or-reason)."""
     delay = config.EMAIL_SEND_DELAY_SECONDS if delay is None else delay
     sent, skipped = [], []
+    paused = guardrails.sending_block_reason()
+    if paused:                                   # kill switch / bounce breaker: nothing goes out
+        return {"sent": [], "skipped": [("ALL LEADS", paused)]}
     room = config.EMAIL_DAILY_CAP - storage.count_sent_today()
     if limit is not None:
         room = min(room, limit)
