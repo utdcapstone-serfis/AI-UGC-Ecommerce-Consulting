@@ -44,9 +44,14 @@ PowerShell window, in any folder.
 1. **Short-lived user token.** Open developers.facebook.com/tools/explorer, choose
    the app, and in the "User or Page" dropdown choose **Get User Access Token**
    (not the Page entry). Make sure these permissions are listed:
-   `pages_show_list`, `pages_read_engagement`, `pages_manage_posts`. Click
-   **Generate Access Token**, sign in, and tick the Page when asked which Pages to
-   allow. The token appears in the Access Token box and lasts about an hour.
+   `pages_show_list`, `pages_read_engagement`, `pages_manage_posts` and
+   `publish_video` (needed for video uploads; without it Facebook answers
+   "(#100) No permission to publish the video"). If `publish_video` isn't offered,
+   add the **Access the Live Video API** use case to the app first (Use cases, Add
+   use cases); the permission then appears on that use case's permissions list.
+   Click **Generate Access Token**, sign in, and tick the Page when asked which
+   Pages to allow (a token made without the Page returns an empty Page list). The
+   token appears in the Access Token box and lasts about an hour.
 2. **Long-lived user token (about 60 days).** The app ID and app secret are in
    App settings, Basic. This copies the token to the clipboard without printing it:
    ```powershell
