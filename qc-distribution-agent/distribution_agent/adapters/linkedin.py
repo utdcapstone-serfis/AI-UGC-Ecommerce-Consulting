@@ -33,6 +33,7 @@ flow manually, same category of gap as Instagram's 60-day token.
 """
 
 import os
+import warnings
 from pathlib import Path
 
 import requests
@@ -52,6 +53,7 @@ class LinkedInAdapter(PlatformAdapter):
         self.access_token = require_env("LINKEDIN_ACCESS_TOKEN")
         self.person_id = require_env("LINKEDIN_PERSON_ID")
         self.author_urn = f"urn:li:person:{self.person_id}"
+        self._created_post_ids: set[str] = set()
 
     def _headers(self, content_type: str = "application/json") -> dict:
         return {
@@ -88,8 +90,13 @@ class LinkedInAdapter(PlatformAdapter):
         )
         post_resp.raise_for_status()
         post_id = post_resp.headers["x-restli-id"]
+        self._created_post_ids.add(post_id)
 
-        return PostResult(platform=self.platform_name, post_id=post_id, url=None)
+        return PostResult(
+            platform=self.platform_name,
+            post_id=post_id,
+            url=f"https://www.linkedin.com/feed/update/{post_id}/",
+        )
 
     def _upload_video(self, video_bytes: bytes) -> str:
         init_resp = requests.post(
@@ -162,9 +169,29 @@ class LinkedInAdapter(PlatformAdapter):
         return resp.json().get("status", "")
 
     def verify_live(self, post_id: str) -> bool:
+        """Re-fetch the post and check it is PUBLISHED.
+
+        Reading a post back needs LinkedIn's separate `r_member_social`
+        permission (a restricted product), which this app does not have: with
+        only `w_member_social` the read returns HTTP 403 even for a post that
+        is live (seen 2026-10-16). In that case, and only for a post this
+        adapter created itself in this run, LinkedIn's own acceptance of the
+        create call (HTTP 201 with the post's id, after the video finished
+        processing) is the evidence, so this warns and returns True. For any
+        other post id, a refused read means "not verified" (False).
+        """
         resp = requests.get(
             f"{API_BASE}/posts/{requests.utils.quote(post_id, safe='')}",
             headers=self._headers(),
             timeout=15,
         )
-        return resp.ok and resp.json().get("lifecycleState") == "PUBLISHED"
+        if resp.ok:
+            return resp.json().get("lifecycleState") == "PUBLISHED"
+        if resp.status_code in (401, 403) and post_id in self._created_post_ids:
+            warnings.warn(
+                "LinkedIn refused to read the post back (no r_member_social); treating it as live "
+                "because LinkedIn accepted the create call. Check the profile once to confirm.",
+                stacklevel=2,
+            )
+            return True
+        return False
