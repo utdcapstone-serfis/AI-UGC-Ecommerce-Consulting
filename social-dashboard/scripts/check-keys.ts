@@ -70,7 +70,7 @@ for (const r of results) {
       problems++;
       console.log(`  [FIX]  ${name} ${error}`);
       console.log(`         -> ${FIX[id]}`);
-    } else if ((days !== undefined && days <= WARN_DAYS) || token?.note) {
+    } else if (days !== undefined ? days <= WARN_DAYS : !!token?.note) {
       problems++;
       console.log(`  [SOON] ${name} ${days !== undefined ? `key expires in ${days} days` : token?.note}`);
       console.log(`         -> ${FIX[id]}`);

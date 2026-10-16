@@ -264,7 +264,8 @@ export function assessConnections(payload: DailyPayload, now: Date): ConnectionS
     if (daysLeft !== undefined && daysLeft < 0) {
       return { ...base, state: "expired", summary: STATE_SUMMARY.expired, detail: token?.note, daysLeft, needsAction: true };
     }
-    if ((daysLeft !== undefined && daysLeft <= EXPIRY_WARN_DAYS) || token?.note) {
+    // A note (e.g. "refresh token rotated") only warns when there is no expiry date to go by.
+    if (daysLeft !== undefined ? daysLeft <= EXPIRY_WARN_DAYS : !!token?.note) {
       const summary = daysLeft !== undefined ? `Key expires in ${daysLeft}d` : "Key rotated, update env var";
       return { ...base, state: "expiring", summary, detail: token?.note, daysLeft, needsAction: true };
     }
