@@ -121,7 +121,9 @@ LINKEDIN_MODE = "Profile details no email ($4 per 1k)"      # never the paid ema
 # Also accept an email the founder wrote on their own LinkedIn profile (headline, About, role text).
 # Never the tool's own email finder - that is pattern guessing.
 LINKEDIN_EMAILS = os.getenv("LINKEDIN_EMAILS", "true").lower() == "true"
-LINKEDIN_SCAN_MAX_PROFILES = int(os.getenv("LINKEDIN_SCAN_MAX_PROFILES", "30"))   # paid profile reads per discovery run (~$0.004 each)
+# Profile reads per discovery run for the email-from-profile pass. The free Apify tier allows only ~20 profile
+# reads a day in total, and every lead needs one for its role check, so this pass is off until you upgrade.
+LINKEDIN_SCAN_MAX_PROFILES = int(os.getenv("LINKEDIN_SCAN_MAX_PROFILES", "0"))
 GUESS_FOUNDER_EMAILS = os.getenv("GUESS_FOUNDER_EMAILS", "false").lower() == "true"
 # Hard cap on paid contact lookups per `main.py run` (override with --max-lookups).
 # Apify's contact add-on found a decision-maker email for ~1 in 16 YC startups, so it is

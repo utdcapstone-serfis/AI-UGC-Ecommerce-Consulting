@@ -94,9 +94,10 @@ def fetch_profile(url: str) -> Optional[dict]:
         run_input = {"profileScraperMode": config.LINKEDIN_MODE, "urls": [url]}
     items = run_actor(config.LINKEDIN_ACTOR, run_input, max_charge_usd=0.1)
     first = items[0] if items else {}
-    if not items or (first.get("error") and not (first.get("firstName") or first.get("basic_info"))):
-        msg = str(first.get("error") or "the actor returned nothing")
-        if re.search(r"limit|upgrade|quota|plan", msg, re.I):
+    if not items or not (first.get("firstName") or first.get("basic_info")):
+        # a refusal arrives as an item with "error" or "message" (daily/plan limits, private or missing profile)
+        msg = str(first.get("error") or first.get("message") or "the actor returned nothing")
+        if re.search(r"limit|upgrade|quota|plan|wait until", msg, re.I):
             _blocked = f"LinkedIn tool unavailable: {msg}"
         raise RuntimeError(msg)
     _CACHE[key] = _normalize(first)
@@ -138,7 +139,7 @@ def verify_role(profile: dict, lead) -> tuple:
     """(ok, reason, details). Pure function so it can be tested without any network call."""
     from agents.contact_finder import is_decision_maker       # lazy: contact_finder imports this module
     if not profile or not (profile.get("firstName") or profile.get("lastName")):
-        return False, "LinkedIn returned no profile", {}
+        return False, "LinkedIn returned no profile", {"transient": True}      # says nothing about the company
     full = f"{profile.get('firstName', '')} {profile.get('lastName', '')}".strip()
     expected = (lead.contact_name or "").strip()
     if expected and difflib.SequenceMatcher(None, _norm(full), _norm(expected)).ratio() < 0.75 \

@@ -138,6 +138,9 @@ def cmd_audit_contacts(args):
         details = {}
         if lead.email_status != "confirmed":
             ok, why, details = linkedin.check_contact(lead)
+            if not ok and details.get("transient"):
+                print(f"[{lead.id:>3}] COULD NOT CHECK {lead.company_name} - {why} (try again later; nothing was changed)")
+                continue
             (checks if ok else problems).append(f"LinkedIn: {why}")
         flag = "VERIFIED " if not problems else "NOT VERIFIED"
         print(f"[{lead.id:>3}] {flag} {lead.company_name} - {lead.contact_name} <{lead.contact_email}>")
