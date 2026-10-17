@@ -1,0 +1,53 @@
+Processed 0 leads. Paid contact lookups this run: 0.
+Note: Prospect tracker exhausted - drawing from recent YC batches.
+Note: YC pool: scanned 1977, screened out 1337 (not ICP), 608 eligible.
+Note: Checked 608 company sites for a published founder email; 42 publish one.
+Note: Read 31 founder LinkedIn profiles for an email they wrote themselves; 0 had one.
+Note: Learned lookup hit rates: {'batch=Fall 2026': 0.03, 'size_band=1-10': 0.53, 'market=B2C': 0.15, 'market=B2C / Prosumer': 0.08, 'market=B2B': 0.52, 'batch=Fall 2025': 0.07, 'size_band=11-50': 0.05, 'batch=Summer 2025': 0.28, 'batch=Winter 2026': 0.58, 'batch=Spring 2026': 0.62}
+Contact not verified (or lookup failed) for 42 companies - NOT saved as leads:
+  - Fort: contact not verified - LinkedIn returned no profile
+  - Mimos: contact not verified - LinkedIn returned no profile
+  - Bluejay: contact not verified - LinkedIn returned no profile
+  - Paradigm: contact not verified - LinkedIn returned no profile
+  - Saphira AI: contact not verified - LinkedIn returned no profile
+  - Soff: contact not verified - LinkedIn returned no profile
+  - Gauge: contact not verified - LinkedIn returned no profile
+  - Terrakotta: contact not verified - LinkedIn returned no profile
+  - Brainbase Labs: contact not verified - LinkedIn returned no profile
+  - Bond: contact not verified - LinkedIn returned no profile
+  - Dalus: contact not verified - LinkedIn returned no profile
+  - Feldy: contact not verified - LinkedIn returned no profile
+  - Pelica: contact not verified - LinkedIn returned no profile
+  - Veles: contact not verified - LinkedIn returned no profile
+  - Almanac: contact not verified - LinkedIn returned no profile
+  - Handled: contact not verified - LinkedIn returned no profile
+  - Control Seat: contact not verified - LinkedIn returned no profile
+  - RealPact: contact not verified - LinkedIn returned no profile
+  - TovenAI: contact not verified - LinkedIn returned no profile
+  - Clarm: contact not verified - LinkedIn returned no profile
+  - Caseflood.ai: contact not verified - LinkedIn returned no profile
+  - Quetzal: contact not verified - LinkedIn returned no profile
+  - Clarum: contact not verified - LinkedIn returned no profile
+  - Overheard: contact not verified - LinkedIn returned no profile
+  - Zarna: contact not verified - LinkedIn returned no profile
+  - LunaBill: contact not verified - LinkedIn returned no profile
+  - throxy: contact not verified - LinkedIn returned no profile
+  - QualGent: contact not verified - LinkedIn returned no profile
+  - Stardrift: contact not verified - LinkedIn returned no profile
+  - Candle: contact not verified - LinkedIn returned no profile
+  - Oki: contact not verified - LinkedIn returned no profile
+  - Yenmo: contact not verified - LinkedIn returned no profile
+  - Ascenix: contact not verified - LinkedIn returned no profile
+  - Freestyle: contact not verified - LinkedIn returned no profile
+  - Tegore: contact not verified - LinkedIn returned no profile
+  - Spott: contact not verified - LinkedIn returned no profile
+  - Neomatter: contact not verified - LinkedIn returned no profile
+  - Decent: contact not verified - LinkedIn returned no profile
+  - Sintropix: contact not verified - LinkedIn returned no profile
+  - Merlin AI: contact not verified - LinkedIn returned no profile
+  - Conduit: contact not verified - LinkedIn returned no profile
+  - Soren: contact not verified - LinkedIn returned no profile
+Only 0 of 45 requested - ran out of candidates (42 checked). Run again to search further.
+
+
+Exported to /Users/alliduntley/Documents/serfis-leadgen/output/serfis_leads.xlsx

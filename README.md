@@ -295,3 +295,11 @@ future enhancement" below.
 - **Pagination**: the lead table currently renders every matching row - fine at MVP volume, add LIMIT/OFFSET paging in `storage.query_leads()` once lead counts grow large.
 - **Concurrency**: `orchestrator.py` still processes leads sequentially; each agent is stateless enough to parallelize once volume matters.
 - **Postgres/Airtable**: swap `storage.py`'s sqlite3 calls for a hosted DB once you need true multi-user concurrent access to the review queue.
+
+## Docs, tests and data in this repo
+
+- `docs/SYSTEM_GUIDE.md`: the current guide to the agents, the verified-contact rule, the guardrails, the dashboard, commands, settings, costs and decisions.
+- `tests/`: `python tests/test_guardrails.py` and `python tests/test_verified.py` (throwaway database, nothing billed).
+- `snapshots/`: a copy of the leads database and the Excel list from 2026-10-17. They contain founders' business emails, so keep this repository private.
+- `docs/run-logs/`: output of the two wide pipeline runs.
+- `brand/`: PowerPoint template, agents slide, and an older PDF guide (superseded by `docs/SYSTEM_GUIDE.md`).
