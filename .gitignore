@@ -21,3 +21,4 @@ output/*.xlsx
 
 # --- Generated ad media lives in its own repo (serfis-ad-content), not here ---
 content/
+brand/build/bg/

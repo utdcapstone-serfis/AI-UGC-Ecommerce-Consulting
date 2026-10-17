@@ -300,6 +300,6 @@ future enhancement" below.
 
 - `docs/SYSTEM_GUIDE.md`: the current guide to the agents, the verified-contact rule, the guardrails, the dashboard, commands, settings, costs and decisions.
 - `tests/`: `python tests/test_guardrails.py` and `python tests/test_verified.py` (throwaway database, nothing billed).
-- `snapshots/`: a copy of the leads database and the Excel list from 2026-10-17. They contain founders' business emails, so keep this repository private.
+- `snapshots/`: a copy of the leads database and the Excel list from 2026-10-17 and older database backups (`backups/`, taken around the first prune and reset). They contain founders' business emails, so keep this repository private.
 - `docs/run-logs/`: output of the two wide pipeline runs.
-- `brand/`: PowerPoint template, agents slide, and an older PDF guide (superseded by `docs/SYSTEM_GUIDE.md`).
+- `brand/`: PowerPoint template, agents slide, logo, and an older PDF guide (superseded by `docs/SYSTEM_GUIDE.md`); `brand/build/` has the scripts that regenerate the decks.
