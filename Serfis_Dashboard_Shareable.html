@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Serfis Lead Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Unbounded:wght@600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap">
+<style>/* Serfis dashboard - dark violet look (matches the Serfis site design system).
+   Look only: class names and markup are unchanged. */
+:root {
+  color-scheme: dark;
+  --bg: #06030F;
+  --bg-2: #0F032D;
+  --violet-2: #6A3FE6;
+  --lavender: #905BF4;
+  --heliotrope: #C084FC;
+  --blue: #3B5BFF;
+  --text: #EFEFEF;
+  --text-2: rgba(239,239,239,.72);
+  --text-3: rgba(239,239,239,.5);
+  --line: rgba(239,239,239,.1);
+  --line-2: rgba(239,239,239,.18);
+  --glass: rgba(16,6,44,.62);
+  --glass-2: rgba(239,239,239,.04);
+  --btn: linear-gradient(135deg, #7F52FF 0%, #6A3FE6 50%, #3F46E8 100%);
+
+  --green: #3BE08C;   --green-bg: rgba(59,224,140,.14);
+  --amber: #F5B84B;   --amber-bg: rgba(245,184,75,.14);
+  --red: #FF7A9C;     --red-bg: rgba(255,92,135,.14);
+  --blue-t: #8FA3FF;  --blue-bg: rgba(59,91,255,.2);
+  --gray: rgba(239,239,239,.7); --gray-bg: rgba(239,239,239,.09);
+  --violet-t: #D6B4FF; --violet-bg: rgba(144,91,244,.2);
+
+  --display: "Fredoka", "Poppins", "Nunito", ui-rounded, system-ui, sans-serif;
+  --wide: "Unbounded", "Poppins", "Arial Black", system-ui, sans-serif;
+  --body: "DM Sans", "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "DM Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --ease-out: cubic-bezier(.23, 1, .32, 1);
+  --radius: 20px;
+  --radius-lg: 28px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* Two still pools of color behind everything, so the glass has something to frost. */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 50% at 88% -6%, rgba(106,63,230,.42), transparent 70%),
+    radial-gradient(ellipse 50% 45% at 4% 104%, rgba(59,91,255,.26), transparent 70%),
+    var(--bg);
+}
+/* Film grain: static, fixed, never on a scrolling box. */
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: 40; pointer-events: none; opacity: .06;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='w'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch' seed='3'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 2.4 -.9'/></filter><rect width='100%25' height='100%25' filter='url(%23w)'/></svg>");
+  background-size: 240px 240px;
+}
+
+a { color: var(--heliotrope); text-decoration: none; transition: color .2s ease; }
+a:hover { color: #fff; }
+:focus-visible { outline: 2px solid var(--heliotrope); outline-offset: 3px; }
+h1, h2, h3 { font-weight: 600; }
+
+/* ---------- Header ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 28px;
+  background: rgba(6,3,15,.62);
+  -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: inset 0 -1px 0 var(--line);
+}
+.topbar .brand {
+  font-family: var(--display); font-weight: 700; font-size: 24px; line-height: 1;
+  color: var(--text); text-decoration: none; letter-spacing: -.005em;
+  text-shadow: 0 0 28px rgba(144,91,244,.45);
+}
+.topbar .brand span {
+  font-family: var(--body); font-weight: 500; font-size: 14px; letter-spacing: .01em;
+  color: var(--heliotrope); margin-left: 8px; text-shadow: none;
+}
+.topbar nav { display: flex; align-items: center; gap: 8px; }
+.topbar nav a {
+  color: var(--text-2); font-size: 14px; font-weight: 500; padding: 9px 16px; border-radius: 999px;
+  transition: color .2s ease, background-color .2s ease, box-shadow .2s ease;
+}
+.topbar nav a:hover { color: #fff; background: rgba(239,239,239,.06); }
+/* The export link reads as the primary action. */
+.topbar nav a:last-child {
+  color: #fff; background: var(--btn);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 10px 30px -12px rgba(106,63,230,.7);
+}
+.topbar nav a:last-child:hover { filter: brightness(1.08); }
+
+main { max-width: 1200px; margin: 0 auto; padding: 32px 28px 72px; }
+
+/* ---------- Summary cards ---------- */
+.cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 24px; }
+
+.card {
+  position: relative; overflow: hidden;
+  background: var(--glass); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 20px 22px;
+  -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 30px 60px -40px rgba(6,3,15,.9);
+}
+.card::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px;
+  background: linear-gradient(90deg, var(--heliotrope), var(--blue));
+}
+.card-value { font-family: var(--wide); font-size: 30px; font-weight: 600; line-height: 1.1; letter-spacing: -.01em; }
+.card-label { font-size: 13px; color: var(--text-2); margin-top: 8px; }
+.card-pending::before { background: linear-gradient(90deg, var(--amber), #FFD98A); }
+.card-approved::before { background: linear-gradient(90deg, var(--green), #8CF5BF); }
+.card-rejected::before { background: linear-gradient(90deg, var(--red), #FFB3C6); }
+
+/* ---------- Filters ---------- */
+.filters {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  background: var(--glass); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 16px 18px; margin-bottom: 20px;
+  -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.filters input[type="text"],
+.filters select,
+.status-form select,
+.log-reply-form input,
+.log-reply-form textarea {
+  font: inherit; font-size: 14px; color: var(--text);
+  background: var(--glass-2); border: 1px solid rgba(239,239,239,.16); border-radius: 12px;
+  padding: 10px 14px;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.filters input[type="text"] { min-width: 230px; }
+.filters input::placeholder, .log-reply-form input::placeholder, .log-reply-form textarea::placeholder { color: rgba(239,239,239,.46); }
+.filters input:focus, .filters select:focus, .status-form select:focus,
+.log-reply-form input:focus, .log-reply-form textarea:focus {
+  outline: none; border-color: var(--lavender); box-shadow: 0 0 0 3px rgba(144,91,244,.28);
+}
+option { background: var(--bg-2); color: var(--text); }
+
+.filters button {
+  height: 40px; padding: 0 22px; border: 0; border-radius: 999px; cursor: pointer;
+  background: var(--btn); color: #fff; font: 600 14px/1 var(--body); letter-spacing: .01em;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 10px 30px -12px rgba(106,63,230,.7);
+  transition: transform .2s var(--ease-out), filter .2s ease;
+}
+.filters button:hover { filter: brightness(1.1); }
+.filters button:active { transform: scale(.97); }
+.clear-link { font-size: 13px; color: var(--text-3); padding: 0 6px; }
+.clear-link:hover { color: #fff; }
+
+/* ---------- Table ---------- */
+.table-wrap {
+  background: var(--glass); border: 1px solid var(--line); border-radius: var(--radius);
+  overflow-x: auto;
+  -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 40px 80px -48px rgba(6,3,15,.9);
+}
+.lead-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.lead-table th {
+  text-align: left; padding: 15px 16px; white-space: nowrap;
+  background: rgba(239,239,239,.03); border-bottom: 1px solid var(--line);
+  font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .14em; color: var(--text-3);
+}
+.lead-table td { padding: 15px 16px; border-bottom: 1px solid var(--line); color: var(--text-2); }
+.lead-table tr:last-child td { border-bottom: 0; }
+.lead-row { cursor: pointer; transition: background-color .2s ease; }
+.lead-row:hover { background: rgba(144,91,244,.1); }
+.company-cell { font-weight: 600; color: var(--text) !important; }
+.empty-state { text-align: center; color: var(--text-3); padding: 36px; }
+
+/* ---------- Pills and badges ---------- */
+.score-pill, .badge {
+  display: inline-block; padding: 4px 11px; border-radius: 999px; line-height: 1.3;
+  font-weight: 600; font-size: 12px; box-shadow: inset 0 0 0 1px rgba(239,239,239,.08);
+}
+.score-pill { font-family: var(--mono); font-weight: 500; font-size: 13px; }
+.score-high { background: var(--green-bg); color: var(--green); }
+.score-mid { background: var(--amber-bg); color: var(--amber); }
+.score-low { background: var(--gray-bg); color: var(--gray); }
+
+.badge-approval-pending_review { background: var(--amber-bg); color: var(--amber); }
+.badge-approval-approved { background: var(--green-bg); color: var(--green); }
+.badge-approval-rejected { background: var(--red-bg); color: var(--red); }
+
+.badge-status-new { background: var(--gray-bg); color: var(--gray); }
+.badge-status-contacted { background: var(--blue-bg); color: var(--blue-t); }
+.badge-status-qualified { background: var(--green-bg); color: var(--green); }
+.badge-status-disqualified { background: var(--red-bg); color: var(--red); }
+.badge-status-converted { background: var(--violet-bg); color: var(--violet-t); }
+
+.sample-note { font-size: 13px; color: var(--text-3); margin: -10px 0 20px; }
+
+/* ---------- Detail page ---------- */
+.back-link { display: inline-block; margin-bottom: 18px; font-size: 14px; }
+
+.sample-banner {
+  background: rgba(245,184,75,.1); color: #F5D58A;
+  border: 1px solid rgba(245,184,75,.28); padding: 12px 18px; border-radius: 14px;
+  font-size: 13px; margin-bottom: 18px;
+}
+.sample-banner strong { color: var(--amber); }
+
+.detail-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px; margin-bottom: 24px; }
+.detail-header h1 { margin: 0 0 6px; font-family: var(--wide); font-size: 30px; font-weight: 600; line-height: 1.1; letter-spacing: -.01em; }
+.detail-subhead { font-size: 14px; color: var(--text-2); }
+.detail-badges { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 20px; }
+
+.panel {
+  background: var(--glass); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  padding: 24px 26px;
+  -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 40px 80px -48px rgba(6,3,15,.9);
+}
+.panel h2 {
+  margin: 0 0 16px; font: 500 11px/1 var(--mono);
+  text-transform: uppercase; letter-spacing: .14em; color: var(--heliotrope);
+}
+.panel-highlight { grid-column: span 2; border-left: 3px solid var(--lavender); }
+.panel-email { background: rgba(16,6,44,.7); }
+
+dl { margin: 0; }
+dl dt { font: 500 11px/1.2 var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--text-3); margin-top: 14px; }
+dl dt:first-child { margin-top: 0; }
+dl dd.preline { white-space: pre-line; }
+dl dd { margin: 4px 0 0; font-size: 15px; line-height: 1.5; word-break: break-word; color: var(--text); }
+
+.outreach-angle { margin: 0; font-size: 16px; line-height: 1.65; color: var(--text); }
+
+.email-subject { margin-bottom: 12px; font-size: 14px; color: var(--text-2); }
+.email-subject strong { color: var(--text); }
+.email-body {
+  white-space: pre-wrap; font-family: inherit; font-size: 14px; line-height: 1.65; color: var(--text);
+  background: rgba(6,3,15,.55); border: 1px solid var(--line); border-radius: 14px;
+  padding: 16px 18px; margin: 0;
+}
+
+/* ---------- Content analytics ---------- */
+.analytics-panel { border-left-color: var(--blue); }
+.analytics-note { font-size: 13px; color: var(--text-3); margin: -4px 0 16px; }
+.analytics-empty { font-size: 14px; color: var(--text-3); margin: 0; }
+.analytics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+
+.platform-card {
+  position: relative; overflow: hidden;
+  background: var(--glass-2); border: 1px solid var(--line); border-radius: 16px;
+  padding: 14px 16px; border-top: 2px solid var(--gray);
+}
+.platform-facebook { border-top-color: #4C8DFF; }
+.platform-instagram { border-top-color: #F25A92; }
+.platform-youtube { border-top-color: #FF4D4D; }
+.platform-x { border-top-color: #EFEFEF; }
+.platform-reddit { border-top-color: #FF6A33; }
+
+.platform-name { font-weight: 600; font-size: 13px; margin-bottom: 10px; }
+.platform-metrics { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.platform-metrics > div { display: flex; justify-content: space-between; }
+.platform-metrics dt { font: 500 11px/1.4 var(--mono); text-transform: none; letter-spacing: 0; color: var(--text-3); margin: 0; }
+.platform-metrics dd { font-size: 13px; font-weight: 600; margin: 0; font-variant-numeric: tabular-nums; }
+
+/* ---------- Actions ---------- */
+.actions-panel { border-left: 3px solid var(--violet-2); }
+.actions-note { font-size: 13px; color: var(--text-3); margin: 0 0 16px; }
+.action-row { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 44px; padding: 0 24px; border: 0; border-radius: 999px; cursor: pointer;
+  font: 600 14px/1 var(--body); letter-spacing: .01em; white-space: nowrap;
+  transition: transform .2s var(--ease-out), filter .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+.btn:active { transform: scale(.97); }
+.btn-approve {
+  background: linear-gradient(135deg, #1FBF75, #3BE08C); color: #04210F;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 10px 30px -12px rgba(59,224,140,.6);
+}
+.btn-approve:hover { filter: brightness(1.08); }
+.btn-reject { background: var(--red-bg); color: var(--red); box-shadow: inset 0 0 0 1px rgba(255,122,156,.4); }
+.btn-reject:hover { background: rgba(255,92,135,.24); }
+.btn-secondary { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1px rgba(239,239,239,.22); }
+.btn-secondary:hover { box-shadow: inset 0 0 0 1px rgba(239,239,239,.5); }
+
+.status-form { display: flex; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.status-form label { font-size: 13px; color: var(--text-2); }
+
+/* ---------- Conversation / reply drafts ---------- */
+.conversation-panel { border-left: 3px solid var(--heliotrope); }
+.thread { display: flex; flex-direction: column; gap: 14px; margin-bottom: 22px; }
+
+.thread-message {
+  border: 1px solid var(--line); border-radius: 18px; padding: 16px 18px; background: var(--glass-2);
+}
+.thread-inbound { background: rgba(239,239,239,.05); }
+.thread-outbound { background: rgba(144,91,244,.09); border-left: 3px solid var(--lavender); }
+
+.thread-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 12px; flex-wrap: wrap; }
+.thread-who { font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .14em; color: var(--heliotrope); }
+.thread-date { color: var(--text-3); margin-left: auto; font-family: var(--mono); font-size: 11px; }
+.thread-subject { font-size: 13px; margin-bottom: 8px; color: var(--text-2); }
+.thread-subject strong { color: var(--text); }
+.thread-body { white-space: pre-wrap; font-family: inherit; font-size: 14px; line-height: 1.65; margin: 0 0 12px; color: var(--text); }
+
+.log-reply-form {
+  border-top: 1px solid var(--line); padding-top: 18px;
+  display: flex; flex-direction: column; gap: 8px; max-width: 580px;
+}
+.log-reply-form h3 { margin: 0 0 4px; font-family: var(--wide); font-size: 16px; font-weight: 600; }
+.log-reply-form label { font: 500 11px/1.2 var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--text-3); margin-top: 4px; }
+.log-reply-form textarea { resize: vertical; min-height: 110px; }
+.log-reply-form button { align-self: flex-start; margin-top: 6px; }
+
+@media (max-width: 900px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .detail-grid { grid-template-columns: 1fr; }
+  .panel-highlight { grid-column: span 1; }
+  .analytics-grid { grid-template-columns: repeat(2, 1fr); }
+  .topbar { padding: 12px 18px; }
+  main { padding: 24px 16px 56px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: .01ms !important; }
+}
+
+.hint { color: var(--muted, #8b8aa0); font-size: 0.85em; }
+
+/* ---------- Guardrail checks ---------- */
+.badge-check-ok { background: var(--green-bg); color: var(--green); }
+.badge-check-flag { background: var(--amber-bg); color: var(--amber); }
+.badge-check-reviewed { background: var(--violet-bg); color: var(--violet-t); }
+.pause-banner {
+  margin: 0 0 18px; padding: 12px 16px; border-radius: 14px; font-size: 14px;
+  background: var(--red-bg); color: var(--text); box-shadow: inset 0 0 0 1px rgba(255,122,156,.4);
+}
+.pause-banner strong { color: var(--red); }
+.guard-panel { grid-column: span 2; }
+.guard-flag { border-left: 3px solid var(--amber); }
+.guard-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; padding: 8px 0; border-top: 1px solid var(--line); }
+.guard-row:first-of-type { border-top: 0; }
+.guard-name { min-width: 110px; font-weight: 600; color: var(--text); }
+.guard-issues { flex-basis: 100%; margin: 4px 0 2px 122px; padding-left: 18px; color: var(--text-2); font-size: 14px; }
+.btn-warn { background: var(--amber-bg); color: var(--amber); box-shadow: inset 0 0 0 1px rgba(245,184,75,.45); }
+@media (max-width: 720px) { .guard-issues { margin-left: 0; } }
+
+/* =====================================================================
+   Company record panel (top of the dashboard) + manual approval visuals
+   ===================================================================== */
+@keyframes panel-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.lead-panel-slot { margin-bottom: 26px; scroll-margin-top: 16px; transition: opacity .2s ease; }
+.lead-panel-slot.is-loading { opacity: .5; }
+.lead-panel-hint {
+  padding: 18px 22px; border-radius: var(--radius); font-size: 14px; color: var(--text-3); text-align: center;
+  border: 1px dashed var(--line-2); background: var(--glass-2);
+}
+.lead-panel {
+  position: relative; padding: 0 clamp(18px, 2.4vw, 32px) clamp(18px, 2.4vw, 30px); border-radius: 30px; overflow: clip;
+  background:
+    radial-gradient(60% 40% at 100% 0%, rgba(106,63,230,.28), transparent 70%),
+    radial-gradient(50% 35% at 0% 100%, rgba(59,91,255,.14), transparent 70%),
+    var(--glass);
+  border: 1px solid var(--line-2); box-shadow: 0 40px 90px -45px rgba(6,3,15,.95), inset 0 1px 0 rgba(255,255,255,.08);
+  animation: panel-in .35s var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) { .lead-panel { animation: none; } }
+
+/* ---- sticky approval strip: manual approval stays in view while scrolling the record ---- */
+.strip {
+  position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin: 0 calc(-1 * clamp(18px, 2.4vw, 32px)) 0; padding: 11px clamp(18px, 2.4vw, 32px);
+  background: rgba(14,6,40,.82); -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid var(--line-2); border-left: 5px solid var(--amber);
+}
+.strip-approved { border-left-color: var(--green); } .strip-rejected { border-left-color: var(--red); }
+.strip-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--amber); flex: none; }
+.strip-approved .strip-dot { background: var(--green); } .strip-rejected .strip-dot { background: var(--red); }
+.strip-dot.pulse { animation: approval-pulse 1.8s ease-in-out infinite; }
+.strip-name { font-weight: 700; font-size: 14px; }
+.strip-state { font: 700 11px/1 var(--mono); letter-spacing: .14em; color: var(--amber); }
+.strip-approved .strip-state { color: var(--green); } .strip-rejected .strip-state { color: var(--red); }
+.strip-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.strip-actions form { margin: 0; }
+.btn-sm { padding: 7px 16px !important; font-size: 13px !important; }
+.strip-close { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line-2); background: transparent; color: var(--text-2); cursor: pointer; font-size: 18px; line-height: 1; }
+.strip-close:hover { color: var(--text); border-color: var(--text-3); }
+
+/* ---- hero ---- */
+.hero { display: grid; grid-template-columns: auto 1fr auto; gap: 22px; align-items: center; padding: 26px 0 20px; }
+.avatar {
+  width: 86px; height: 86px; border-radius: 26px; display: grid; place-items: center; flex: none;
+  font: 700 30px var(--wide); color: #fff; letter-spacing: -.02em; text-shadow: 0 2px 10px rgba(0,0,0,.3);
+  background: linear-gradient(135deg, hsl(var(--h) 72% 58%), hsl(calc(var(--h) + 45) 72% 38%));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 18px 36px -16px hsl(var(--h) 80% 40% / .8);
+}
+.avatar-sm { width: 52px; height: 52px; border-radius: 16px; font-size: 18px; }
+.lp-eyebrow { font: 500 11px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--text-3); }
+.lp-title { margin: 6px 0 10px; font-family: var(--wide); font-size: clamp(26px, 3.4vw, 40px); font-weight: 600; line-height: 1.05; letter-spacing: -.015em; }
+.chips { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+.chip { padding: 5px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 500; color: var(--text-2); background: rgba(239,239,239,.07); box-shadow: inset 0 0 0 1px rgba(239,239,239,.1); }
+.chip-priority { background: var(--violet-bg); color: var(--violet-t); font-weight: 700; }
+.chip-yc { background: rgba(255,122,48,.14); color: #FFB27A; }
+.hero-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.link-btn { padding: 6px 13px; border-radius: 999px; font-size: 13px; color: var(--text); text-decoration: none; background: rgba(144,91,244,.18); box-shadow: inset 0 0 0 1px rgba(192,132,252,.35); transition: background .2s ease; }
+.link-btn:hover { background: rgba(144,91,244,.32); }
+.ring-wrap { text-align: center; }
+.ring {
+  --c: var(--green); position: relative; width: 104px; height: 104px; border-radius: 50%; display: grid; place-content: center; text-align: center;
+  background: conic-gradient(var(--c) calc(var(--p) * 1%), rgba(239,239,239,.12) 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 11px), #000 calc(100% - 10px)); mask: radial-gradient(farthest-side, transparent calc(100% - 11px), #000 calc(100% - 10px));
+}
+.ring-mid { --c: var(--amber); } .ring-low { --c: var(--gray); }
+.ring-wrap { position: relative; width: 104px; }
+.ring-num, .ring-of { position: absolute; left: 0; right: 0; }
+.ring-wrap .ring { margin: 0; }
+.ring-num { top: 27px; font: 700 32px/1 var(--wide); }
+.ring-of { top: 63px; font: 500 12px var(--mono); color: var(--text-3); }
+.ring-label { margin-top: 6px; font: 500 11px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); }
+
+/* ---- manual approval block ---- */
+.approval { border-radius: 24px; padding: clamp(18px, 2.2vw, 28px); margin: 6px 0 20px; border: 1px solid var(--line-2); position: relative; overflow: hidden; }
+.approval::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(40% 80% at 100% 0%, rgba(255,255,255,.07), transparent 70%); }
+.approval-pending_review { background: linear-gradient(135deg, rgba(245,184,75,.22), rgba(245,184,75,.05) 70%); border-color: rgba(245,184,75,.6); box-shadow: 0 0 0 1px rgba(245,184,75,.15), 0 20px 50px -30px rgba(245,184,75,.5); }
+.approval-approved { background: linear-gradient(135deg, rgba(59,224,140,.2), rgba(59,224,140,.04) 70%); border-color: rgba(59,224,140,.55); }
+.approval-rejected { background: linear-gradient(135deg, rgba(255,92,135,.2), rgba(255,92,135,.04) 70%); border-color: rgba(255,122,156,.55); }
+.approval-top { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; position: relative; z-index: 1; }
+.approval-icon {
+  width: 58px; height: 58px; border-radius: 18px; display: grid; place-items: center; flex: none; font-size: 28px; font-weight: 700;
+  background: rgba(245,184,75,.2); color: var(--amber); box-shadow: inset 0 0 0 1px rgba(245,184,75,.5);
+}
+.approval-approved .approval-icon { background: rgba(59,224,140,.2); color: var(--green); box-shadow: inset 0 0 0 1px rgba(59,224,140,.5); }
+.approval-rejected .approval-icon { background: rgba(255,92,135,.2); color: var(--red); box-shadow: inset 0 0 0 1px rgba(255,122,156,.5); }
+.approval-pending_review .approval-icon { animation: approval-pulse 1.8s ease-in-out infinite; }
+@keyframes approval-pulse { 0%,100% { box-shadow: inset 0 0 0 1px rgba(245,184,75,.5), 0 0 0 3px rgba(245,184,75,.3); } 50% { box-shadow: inset 0 0 0 1px rgba(245,184,75,.5), 0 0 0 12px rgba(245,184,75,0); } }
+@media (prefers-reduced-motion: reduce) { .approval-pending_review .approval-icon, .strip-dot.pulse { animation: none; } }
+.approval-text { flex: 1 1 320px; min-width: 0; }
+.approval-kicker { font: 500 11px/1.2 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--text-2); }
+.approval-headline { font-family: var(--wide); font-size: clamp(22px, 3vw, 34px); font-weight: 700; letter-spacing: -.01em; margin: 4px 0; }
+.approval-pending_review .approval-headline { color: var(--amber); }
+.approval-approved .approval-headline { color: var(--green); }
+.approval-rejected .approval-headline { color: var(--red); }
+.approval-sub { font-size: 14px; color: var(--text-2); max-width: 64ch; }
+.approval-sub code, .funnel code, .pause-banner code { font-family: var(--mono); font-size: 12.5px; padding: 1px 6px; border-radius: 6px; background: rgba(239,239,239,.1); color: var(--text); }
+.approval-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.approval-actions form { margin: 0; }
+.approval-actions .btn { padding: 14px 26px; font-size: 15px; }
+
+/* ---- five-step path ---- */
+.stepper { list-style: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; margin: 26px 0 22px; padding: 0; position: relative; z-index: 1; }
+.step { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 8px 6px; }
+.step::before { content: ""; position: absolute; top: 24px; left: -50%; width: 100%; height: 3px; border-radius: 2px; background: rgba(239,239,239,.14); z-index: 0; }
+.step:first-child::before { display: none; }
+.step-done::before, .step-current::before, .step-rejected::before { background: linear-gradient(90deg, var(--green), var(--green)); }
+.step-mark {
+  position: relative; z-index: 1; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+  font: 700 15px var(--mono); background: #150a35; border: 2px solid rgba(239,239,239,.2); color: var(--text-3);
+}
+.step-done .step-mark { background: var(--green); border-color: var(--green); color: #052b18; }
+.step-fail .step-mark { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+.step-next .step-mark { border-color: var(--green); color: var(--green); }
+.step-current .step-mark { background: var(--amber); border-color: var(--amber); color: #3b2600; width: 42px; height: 42px; margin-top: -4px; box-shadow: 0 0 0 6px rgba(245,184,75,.28); }
+.step-rejected .step-mark { background: var(--red); border-color: var(--red); color: #3b0014; width: 42px; height: 42px; margin-top: -4px; }
+.step-label { font: 600 12.5px/1.25 var(--body); color: var(--text-2); }
+.step-manual { background: rgba(245,184,75,.1); border-radius: 18px; box-shadow: inset 0 0 0 1px rgba(245,184,75,.3); }
+.approval-approved .step-manual { background: rgba(59,224,140,.1); box-shadow: inset 0 0 0 1px rgba(59,224,140,.3); }
+.approval-rejected .step-manual { background: rgba(255,92,135,.1); box-shadow: inset 0 0 0 1px rgba(255,122,156,.3); }
+.step-manual .step-label { font: 700 12px/1.25 var(--mono); letter-spacing: .1em; color: var(--text); }
+.step-current .step-label { color: var(--amber); }
+.step-note { font-size: 11.5px; color: var(--text-3); min-height: 14px; }
+
+/* ---- readiness: four check tiles ---- */
+.readiness-head { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 14px; margin: 4px 0 10px; position: relative; z-index: 1; }
+.readiness-count { font: 700 12px var(--mono); letter-spacing: .06em; }
+.readiness-count.all-ok { color: var(--green); } .readiness-count.some-open { color: var(--amber); }
+.check-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; position: relative; z-index: 1; }
+.check-tile { padding: 12px 14px; border-radius: 16px; background: rgba(6,3,15,.4); border: 1px solid var(--line-2); border-top-width: 4px; }
+.check-tile.ok { border-top-color: var(--green); }
+.check-tile.open { border-top-color: var(--amber); background: repeating-linear-gradient(135deg, rgba(245,184,75,.1) 0 8px, rgba(245,184,75,.03) 8px 16px); }
+.check-icon { font-weight: 700; font-size: 15px; }
+.check-tile.ok .check-icon { color: var(--green); } .check-tile.open .check-icon { color: var(--amber); }
+.check-title { font-weight: 700; font-size: 13.5px; margin: 2px 0 4px; }
+.check-detail { font-size: 12.5px; line-height: 1.4; color: var(--text-2); word-break: break-word; }
+
+/* ---- sections ---- */
+.lp-section { margin-top: 18px; padding: 20px 22px; border-radius: 20px; border: 1px solid var(--line); background: rgba(16,6,44,.5); }
+.lp-section h3 { display: flex; align-items: center; gap: 9px; margin: 0 0 14px; font: 700 12px/1.3 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--heliotrope); }
+.lp-section h3 .hint { text-transform: none; letter-spacing: 0; font: 400 12.5px var(--body); color: var(--text-3); margin-left: 4px; }
+.h-ico { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 9px; font-size: 14px; background: rgba(144,91,244,.2); letter-spacing: 0; }
+.lp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; }
+.lp-wide { grid-column: span 2; }
+.lp-cols { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px 20px; margin-top: 16px; }
+.lp-cols > div dt { margin-top: 0; }
+.plain-list { margin: 12px 0 0; padding-left: 18px; font-size: 13.5px; color: var(--text-2); }
+.preline { white-space: pre-line; }
+
+.glance { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 18px; }
+.tile { padding: 14px 16px; border-radius: 16px; background: rgba(239,239,239,.05); border: 1px solid var(--line); }
+.tile-k { font: 500 10.5px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); }
+.tile-v { margin-top: 6px; font-weight: 700; font-size: 15px; line-height: 1.25; word-break: break-word; }
+
+.contact-card .contact-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.contact-name { font-weight: 700; font-size: 18px; } .contact-title { color: var(--text-2); font-size: 14px; }
+.email-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 14px; border-radius: 14px; background: rgba(6,3,15,.5); border: 1px solid var(--line-2); margin-bottom: 10px; }
+.email-addr { font: 500 15px var(--mono); word-break: break-all; }
+.copy-btn { margin-left: auto; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line-2); background: transparent; color: var(--text-2); font-size: 12px; cursor: pointer; }
+.copy-btn:hover { color: var(--text); border-color: var(--lavender); }
+.badges-row { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+.vbadge { padding: 5px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 600; }
+.vb-ok { background: var(--green-bg); color: var(--green); box-shadow: inset 0 0 0 1px rgba(59,224,140,.35); }
+.vb-warn { background: var(--amber-bg); color: var(--amber); box-shadow: inset 0 0 0 1px rgba(245,184,75,.4); }
+.vb-bad { background: var(--red-bg); color: var(--red); box-shadow: inset 0 0 0 1px rgba(255,122,156,.4); }
+.source-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.source-chip { padding: 4px 10px; border-radius: 10px; font-size: 12.5px; color: var(--text-2); background: rgba(239,239,239,.07); word-break: break-all; }
+
+/* draft email as an email */
+.mock { border-radius: 16px; overflow: hidden; border: 1px solid var(--line-2); background: rgba(6,3,15,.55); }
+.mock-head { padding: 14px 18px; display: grid; gap: 6px; font-size: 14px; background: rgba(239,239,239,.05); border-bottom: 1px solid var(--line-2); }
+.mock-k { display: inline-block; min-width: 62px; font: 500 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); }
+.mock-body { margin: 0; padding: 18px 20px; font: 400 15px/1.7 var(--body); white-space: pre-wrap; word-break: break-word; color: var(--text); }
+.mock-foot { padding: 10px 18px; font-size: 12.5px; color: var(--text-3); border-top: 1px dashed var(--line-2); }
+
+/* timeline */
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.timeline li { position: relative; display: flex; gap: 14px; padding: 0 0 16px 0; }
+.timeline li:not(:last-child)::after { content: ""; position: absolute; left: 7px; top: 18px; bottom: 0; width: 2px; background: var(--line-2); }
+.tl-dot { width: 16px; height: 16px; border-radius: 50%; flex: none; margin-top: 2px; border: 2px solid var(--text-3); background: transparent; }
+.tl-done .tl-dot { background: var(--green); border-color: var(--green); }
+.tl-open .tl-dot { border-color: var(--amber); box-shadow: 0 0 0 4px rgba(245,184,75,.2); }
+.timeline strong { display: block; font-size: 14px; } .timeline span { font-size: 12.5px; color: var(--text-3); }
+
+/* complete record: every stored field */
+.complete-record summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 9px; font: 700 12px/1.3 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--heliotrope); }
+.complete-record summary::-webkit-details-marker { display: none; }
+.complete-record summary::after { content: "+"; margin-left: auto; font-size: 18px; color: var(--text-3); }
+.complete-record[open] summary::after { content: "\2212"; }
+.complete-record summary .hint { text-transform: none; letter-spacing: 0; font: 400 12.5px var(--body); color: var(--text-3); }
+.record-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 14px; }
+.record-table th { width: 210px; text-align: left; vertical-align: top; padding: 9px 12px 9px 0; font: 500 12px var(--mono); color: var(--text-3); border-bottom: 1px solid var(--line); white-space: nowrap; }
+.record-table td { padding: 9px 0; border-bottom: 1px solid var(--line); color: var(--text); white-space: pre-wrap; word-break: break-word; }
+.record-table td.empty { color: var(--text-3); font-style: italic; }
+
+/* ---- approval-queue bar (all leads) ---- */
+.funnel { margin: 0 0 24px; padding: 20px 24px; border-radius: 24px; background: var(--glass); border: 1px solid var(--line-2); }
+.funnel-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; font-size: 15px; }
+.funnel-waiting { font: 700 13px var(--mono); letter-spacing: .04em; color: var(--amber); }
+.funnel-waiting.is-zero { color: var(--green); }
+.funnel-bar { display: flex; gap: 4px; height: 46px; border-radius: 14px; overflow: hidden; }
+.funnel-seg { display: grid; place-items: center; font: 700 16px var(--mono); color: #0b0620; min-width: 40px; transition: flex .3s ease; }
+.seg-waiting { background: repeating-linear-gradient(135deg, var(--amber) 0 10px, #FFC966 10px 20px); }
+.seg-approved { background: var(--green); } .seg-sent { background: var(--blue-t); } .seg-rejected { background: var(--red); }
+.seg-empty { background: rgba(239,239,239,.12); color: var(--text-3); font-family: var(--body); font-weight: 500; }
+.funnel-legend { display: flex; flex-wrap: wrap; gap: 8px 22px; list-style: none; margin: 14px 0 0; padding: 0; font-size: 13px; color: var(--text-2); }
+.funnel-legend strong { color: var(--text); margin-left: 4px; }
+.funnel-legend .pct { color: var(--text-3); font-family: var(--mono); font-size: 12px; margin-left: 4px; }
+.swatch { display: inline-block; width: 12px; height: 12px; border-radius: 4px; margin-right: 8px; vertical-align: -1px; }
+.swatch.seg-waiting { background: var(--amber); }
+
+/* ---- list rows ---- */
+.lead-row { cursor: pointer; transition: background .15s ease; }
+.lead-row:hover { background: rgba(144,91,244,.12); }
+.lead-row.row-pending td:first-child { box-shadow: inset 4px 0 0 var(--amber); }
+.lead-row.row-selected { background: rgba(144,91,244,.2); }
+.row-link { color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; }
+.mini-avatar { width: 30px; height: 30px; border-radius: 10px; display: inline-grid; place-items: center; font: 700 11px var(--wide); color: #fff; flex: none;
+  background: linear-gradient(135deg, hsl(var(--h) 72% 58%), hsl(calc(var(--h) + 45) 72% 38%)); }
+
+@media (max-width: 980px) {
+  .hero { grid-template-columns: auto 1fr; }
+  .ring-wrap { grid-column: 1 / -1; justify-self: start; display: flex; align-items: center; gap: 14px; width: auto; }
+  .glance { grid-template-columns: repeat(2, 1fr); }
+  .check-tiles { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 800px) {
+  .lp-grid { grid-template-columns: 1fr; } .lp-wide { grid-column: auto; }
+  .stepper { grid-template-columns: 1fr; gap: 6px; }
+  .step { flex-direction: row; text-align: left; gap: 12px; } .step::before { display: none; }
+  .hero { grid-template-columns: 1fr; } .avatar { width: 64px; height: 64px; font-size: 22px; border-radius: 20px; }
+  .record-table th { width: 130px; }
+  .strip-name { display: none; }
+}
+@media (max-width: 520px) { .check-tiles, .glance { grid-template-columns: 1fr; } }
+
+.preview-note{margin:0 0 14px;padding:10px 14px;border-radius:12px;background:rgba(239,239,239,.06);color:var(--text-2);font-size:13px}
+.table-wrap{overflow-x:auto}
+@media (max-width:640px){main{padding-left:16px;padding-right:16px}}
+</style></head>
+<body>
+<header class="topbar"><span class="brand">Serfis <span>Lead Dashboard</span></span><nav><span class="hint">Output of the lead-gen agents</span></nav></header>
+<main>
+<section id="slot" class="lead-panel-slot" aria-live="polite"></section>
+<section class="cards" id="cards"></section>
+<section class="funnel" id="funnel" aria-label="Manual approval queue"></section>
+<div class="filters" id="filters"></div>
+<section class="table-wrap"><table class="lead-table"><thead><tr><th>Company</th><th>Industry</th><th>Size</th><th>ICP Score</th><th>Contact</th><th>Lead Status</th><th>Approval</th><th>Checks</th><th>Added</th></tr></thead><tbody id="tbody"></tbody></table></section>
+</main>
+<script type="application/json" id="data">{"generated": "2026-10-17", "leads": [{"f": {"company_name": "Manicule", "website": "https://manicule.com", "industry": "B2B -> Marketing", "company_size": "1-10", "location": "San Francisco", "what_they_sell": "AgentRel — Devrel For Agents", "funding_notes": "Y Combinator Spring 2026", "icp_fit_score": 6, "why_it_fits": "Workflow product with a visual before/after; suits targeted explainer and LinkedIn content. (Rule-based - review.)", "priority": "P2", "category": "B2B -> Marketing", "market": "B2B", "best_ad_type": "B2B Explainer / LinkedIn", "serfis_fit": "Medium", "content_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "yc_profile_url": "https://www.ycombinator.com/companies/manicule", "yc_batch": "Spring 2026", "founders": "Naman Bansal (Founder/CEO)\nShreyans Jain (Founder/CTO)", "overrides": "", "contact_name": "Naman Bansal", "contact_title": "Co-Founder & CEO", "contact_email": "n••••@manicule.dev", "email_status": "linkedin", "contact_profile_url": "https://linkedin.com/in/namban", "contact_check": "LinkedIn: confirmed Co-Founder & CEO at Manicule (YC P26) (current)", "research_notes": "Y Combinator Spring 2026, team of 8, San Francisco. Manicule does AgentRel. We get companies discovered and used by AI agents. Think DevRel, rebuilt for a world where agents make all the decisions. We own developer documentation and technical content across social channels, end-to-end. We've grown 100% MoM over the last three months to $53K in monthly revenue, with customers like Supermemory, Greptile, Reducto, and Mastra.\r\n  \r\nGetting discovered a... Founders: Naman Bansal (Founder/CEO); Shreyans Jain (Founder/CTO). Category: B2B -> Marketing (B2B). Suggested content angle: Manual process vs. automated; time-saved story; short founder-led explainer. Best ad type: B2B Explainer / LinkedIn. Sells: AgentRel — Devrel For Agents.", "research_sources": "Company website (https://manicule.com); Y Combinator company profile (https://www.ycombinator.com/companies/manicule)", "outreach_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "draft_email_subject": "Short-form video ideas for Manicule", "draft_email_body": "Hi Naman,\n\nI came across Manicule and really liked what you're doing with agentRel.\n\nAt Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, YouTube, Reddit, X, and Pinterest.\n\nSocial media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.\n\nI had a few ideas for how Manicule could turn agentRel into engaging social content.\n\nWould you be open to me sending over a couple of concepts?\n\nBest,\nAllison\nSerfis AI", "approval_status": "pending_review", "decided_at": "", "lead_status": "new", "source": "yc_directory", "id": 224, "created_at": "2026-10-16T19:55:54.473520+00:00", "updated_at": "2026-10-16T20:02:53.740633+00:00"}, "ctx": {"verified": true, "hasDraft": true, "checks": {"draft": [], "region": []}, "acknowledged": [], "sends": [], "suppressed": false, "cooldown": null, "lookup": {"domain": "manicule.com", "company": "Manicule", "outcome": "hit", "batch": "Spring 2026", "size_band": "1-10", "market": "B2B", "checked_at": "2026-10-16T19:55:55.845175+00:00"}, "risk": [], "messages": [], "wordCount": 119}}, {"f": {"company_name": "InventoryQuant", "website": "https://www.inventoryquant.com", "industry": "B2B", "company_size": "1-10", "location": "San Francisco", "what_they_sell": "We automate the inventory process in insurance", "funding_notes": "Y Combinator Winter 2026", "icp_fit_score": 6, "why_it_fits": "Workflow product with a visual before/after; suits targeted explainer and LinkedIn content. (Rule-based - review.)", "priority": "P2", "category": "B2B", "market": "B2B", "best_ad_type": "B2B Explainer / LinkedIn", "serfis_fit": "Medium", "content_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "yc_profile_url": "https://www.ycombinator.com/companies/inventoryquant", "yc_batch": "Winter 2026", "founders": "Sander Schulhoff (Founder/CEO)", "overrides": "", "contact_name": "Sander Schulhoff", "contact_title": "Chief Executive Officer", "contact_email": "s•••••@inventoryquant.com", "email_status": "published", "contact_profile_url": "https://linkedin.com/in/sander-schulhoff", "contact_check": "still published on the company site; LinkedIn: confirmed Chief Executive Officer at InventoryQuant (current)", "research_notes": "Y Combinator Winter 2026, team of 1, San Francisco. We automate inventory and contents processing for insurance and insurance-adjacent industries, including public adjusters, restoration contents, and insurance companies. We also handle various inventory and estimate adjacent processes that cost many billions of dollars a year and thousands of years of man hours. Founders: Sander Schulhoff (Founder/CEO). Category: B2B (B2B). Suggested content angle: Manual process vs. automated; time-saved story; short founder-led explainer. Best ad type: B2B Explainer / LinkedIn. Sells: We automate the inventory process in insurance.", "research_sources": "Company website (https://www.inventoryquant.com); Y Combinator company profile (https://www.ycombinator.com/companies/inventoryquant)", "outreach_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "draft_email_subject": "Short-form video ideas for InventoryQuant", "draft_email_body": "Hi Sander,\n\nI came across InventoryQuant and really liked what you're doing with we automate the inventory process in insurance.\n\nAt Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, YouTube, Reddit, X, and Pinterest.\n\nSocial media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.\n\nI had a few ideas for how InventoryQuant could turn we automate the inventory process in insurance into engaging social content.\n\nWould you be open to me sending over a couple of concepts?\n\nBest,\nAllison\nSerfis AI", "approval_status": "pending_review", "decided_at": "", "lead_status": "new", "source": "yc_directory", "id": 220, "created_at": "2026-10-16T19:50:37.696970+00:00", "updated_at": "2026-10-16T20:03:04.610472+00:00"}, "ctx": {"verified": true, "hasDraft": true, "checks": {"draft": [], "region": []}, "acknowledged": [], "sends": [], "suppressed": false, "cooldown": null, "lookup": {"domain": "inventoryquant.com", "company": "InventoryQuant", "outcome": "hit", "batch": "Winter 2026", "size_band": "1-10", "market": "B2B", "checked_at": "2026-10-16T19:50:44.727884+00:00"}, "risk": [], "messages": [], "wordCount": 131}}, {"f": {"company_name": "Burt", "website": "https://www.burthq.com/", "industry": "B2B -> Supply Chain and Logistics", "company_size": "1-10", "location": "San Francisco", "what_they_sell": "AI teammates for logistics", "funding_notes": "Y Combinator Winter 2026", "icp_fit_score": 6, "why_it_fits": "Workflow product with a visual before/after; suits targeted explainer and LinkedIn content. (Rule-based - review.)", "priority": "P2", "category": "B2B -> Supply Chain and Logistics", "market": "B2B", "best_ad_type": "B2B Explainer / LinkedIn", "serfis_fit": "Medium", "content_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "yc_profile_url": "https://www.ycombinator.com/companies/burt", "yc_batch": "Winter 2026", "founders": "Bobby Zhong (Founder/CEO)\nKurt Sharma (Founder/CTO)", "overrides": "", "contact_name": "Bobby Zhong", "contact_title": "Co-Founder, CEO", "contact_email": "b••••@burthq.com", "email_status": "published", "contact_profile_url": "https://linkedin.com/in/bobby-zhong", "contact_check": "still published on the company site; LinkedIn: confirmed Co-Founder, CEO at Burt (YC W26) (current)", "research_notes": "Y Combinator Winter 2026, team of 2, San Francisco. We're building for the people that keep the world moving. \r\n\r\nFreight brokers and forwarders operate on razor-thin margins in a relationship-driven business — yet most of their teams spend the majority of their day on manual, repetitive work.\r\n\r\nWe help freight brokers and forwarders build AI teammates that handle their repetitive, manual tasks so teams have time to focus on customers, carriers, a... Founders: Bobby Zhong (Founder/CEO); Kurt Sharma (Founder/CTO). Category: B2B -> Supply Chain and Logistics (B2B). Suggested content angle: Manual process vs. automated; time-saved story; short founder-led explainer. Best ad type: B2B Explainer / LinkedIn. Sells: AI teammates for logistics.", "research_sources": "Company website (https://www.burthq.com/); Y Combinator company profile (https://www.ycombinator.com/companies/burt)", "outreach_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "draft_email_subject": "Short-form video ideas for Burt", "draft_email_body": "Hi Bobby,\n\nI came across Burt and really liked what you're doing with AI teammates for logistics.\n\nAt Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, YouTube, Reddit, X, and Pinterest.\n\nSocial media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.\n\nI had a few ideas for how Burt could turn AI teammates for logistics into engaging social content.\n\nWould you be open to me sending over a couple of concepts?\n\nBest,\nAllison\nSerfis AI", "approval_status": "pending_review", "decided_at": "", "lead_status": "new", "source": "yc_directory", "id": 216, "created_at": "2026-10-16T19:50:27.748799+00:00", "updated_at": "2026-10-16T20:03:14.720468+00:00"}, "ctx": {"verified": true, "hasDraft": true, "checks": {"draft": [], "region": []}, "acknowledged": [], "sends": [], "suppressed": false, "cooldown": null, "lookup": {"domain": "burthq.com", "company": "Burt", "outcome": "hit", "batch": "Winter 2026", "size_band": "1-10", "market": "B2B", "checked_at": "2026-10-16T19:50:37.321329+00:00"}, "risk": [], "messages": [], "wordCount": 125}}, {"f": {"company_name": "Terminal Use", "website": "https://www.terminaluse.com/", "industry": "B2B -> Operations", "company_size": "1-10", "location": "San Francisco", "what_they_sell": "AI-native transformation for operations-heavy companies", "funding_notes": "Y Combinator Winter 2026", "icp_fit_score": 6, "why_it_fits": "Workflow product with a visual before/after; suits targeted explainer and LinkedIn content. (Rule-based - review.)", "priority": "P2", "category": "B2B -> Operations", "market": "B2B", "best_ad_type": "B2B Explainer / LinkedIn", "serfis_fit": "Medium", "content_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "yc_profile_url": "https://www.ycombinator.com/companies/terminal-use", "yc_batch": "Winter 2026", "founders": "Vivek Raja (Founder/CEO)\nFilip Balucha (Founder)\nStavros Filosidis (Founder/CTO)", "overrides": "", "contact_name": "Vivek Raja", "contact_title": "Co-Founder & CEO", "contact_email": "v••••@terminaluse.com", "email_status": "published", "contact_profile_url": "https://linkedin.com/in/v-raja", "contact_check": "still published on the company site; LinkedIn: confirmed Co-Founder & CEO at Terminal Use (YC W26) (current)", "research_notes": "Y Combinator Winter 2026, team of 4, San Francisco. AI pilots are everywhere. Few organizations can point to a department that actually runs AI-first. Terminal Use changes that.\r\n\r\nWe help operations teams rebuild how work gets done, end to end. We begin with one critical process, map how it runs today and where it breaks, then redesign the workflow around AI agents, existing systems, and people at the right control points.\r\nThe result is a working... Founders: Vivek Raja (Founder/CEO); Filip Balucha (Founder); Stavros Filosidis (Founder/CTO). Category: B2B -> Operations (B2B). Suggested content angle: Manual process vs. automated; time-saved story; short founder-led explainer. Best ad type: B2B Explainer / LinkedIn. Sells: AI-native transformation for operations-heavy companies.", "research_sources": "Company website (https://www.terminaluse.com/); Y Combinator company profile (https://www.ycombinator.com/companies/terminal-use)", "outreach_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "draft_email_subject": "Short-form video ideas for Terminal Use", "draft_email_body": "Hi Vivek,\n\nI came across Terminal Use and really liked what you're doing with AI-native transformation for operations-heavy companies.\n\nAt Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, YouTube, Reddit, X, and Pinterest.\n\nSocial media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.\n\nI had a few ideas for how Terminal Use could turn AI-native transformation for operations-heavy companies into engaging social content.\n\nWould you be open to me sending over a couple of concepts?\n\nBest,\nAllison\nSerfis AI", "approval_status": "pending_review", "decided_at": "", "lead_status": "new", "source": "yc_directory", "id": 212, "created_at": "2026-10-16T19:50:23.146511+00:00", "updated_at": "2026-10-16T20:03:25.691964+00:00"}, "ctx": {"verified": true, "hasDraft": true, "checks": {"draft": [], "region": []}, "acknowledged": [], "sends": [], "suppressed": false, "cooldown": null, "lookup": {"domain": "terminaluse.com", "company": "Terminal Use", "outcome": "hit", "batch": "Winter 2026", "size_band": "1-10", "market": "B2B", "checked_at": "2026-10-16T19:50:27.532638+00:00"}, "risk": [], "messages": [], "wordCount": 129}}, {"f": {"company_name": "Perfectly", "website": "https://www.perfectly.so/", "industry": "B2B -> Recruiting and Talent", "company_size": "1-10", "location": "San Francisco", "what_they_sell": "The AI-native Recruiting OS", "funding_notes": "Y Combinator Winter 2026", "icp_fit_score": 6, "why_it_fits": "Workflow product with a visual before/after; suits targeted explainer and LinkedIn content. (Rule-based - review.)", "priority": "P2", "category": "B2B -> Recruiting and Talent", "market": "B2B", "best_ad_type": "B2B Explainer / LinkedIn", "serfis_fit": "Medium", "content_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "yc_profile_url": "https://www.ycombinator.com/companies/perfectly", "yc_batch": "Winter 2026", "founders": "Victor Luo (Founder/CEO)\nZhuang (Gary) Luo (Founder/CTO)\nHuimin Xie (Founder)", "overrides": "", "contact_name": "Victor Luo", "contact_title": "CEO and Co-Founder", "contact_email": "v•••••@perfectly.so", "email_status": "published", "contact_profile_url": "https://linkedin.com/in/victor-luo", "contact_check": "still published on the company site; LinkedIn: confirmed CEO and Co-Founder at Perfectly (YC W26) (current)", "research_notes": "Y Combinator Winter 2026, team of 4, San Francisco. Perfectly is the first AI-native Recruiting OS.\r\n\r\nSince starting YC, we’re already helping top startups like Giga, Corgi, LlamaIndex, Porter, and dozens more hire faster.\r\n\r\nWe’re seeing:\r\n-> 4× faster hiring\r\n-> 10× candidate volume\r\n-> 2× higher interview pass rates\r\n\r\nBehind the scenes, it’s even more impressive:\r\n-> 20x higher recruiting efficiency: from 20 hours to 1 hour\r\n-> 250% higher can... Founders: Victor Luo (Founder/CEO); Zhuang (Gary) Luo (Founder/CTO); Huimin Xie (Founder). Category: B2B -> Recruiting and Talent (B2B). Suggested content angle: Manual process vs. automated; time-saved story; short founder-led explainer. Best ad type: B2B Explainer / LinkedIn. Sells: The AI-native Recruiting OS.", "research_sources": "Company website (https://www.perfectly.so/); Y Combinator company profile (https://www.ycombinator.com/companies/perfectly)", "outreach_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "draft_email_subject": "Short-form video ideas for Perfectly", "draft_email_body": "Hi Victor,\n\nI came across Perfectly and really liked what you're doing with the ai-native recruiting os.\n\nAt Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, YouTube, Reddit, X, and Pinterest.\n\nSocial media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.\n\nI had a few ideas for how Perfectly could turn the ai-native recruiting os into engaging social content.\n\nWould you be open to me sending over a couple of concepts?\n\nBest,\nAllison\nSerfis AI", "approval_status": "pending_review", "decided_at": "", "lead_status": "new", "source": "yc_directory", "id": 208, "created_at": "2026-10-16T19:50:01.488655+00:00", "updated_at": "2026-10-16T20:03:43.009138+00:00"}, "ctx": {"verified": true, "hasDraft": true, "checks": {"draft": [], "region": []}, "acknowledged": [], "sends": [], "suppressed": false, "cooldown": null, "lookup": {"domain": "perfectly.so", "company": "Perfectly", "outcome": "hit", "batch": "Winter 2026", "size_band": "1-10", "market": "B2B", "checked_at": "2026-10-16T19:50:22.549873+00:00"}, "risk": [], "messages": [], "wordCount": 125}}, {"f": {"company_name": "DeepAware AI (Robotics Center of Silicon Valley)", "website": "https://roboticscenter.ai/", "industry": "Industrials -> Manufacturing and Robotics", "company_size": "1-10", "location": "San Francisco", "what_they_sell": "Robots, parts & RL envs & evals - delivered in 48 hrs / pickup in SF.", "funding_notes": "Y Combinator Summer 2025", "icp_fit_score": 6, "why_it_fits": "Workflow product with a visual before/after; suits targeted explainer and LinkedIn content. (Rule-based - review.)", "priority": "P2", "category": "Industrials -> Manufacturing and Robotics", "market": "B2B", "best_ad_type": "B2B Explainer / LinkedIn", "serfis_fit": "Medium", "content_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "yc_profile_url": "https://www.ycombinator.com/companies/deepaware-ai-robotics-center-of-silicon-valley", "yc_batch": "Summer 2025", "founders": "Jerry Huang (Founder/CEO)\nStela Tong (Founder/CTO)", "overrides": "", "contact_name": "Jerry Huang", "contact_title": "Founder and CEO", "contact_email": "j••••@roboticscenter.ai", "email_status": "published", "contact_profile_url": "https://linkedin.com/in/jerryh01", "contact_check": "still published on the company site; LinkedIn: confirmed Founder and CEO at DeepAware AI (YC S25) (current)", "research_notes": "Y Combinator Summer 2025, team of 4, San Francisco. DeepAware (Robotics Center of Silicon Valley, https://roboticscenter.ai/) is the fastest way for enterprises and researchers to get robots and robotics parts in the US — 72-hour delivery or Bay Area pickup.\r\n\r\nBeyond hardware, we help teams collect teleoperation data, build reinforcement learning environments, and deploy robots into production. Customers include AI labs, industrial operations, res... Founders: Jerry Huang (Founder/CEO); Stela Tong (Founder/CTO). Category: Industrials -> Manufacturing and Robotics (B2B). Suggested content angle: Manual process vs. automated; time-saved story; short founder-led explainer. Best ad type: B2B Explainer / LinkedIn. Sells: Robots, parts & RL envs & evals - delivered in 48 hrs / pickup in SF..", "research_sources": "Company website (https://roboticscenter.ai/); Y Combinator company profile (https://www.ycombinator.com/companies/deepaware-ai-robotics-center-of-silicon-valley)", "outreach_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "draft_email_subject": "Short-form video ideas for DeepAware AI (Robotics Center of Silicon Valley)", "draft_email_body": "Hi Jerry,\n\nI came across DeepAware AI (Robotics Center of Silicon Valley) and really liked what you're doing with robots.\n\nAt Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, YouTube, Reddit, X, and Pinterest.\n\nSocial media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.\n\nI had a few ideas for how DeepAware AI (Robotics Center of Silicon Valley) could turn robots into engaging social content.\n\nWould you be open to me sending over a couple of concepts?\n\nBest,\nAllison\nSerfis AI", "approval_status": "pending_review", "decided_at": "", "lead_status": "new", "source": "yc_directory", "id": 204, "created_at": "2026-10-16T19:49:45.652122+00:00", "updated_at": "2026-10-16T20:03:54.890718+00:00"}, "ctx": {"verified": true, "hasDraft": true, "checks": {"draft": [], "region": []}, "acknowledged": [], "sends": [], "suppressed": false, "cooldown": null, "lookup": {"domain": "roboticscenter.ai", "company": "DeepAware AI (Robotics Center of Silicon Valley)", "outcome": "hit", "batch": "Summer 2025", "size_band": "1-10", "market": "B2B", "checked_at": "2026-10-16T19:50:00.791016+00:00"}, "risk": [], "messages": [], "wordCount": 131}}, {"f": {"company_name": "Stilta", "website": "https://stilta.com", "industry": "B2B", "company_size": "1-10", "location": "Stockholm, Sweden", "what_they_sell": "Agentic AI for intellectual property", "funding_notes": "Y Combinator Winter 2026", "icp_fit_score": 6, "why_it_fits": "Workflow product with a visual before/after; suits targeted explainer and LinkedIn content. (Rule-based - review.)", "priority": "P2", "category": "B2B", "market": "B2B", "best_ad_type": "B2B Explainer / LinkedIn", "serfis_fit": "Medium", "content_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "yc_profile_url": "https://www.ycombinator.com/companies/stilta", "yc_batch": "Winter 2026", "founders": "Oskar Block (Founder/CEO)\nOscar Adamsson (Founder/CPO)\nTobias Estreen (Founder)\nPetrus Werner (Founder/Chief Engineering Officer)", "overrides": "", "contact_name": "Oskar Block", "contact_title": "CEO & Co-Founder", "contact_email": "o••••@stilta.com", "email_status": "published", "contact_profile_url": "https://linkedin.com/in/oskarblock", "contact_check": "still published on the company site; LinkedIn: confirmed CEO & Co-Founder at Stilta (current)", "research_notes": "Y Combinator Winter 2026, team of 4, Stockholm, Sweden. Stilta builds agentic AI software for intellectual property, starting with patent litigation. Whether challenging or enforcing a patent, leading IP law firms and in-house IP teams use Stilta for source-backed, auditable analysis.\r\n\r\nInnovation drives the world's most important breakthroughs, but the tools that protect it haven't kept pace. Patent attorneys do high-stakes work with a process still... Founders: Oskar Block (Founder/CEO); Oscar Adamsson (Founder/CPO); Tobias Estreen (Founder); Petrus Werner (Founder/Chief Engineering Officer). Category: B2B (B2B). Suggested content angle: Manual process vs. automated; time-saved story; short founder-led explainer. Best ad type: B2B Explainer / LinkedIn. Sells: Agentic AI for intellectual property.", "research_sources": "Company website (https://stilta.com); Y Combinator company profile (https://www.ycombinator.com/companies/stilta)", "outreach_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "draft_email_subject": "Short-form video ideas for Stilta", "draft_email_body": "Hi Oskar,\n\nI came across Stilta and really liked what you're doing with agentic AI for intellectual property.\n\nAt Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, YouTube, Reddit, X, and Pinterest.\n\nSocial media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.\n\nI had a few ideas for how Stilta could turn agentic AI for intellectual property into engaging social content.\n\nWould you be open to me sending over a couple of concepts?\n\nBest,\nAllison\nSerfis AI", "approval_status": "pending_review", "decided_at": "", "lead_status": "new", "source": "yc_directory", "id": 200, "created_at": "2026-10-16T19:49:36.010554+00:00", "updated_at": "2026-10-16T20:04:05.537531+00:00"}, "ctx": {"verified": true, "hasDraft": true, "checks": {"draft": [], "region": ["based outside the US (Stockholm, Sweden) - cold B2B email rules are stricter in the EU, UK and Canada (Germany especially); check it is allowed before sending"]}, "acknowledged": [], "sends": [], "suppressed": false, "cooldown": null, "lookup": {"domain": "stilta.com", "company": "Stilta", "outcome": "hit", "batch": "Winter 2026", "size_band": "1-10", "market": "B2B", "checked_at": "2026-10-16T19:49:45.117609+00:00"}, "risk": [], "messages": [], "wordCount": 127}}, {"f": {"company_name": "Cardboard", "website": "https://cardboard.ai", "industry": "B2B", "company_size": "1-10", "location": "Bengaluru, India", "what_they_sell": "Agentic video editor", "funding_notes": "Y Combinator Winter 2026", "icp_fit_score": 6, "why_it_fits": "Workflow product with a visual before/after; suits targeted explainer and LinkedIn content. (Rule-based - review.)", "priority": "P2", "category": "B2B", "market": "B2B", "best_ad_type": "B2B Explainer / LinkedIn", "serfis_fit": "Medium", "content_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "yc_profile_url": "https://www.ycombinator.com/companies/cardboard", "yc_batch": "Winter 2026", "founders": "Saksham Aggarwal (Founder/CEO)\nIshan Sharma (Founder/CTO)", "overrides": "", "contact_name": "Ishan Sharma", "contact_title": "Co-Founder & CTO", "contact_email": "i••••@cardboard.ai", "email_status": "published", "contact_profile_url": "https://linkedin.com/in/ishandeveloper", "contact_check": "still published on the company site; LinkedIn: confirmed Co-Founder & CTO at Cardboard Inc. (current)", "research_notes": "Y Combinator Winter 2026, team of 8, Bengaluru, India. Cardboard is an agentic video editor for growth/marketing teams and serious creators who need to ship videos consistently. Instead of agencies, long timelines, and infinite review cycles, teams give cardboard a footage + a goal (“3 variants”, “30s hook”, “testimonials”) to get a strong first cut in minutes on which they can iterate quickly.\r\n\r\nMultimodal LLMs can finally reason over footage, and W... Founders: Saksham Aggarwal (Founder/CEO); Ishan Sharma (Founder/CTO). Category: B2B (B2B). Suggested content angle: Manual process vs. automated; time-saved story; short founder-led explainer. Best ad type: B2B Explainer / LinkedIn. Sells: Agentic video editor.", "research_sources": "Company website (https://cardboard.ai); Y Combinator company profile (https://www.ycombinator.com/companies/cardboard)", "outreach_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "draft_email_subject": "Short-form video ideas for Cardboard", "draft_email_body": "Hi Ishan,\n\nI came across Cardboard and really liked what you're doing with agentic video editor.\n\nAt Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, YouTube, Reddit, X, and Pinterest.\n\nSocial media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.\n\nI had a few ideas for how Cardboard could turn agentic video editor into engaging social content.\n\nWould you be open to me sending over a couple of concepts?\n\nBest,\nAllison\nSerfis AI", "approval_status": "pending_review", "decided_at": "", "lead_status": "new", "source": "yc_directory", "id": 196, "created_at": "2026-10-16T19:49:21.566257+00:00", "updated_at": "2026-10-16T20:04:17.992358+00:00"}, "ctx": {"verified": true, "hasDraft": true, "checks": {"draft": [], "region": ["based outside the US (Bengaluru, India) - confirm it is OK to email"]}, "acknowledged": [], "sends": [], "suppressed": false, "cooldown": null, "lookup": {"domain": "cardboard.ai", "company": "Cardboard", "outcome": "hit", "batch": "Winter 2026", "size_band": "1-10", "market": "B2B", "checked_at": "2026-10-16T19:49:34.452820+00:00"}, "risk": [], "messages": [], "wordCount": 123}}, {"f": {"company_name": "Lattice Health", "website": "https://www.latticehealthai.com/", "industry": "Healthcare", "company_size": "1-10", "location": "San Francisco", "what_they_sell": "Monitoring and governance for deployed medical imaging AI", "funding_notes": "Y Combinator Spring 2026", "icp_fit_score": 6, "why_it_fits": "Workflow product with a visual before/after; suits targeted explainer and LinkedIn content. (Rule-based - review.)", "priority": "P2", "category": "Healthcare", "market": "B2B", "best_ad_type": "B2B Explainer / LinkedIn", "serfis_fit": "Medium", "content_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "yc_profile_url": "https://www.ycombinator.com/companies/lattice-health", "yc_batch": "Spring 2026", "founders": "Christine Park (Founder/CEO)", "overrides": "", "contact_name": "Christine Park", "contact_title": "Founder", "contact_email": "c•••••@latticehealthai.com", "email_status": "published", "contact_profile_url": "https://linkedin.com/in/christine-park-642011230", "contact_check": "still published on the company site; LinkedIn: confirmed Founder at Lattice Health (current)", "research_notes": "Y Combinator Spring 2026, team of 1, San Francisco. Lattice Health monitors deployed medical imaging AI so hospitals can tell whether each model is still working, tracking agreement with the radiologist's read, drift, and performance across patient groups. It observes rather than controls and produces the evidence teams need for safety, governance and compliance. Founders: Christine Park (Founder/CEO). Category: Healthcare (B2B). Suggested content angle: Manual process vs. automated; time-saved story; short founder-led explainer. Best ad type: B2B Explainer / LinkedIn. Sells: Monitoring and governance for deployed medical imaging AI.", "research_sources": "Company website (https://www.latticehealthai.com/); Y Combinator company profile (https://www.ycombinator.com/companies/lattice-health)", "outreach_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "draft_email_subject": "Short-form video ideas for Lattice Health", "draft_email_body": "Hi Christine,\n\nI came across Lattice Health and really liked what you're doing with monitoring and governance for deployed medical imaging AI.\n\nAt Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, YouTube, Reddit, X, and Pinterest.\n\nSocial media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.\n\nI had a few ideas for how Lattice Health could turn monitoring and governance for deployed medical imaging AI into engaging social content.\n\nWould you be open to me sending over a couple of concepts?\n\nBest,\nAllison\nSerfis AI", "approval_status": "pending_review", "decided_at": "", "lead_status": "new", "source": "yc_directory", "id": 192, "created_at": "2026-10-16T19:49:01.917879+00:00", "updated_at": "2026-10-16T20:04:30.028288+00:00"}, "ctx": {"verified": true, "hasDraft": true, "checks": {"draft": [], "region": []}, "acknowledged": [], "sends": [], "suppressed": false, "cooldown": null, "lookup": {"domain": "latticehealthai.com", "company": "Lattice Health", "outcome": "hit", "batch": "Spring 2026", "size_band": "1-10", "market": "B2B", "checked_at": "2026-10-16T19:49:20.673490+00:00"}, "risk": [], "messages": [], "wordCount": 135}}, {"f": {"company_name": "Memoir", "website": "https://www.trymemoir.ai/", "industry": "B2B", "company_size": "1-10", "location": "San Francisco", "what_they_sell": "Everything your team ships, explained to everyone it affects.", "funding_notes": "Y Combinator Spring 2026", "icp_fit_score": 6, "why_it_fits": "Workflow product with a visual before/after; suits targeted explainer and LinkedIn content. (Rule-based - review.)", "priority": "P2", "category": "B2B", "market": "B2B", "best_ad_type": "B2B Explainer / LinkedIn", "serfis_fit": "Medium", "content_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "yc_profile_url": "https://www.ycombinator.com/companies/memoir", "yc_batch": "Spring 2026", "founders": "Maanav Agrawal (Founder/CEO)", "overrides": "", "contact_name": "Maanav Agrawal", "contact_title": "Founder", "contact_email": "m•••••@trymemoir.ai", "email_status": "published", "contact_profile_url": "https://linkedin.com/in/maanav-agrawal", "contact_check": "still published on the company site; LinkedIn: confirmed Founder at Memoir (YC P26) (current)", "research_notes": "Y Combinator Spring 2026, team of 1, San Francisco. Memoir is building a persistent and proactive AI teammate that helps an entire company keep up with its own progress. Think Instinct but for enterprise. We’re starting with product changes. When engineering ships something, Memoir understands who it affects and creates what each audience needs: a walkthrough for a customer, launch materials for a product marketer, or a technical explanation for an... Founders: Maanav Agrawal (Founder/CEO). Category: B2B (B2B). Suggested content angle: Manual process vs. automated; time-saved story; short founder-led explainer. Best ad type: B2B Explainer / LinkedIn. Sells: Everything your team ships, explained to everyone it affects..", "research_sources": "Company website (https://www.trymemoir.ai/); Y Combinator company profile (https://www.ycombinator.com/companies/memoir)", "outreach_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "draft_email_subject": "Short-form video ideas for Memoir", "draft_email_body": "Hi Maanav,\n\nI came across Memoir and really liked what you're doing with everything your team ships.\n\nAt Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, YouTube, Reddit, X, and Pinterest.\n\nSocial media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.\n\nI had a few ideas for how Memoir could turn everything your team ships into engaging social content.\n\nWould you be open to me sending over a couple of concepts?\n\nBest,\nAllison\nSerfis AI", "approval_status": "pending_review", "decided_at": "", "lead_status": "new", "source": "yc_directory", "id": 188, "created_at": "2026-10-16T19:48:49.327595+00:00", "updated_at": "2026-10-16T20:04:40.868952+00:00"}, "ctx": {"verified": true, "hasDraft": true, "checks": {"draft": [], "region": []}, "acknowledged": [], "sends": [], "suppressed": false, "cooldown": null, "lookup": {"domain": "trymemoir.ai", "company": "Memoir", "outcome": "hit", "batch": "Spring 2026", "size_band": "1-10", "market": "B2B", "checked_at": "2026-10-16T19:49:01.675045+00:00"}, "risk": [], "messages": [], "wordCount": 125}}, {"f": {"company_name": "Silmaril", "website": "https://silmaril.dev", "industry": "B2B", "company_size": "1-10", "location": "San Francisco", "what_they_sell": "Security for agents that self-improves", "funding_notes": "Y Combinator Spring 2026", "icp_fit_score": 6, "why_it_fits": "Workflow product with a visual before/after; suits targeted explainer and LinkedIn content. (Rule-based - review.)", "priority": "P2", "category": "B2B", "market": "B2B", "best_ad_type": "B2B Explainer / LinkedIn", "serfis_fit": "Medium", "content_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "yc_profile_url": "https://www.ycombinator.com/companies/silmaril", "yc_batch": "Spring 2026", "founders": "Aum Upadhyay (Founder/CEO)\nEduardo Velasco (Founder/CTO)", "overrides": "", "contact_name": "Aum Upadhyay", "contact_title": "Co-Founder & CEO", "contact_email": "a••@silmaril.dev", "email_status": "published", "contact_profile_url": "https://linkedin.com/in/aum-upadhyay-517016269", "contact_check": "still published on the company site; LinkedIn: confirmed Co-Founder & CEO at Silmaril (current)", "research_notes": "Y Combinator Spring 2026, team of 2, San Francisco. Silmaril is the first security for agents that self-improves. It understands application context to block 2x as many threats as current SOTA defenses with 10x lower latency. Customers plug us into agentic frameworks like LangGraph with 5 lines of code. Silmaril has stopped $28M of damages for customers. Founders: Aum Upadhyay (Founder/CEO); Eduardo Velasco (Founder/CTO). Category: B2B (B2B). Suggested content angle: Manual process vs. automated; time-saved story; short founder-led explainer. Best ad type: B2B Explainer / LinkedIn. Sells: Security for agents that self-improves.", "research_sources": "Company website (https://silmaril.dev); Y Combinator company profile (https://www.ycombinator.com/companies/silmaril)", "outreach_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "draft_email_subject": "Short-form video ideas for Silmaril", "draft_email_body": "Hi Aum,\n\nI came across Silmaril and really liked what you're doing with security for agents.\n\nAt Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, YouTube, Reddit, X, and Pinterest.\n\nSocial media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.\n\nI had a few ideas for how Silmaril could turn security for agents into engaging social content.\n\nWould you be open to me sending over a couple of concepts?\n\nBest,\nAllison\nSerfis AI", "approval_status": "pending_review", "decided_at": "", "lead_status": "new", "source": "yc_directory", "id": 182, "created_at": "2026-10-05T22:04:22.838032+00:00", "updated_at": "2026-10-16T20:04:51.720740+00:00"}, "ctx": {"verified": true, "hasDraft": true, "checks": {"draft": [], "region": []}, "acknowledged": [], "sends": [], "suppressed": false, "cooldown": null, "lookup": {"domain": "silmaril.dev", "company": "Silmaril", "outcome": "hit", "batch": "Spring 2026", "size_band": "1-10", "market": "B2B", "checked_at": "2026-10-05T22:04:25.065333+00:00"}, "risk": [], "messages": [], "wordCount": 123}}, {"f": {"company_name": "Arctic Health", "website": "https://arctic.health", "industry": "Healthcare -> Healthcare Services", "company_size": "1-10", "location": "New York City, NY", "what_they_sell": "AI-native credentialing and contracting for healthcare", "funding_notes": "Y Combinator Spring 2026", "icp_fit_score": 6, "why_it_fits": "Workflow product with a visual before/after; suits targeted explainer and LinkedIn content. (Rule-based - review.)", "priority": "P2", "category": "Healthcare -> Healthcare Services", "market": "B2B", "best_ad_type": "B2B Explainer / LinkedIn", "serfis_fit": "Medium", "content_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "yc_profile_url": "https://www.ycombinator.com/companies/arctic-health", "yc_batch": "Spring 2026", "founders": "Sam Slezek (Founder/CEO)\nRaghav Mehrish (Founder/CTO)", "overrides": "", "contact_name": "Sam Slezek", "contact_title": "Co-Founder & CEO", "contact_email": "s••@arctic.health", "email_status": "published", "contact_profile_url": "https://linkedin.com/in/slezek", "contact_check": "still published on the company site; LinkedIn: confirmed Co-Founder & CEO at Arctic Health (current)", "research_notes": "Y Combinator Spring 2026, team of 4, New York City, NY. Arctic Health is building AI-native credentialing and contracting for healthcare organizations. We automate the full workflow, from establishing payer contracts to enrolling each provider. We collect and validate organization and provider data according to each state and payer’s requirements, and submit on the organization's behalf. We then monitor status and compliance on an ongoing basis.\r\n\r\nToo... Founders: Sam Slezek (Founder/CEO); Raghav Mehrish (Founder/CTO). Category: Healthcare -> Healthcare Services (B2B). Suggested content angle: Manual process vs. automated; time-saved story; short founder-led explainer. Best ad type: B2B Explainer / LinkedIn. Sells: AI-native credentialing and contracting for healthcare.", "research_sources": "Company website (https://arctic.health); Y Combinator company profile (https://www.ycombinator.com/companies/arctic-health)", "outreach_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "draft_email_subject": "Short-form video ideas for Arctic Health", "draft_email_body": "Hi Sam,\n\nI came across Arctic Health and really liked what you're doing with AI-native credentialing and contracting for healthcare.\n\nAt Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, YouTube, Reddit, X, and Pinterest.\n\nSocial media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.\n\nI had a few ideas for how Arctic Health could turn AI-native credentialing and contracting for healthcare into engaging social content.\n\nWould you be open to me sending over a couple of concepts?\n\nBest,\nAllison\nSerfis AI", "approval_status": "pending_review", "decided_at": "", "lead_status": "new", "source": "yc_directory", "id": 178, "created_at": "2026-10-05T21:59:42.373084+00:00", "updated_at": "2026-10-16T20:04:59.507976+00:00"}, "ctx": {"verified": true, "hasDraft": true, "checks": {"draft": [], "region": []}, "acknowledged": [], "sends": [], "suppressed": false, "cooldown": null, "lookup": {"domain": "arctic.health", "company": "Arctic Health", "outcome": "hit", "batch": "Spring 2026", "size_band": "1-10", "market": "B2B", "checked_at": "2026-10-05T21:59:43.653851+00:00"}, "risk": [], "messages": [], "wordCount": 131}}, {"f": {"company_name": "Userlens", "website": "https://userlens.io", "industry": "B2B -> Productivity", "company_size": "1-10", "location": "San Francisco", "what_they_sell": "Let agents talk to your customers", "funding_notes": "Y Combinator Spring 2026", "icp_fit_score": 6, "why_it_fits": "Workflow product with a visual before/after; suits targeted explainer and LinkedIn content. (Rule-based - review.)", "priority": "P2", "category": "B2B -> Productivity", "market": "B2B", "best_ad_type": "B2B Explainer / LinkedIn", "serfis_fit": "Medium", "content_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "yc_profile_url": "https://www.ycombinator.com/companies/userlens", "yc_batch": "Spring 2026", "founders": "Ankur Dahama (Founder/CEO)\nHai Ta (Founder)", "overrides": "", "contact_name": "Hai Ta", "contact_title": "Co-Founder", "contact_email": "h••@userlens.io", "email_status": "published", "contact_profile_url": "https://linkedin.com/in/anhaita", "contact_check": "still published on the company site; LinkedIn: confirmed Co-Founder at Userlens (YC P26) (current)", "research_notes": "Y Combinator Spring 2026, team of 4, San Francisco. Companies today are growing faster than ever with smaller teams. The best AI-native companies don’t just need more users - they need more of their users becoming power users. Userlens makes it possible for lean teams to drive product adoption proactively, at scale.\r\n\r\nUserlens is building the AI product adoption expert. Our goal is to help every user at every company get more value from the produc... Founders: Ankur Dahama (Founder/CEO); Hai Ta (Founder). Category: B2B -> Productivity (B2B). Suggested content angle: Manual process vs. automated; time-saved story; short founder-led explainer. Best ad type: B2B Explainer / LinkedIn. Sells: Let agents talk to your customers.", "research_sources": "Company website (https://userlens.io); Y Combinator company profile (https://www.ycombinator.com/companies/userlens)", "outreach_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "draft_email_subject": "Short-form video ideas for Userlens", "draft_email_body": "Hi Hai,\n\nI came across Userlens and really liked what you're doing with let agents talk to your customers.\n\nAt Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, YouTube, Reddit, X, and Pinterest.\n\nSocial media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.\n\nI had a few ideas for how Userlens could turn let agents talk to your customers into engaging social content.\n\nWould you be open to me sending over a couple of concepts?\n\nBest,\nAllison\nSerfis AI", "approval_status": "pending_review", "decided_at": "", "lead_status": "new", "source": "yc_directory", "id": 174, "created_at": "2026-10-05T21:59:41.015104+00:00", "updated_at": "2026-10-16T20:05:11.281040+00:00"}, "ctx": {"verified": true, "hasDraft": true, "checks": {"draft": [], "region": []}, "acknowledged": [], "sends": [], "suppressed": false, "cooldown": null, "lookup": {"domain": "userlens.io", "company": "Userlens", "outcome": "hit", "batch": "Spring 2026", "size_band": "1-10", "market": "B2B", "checked_at": "2026-10-05T21:59:42.149450+00:00"}, "risk": [], "messages": [], "wordCount": 129}}, {"f": {"company_name": "Netter", "website": "https://netter.ai", "industry": "B2B -> Analytics", "company_size": "1-10", "location": "Paris, France", "what_they_sell": "AI native Palantir for mid market.", "funding_notes": "Y Combinator Spring 2026", "icp_fit_score": 6, "why_it_fits": "Workflow product with a visual before/after; suits targeted explainer and LinkedIn content. (Rule-based - review.)", "priority": "P2", "category": "B2B -> Analytics", "market": "B2B", "best_ad_type": "B2B Explainer / LinkedIn", "serfis_fit": "Medium", "content_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "yc_profile_url": "https://www.ycombinator.com/companies/netter", "yc_batch": "Spring 2026", "founders": "Samuel Ladroue (Founder/CEO)\nAmin Hamzaoui (Founder)", "overrides": "", "contact_name": "Samuel Ladroue", "contact_title": "Co-Founder & CEO", "contact_email": "s•••••@netter.ai", "email_status": "published", "contact_profile_url": "https://linkedin.com/in/samuel-ladroue", "contact_check": "still published on the company site; LinkedIn: confirmed Co-Founder & CEO at Netter (YC P26) (current)", "research_notes": "Y Combinator Spring 2026, team of 4, Paris, France. Netter (YC P26) helps companies regain control over their data, so teams can pilot their activities with high precision.\r\n\r\nMost companies are sitting on years of valuable data, spread across different formats and disconnected tools that don't talk to each other.\r\n\r\nNetter brings technical capacity to companies that don't have an army of data engineers, and tackles their most complex data challeng... Founders: Samuel Ladroue (Founder/CEO); Amin Hamzaoui (Founder). Category: B2B -> Analytics (B2B). Suggested content angle: Manual process vs. automated; time-saved story; short founder-led explainer. Best ad type: B2B Explainer / LinkedIn. Sells: AI native Palantir for mid market..", "research_sources": "Company website (https://netter.ai); Y Combinator company profile (https://www.ycombinator.com/companies/netter)", "outreach_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "draft_email_subject": "Short-form video ideas for Netter", "draft_email_body": "Hi Samuel,\n\nI came across Netter and really liked what you're doing with AI native Palantir for mid market.\n\nAt Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, YouTube, Reddit, X, and Pinterest.\n\nSocial media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.\n\nI had a few ideas for how Netter could turn AI native Palantir for mid market into engaging social content.\n\nWould you be open to me sending over a couple of concepts?\n\nBest,\nAllison\nSerfis AI", "approval_status": "pending_review", "decided_at": "", "lead_status": "new", "source": "yc_directory", "id": 170, "created_at": "2026-10-05T21:59:37.313729+00:00", "updated_at": "2026-10-16T20:05:23.776741+00:00"}, "ctx": {"verified": true, "hasDraft": true, "checks": {"draft": [], "region": ["based outside the US (Paris, France) - cold B2B email rules are stricter in the EU, UK and Canada (Germany especially); check it is allowed before sending"]}, "acknowledged": [], "sends": [], "suppressed": false, "cooldown": null, "lookup": {"domain": "netter.ai", "company": "Netter", "outcome": "hit", "batch": "Spring 2026", "size_band": "1-10", "market": "B2B", "checked_at": "2026-10-05T21:59:40.434077+00:00"}, "risk": [], "messages": [], "wordCount": 129}}, {"f": {"company_name": "Comena", "website": "https://comena.ai", "industry": "B2B -> Supply Chain and Logistics", "company_size": "1-10", "location": "Germany", "what_they_sell": "AI agents for distributors and manufacturers to automate order entry.", "funding_notes": "Y Combinator Summer 2025", "icp_fit_score": 6, "why_it_fits": "Workflow product with a visual before/after; suits targeted explainer and LinkedIn content. (Rule-based - review.)", "priority": "P2", "category": "B2B -> Supply Chain and Logistics", "market": "B2B", "best_ad_type": "B2B Explainer / LinkedIn", "serfis_fit": "Medium", "content_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "yc_profile_url": "https://www.ycombinator.com/companies/comena", "yc_batch": "Summer 2025", "founders": "Jiehua Wu (Founder/CEO)\nAlmo Sutedjo (Founder/CTO)", "overrides": "", "contact_name": "Jiehua Wu", "contact_title": "Co-Founder & CEO", "contact_email": "j•••••@comena.ai", "email_status": "published", "contact_profile_url": "https://linkedin.com/in/jiehua-wu", "contact_check": "still published on the company site; LinkedIn: confirmed Co-Founder & CEO at Comena (current)", "research_notes": "Y Combinator Summer 2025, team of 8, Germany. We build AI agents that automate order processing for industrial distributors and manufacturers. Say goodbye to inside sales and customer service teams spending hours on manual data entry. Comena streamlines order and quote entry, from inbox to ERP, freeing up sales teams to focus on high-value activities and proactive selling. Founders: Jiehua Wu (Founder/CEO); Almo Sutedjo (Founder/CTO). Category: B2B -> Supply Chain and Logistics (B2B). Suggested content angle: Manual process vs. automated; time-saved story; short founder-led explainer. Best ad type: B2B Explainer / LinkedIn. Sells: AI agents for distributors and manufacturers to automate order entry..", "research_sources": "Company website (https://comena.ai); Y Combinator company profile (https://www.ycombinator.com/companies/comena)", "outreach_angle": "Manual process vs. automated; time-saved story; short founder-led explainer.", "draft_email_subject": "Short-form video ideas for Comena", "draft_email_body": "Hi Jiehua,\n\nI came across Comena and really liked what you're building.\n\nAt Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, YouTube, Reddit, X, and Pinterest.\n\nSocial media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.\n\nI had a few ideas for how Comena could turn what you do into engaging social content.\n\nWould you be open to me sending over a couple of concepts?\n\nBest,\nAllison\nSerfis AI", "approval_status": "pending_review", "decided_at": "", "lead_status": "new", "source": "yc_directory", "id": 166, "created_at": "2026-10-05T21:59:34.365006+00:00", "updated_at": "2026-10-16T20:05:33.896166+00:00"}, "ctx": {"verified": true, "hasDraft": true, "checks": {"draft": [], "region": ["based outside the US (Germany) - cold B2B email rules are stricter in the EU, UK and Canada (Germany especially); check it is allowed before sending"]}, "acknowledged": [], "sends": [], "suppressed": false, "cooldown": null, "lookup": {"domain": "comena.ai", "company": "Comena", "outcome": "hit", "batch": "Summer 2025", "size_band": "1-10", "market": "B2B", "checked_at": "2026-10-05T21:59:36.726116+00:00"}, "risk": [], "messages": [], "wordCount": 119}}, {"f": {"company_name": "Tire Swing", "website": "https://gettireswing.com", "industry": "Affordable Housing Compliance AI", "company_size": "1-10", "location": "New York City, NY", "what_they_sell": "AI for resident and applicant eligibility evaluations and certification workflows in affordable housing.", "funding_notes": "Y Combinator Fall 2026", "icp_fit_score": 6, "why_it_fits": "Niche but clear operational pain point; could use educational and trust-focused creative targeted to property managers and compliance teams.", "priority": "P2", "category": "Affordable Housing Compliance AI", "market": "B2B", "best_ad_type": "B2B Explainer", "serfis_fit": "Medium", "content_angle": "Certification workflow simplification; reduce manual paperwork; property-manager testimonial; compliance clarity.", "yc_profile_url": "https://www.ycombinator.com/companies/tire-swing", "yc_batch": "Fall 2026", "founders": "Paul Witten (Founder/CEO)\nLucas Irvine (Founder/CTO)", "overrides": "", "contact_name": "Paul Witten", "contact_title": "Founder/CEO", "contact_email": "p•••@gettireswing.com", "email_status": "", "contact_profile_url": "http://www.linkedin.com/in/paul-witten-39579715a", "contact_check": "", "research_notes": "Y Combinator Fall 2026, team of 2, New York City, NY. Tire Swing uses AI to power resident and applicant eligibility evaluations for affordable housing.\r\n\r\nOur software manages the resident certification and recertification process end-to-end for public and private properties supported by Project Based Rental Assistance, Low Income Housing Tax Credit, and Housing Vouchers. It serves as a drop-in replacement for third-party consultants and auditors, a... Founders: Paul Witten (Founder/CEO); Lucas Irvine (Founder/CTO). Category: Affordable Housing Compliance AI (B2B). Suggested content angle: Certification workflow simplification; reduce manual paperwork; property-manager testimonial; compliance clarity. Best ad type: B2B Explainer. Sells: AI for resident and applicant eligibility evaluations and certification workflows in affordable housing..", "research_sources": "Company website (https://gettireswing.com); Y Combinator company profile (https://www.ycombinator.com/companies/tire-swing); Serfis YC F26 prospect tracker (priority, category, fit, content angle)", "outreach_angle": "Certification workflow simplification; reduce manual paperwork; property-manager testimonial; compliance clarity.", "draft_email_subject": "Short-form video ideas for Tire Swing", "draft_email_body": "Hi Paul,\n\nI came across Tire Swing and really liked what you're building.\n\nAt Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, YouTube, Reddit, X, and Pinterest.\n\nSocial media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.\n\nI had a few ideas for how Tire Swing could turn what you do into engaging social content.\n\nWould you be open to me sending over a couple of concepts?\n\nBest,\nAllison\nSerfis AI", "approval_status": "pending_review", "decided_at": "", "lead_status": "new", "source": "prospect_tracker", "id": 142, "created_at": "2026-10-05T20:37:16.441400+00:00", "updated_at": "2026-10-05T20:37:25.067408+00:00"}, "ctx": {"verified": false, "hasDraft": true, "checks": {"draft": [], "region": []}, "acknowledged": [], "sends": [], "suppressed": false, "cooldown": null, "lookup": null, "risk": [], "messages": [], "wordCount": 121}}], "stats": {"total": 16, "avgScore": 6.0, "emailStatus": {"linkedin": 1, "published": 14, "provider": 1}, "market": {"B2B": 16}, "batch": {"Spring 2026": 7, "Winter 2026": 6, "Summer 2025": 2, "Fall 2026": 1}, "withProof": 15, "draftClear": 16, "regionFlag": 4, "history": {"miss": 15, "hit": 16}, "sent": 0, "paused": false}, "reference": "Hi [First Name],\n\nI came across [Company] and really liked [specific thing about their product/brand].\n\nAt Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, YouTube, Reddit, X, and Pinterest.\n\nSocial media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.\n\nI had a few ideas for how [Company] could turn [specific product/service] into engaging social content.\n\nWould you be open to me sending over a couple of concepts?\n\nBest,\nAllison\nSerfis AI", "offer": "Serfis AI creates short-form video advertisements and social content designed\nfor TikTok, Instagram, YouTube, Reddit, X, and Pinterest. Social media moves\nquickly, and staying on the forefront of emerging trends helps brands remain\nrelevant, capture attention, and create more opportunities to reach their\ntarget audience. Serfis helps businesses consistently produce fresh creative\nthat fits the style and audience of each platform, rather than relying on the\nsame content everywhere. The offered next step is a couple of concept ideas\nsent over email.", "signoff": "Best,\nAllison\nSerfis AI"}</script>
+<script>(function () {
+  'use strict';
+  const D = JSON.parse(document.getElementById('data').textContent);
+  const $ = (s, el) => (el || document).querySelector(s);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const when = (s) => (s || '').slice(0, 16).replace('T', ' ');
+  const st = { sel: null, dec: {}, ack: {}, confirm: null, f: { q: '', fit: '', appr: '', lead: '', industry: '', sort: 'desc' } };
+  const LEADS = D.leads;
+  const byId = (id) => LEADS.find((l) => String(l.f.id) === String(id));
+
+  /* ---------- state helpers (decisions made here stay in this page) ---------- */
+  const approval = (l) => (st.dec[l.f.id] ? st.dec[l.f.id].status : l.f.approval_status);
+  const decidedAt = (l) => (st.dec[l.f.id] ? st.dec[l.f.id].at : l.f.decided_at);
+  const acked = (l) => new Set([...(l.ctx.acknowledged || []), ...(st.ack[l.f.id] || [])]);
+  const blocking = (l) => ['draft', 'region'].filter((c) => (l.ctx.checks[c] || []).length && !acked(l).has(c));
+  const sent = (l) => l.ctx.sends.length > 0 || ['contacted', 'qualified', 'converted'].includes(l.f.lead_status);
+  function summary(l) {
+    const flagged = ['draft', 'region'].filter((c) => (l.ctx.checks[c] || []).length);
+    if (!flagged.length) return ['ok', 0];
+    const open = flagged.filter((c) => !acked(l).has(c));
+    return open.length ? ['flag', open.reduce((n, c) => n + l.ctx.checks[c].length, 0)] : ['reviewed', 0];
+  }
+  function readiness(l) {
+    const a = acked(l), c = l.ctx.checks;
+    return [
+      { label: 'Verified contact', ok: l.ctx.verified, detail: l.f.contact_check || (l.ctx.verified ? '' : 'no verified email') },
+      { label: 'Draft email checked', ok: l.ctx.hasDraft && (!c.draft.length || a.has('draft')),
+        detail: c.draft.length ? c.draft.join('; ') + (a.has('draft') ? ' (you approved anyway)' : '') : (l.ctx.hasDraft ? 'clear' : 'no draft') },
+      { label: 'Location checked', ok: !c.region.length || a.has('region'),
+        detail: c.region.length ? c.region.join('; ') + (a.has('region') ? ' (you approved anyway)' : '') : (l.f.location || 'clear') },
+      { label: 'Safe to contact', ok: !l.ctx.suppressed && !l.ctx.cooldown,
+        detail: l.ctx.suppressed ? 'on the do-not-contact list' : (l.ctx.cooldown || 'not suppressed, not emailed in 90 days') },
+    ];
+  }
+  function steps(l) {
+    const ap = approval(l), a = ap === 'approved', r = ap === 'rejected', b = blocking(l);
+    return [
+      { label: 'Company found', state: 'done', note: (l.f.created_at || '').slice(0, 10) },
+      { label: 'Contact verified', state: l.ctx.verified ? 'done' : 'fail', note: l.f.email_status || 'not verified' },
+      { label: 'Draft ready', state: l.ctx.hasDraft ? 'done' : 'fail', note: !l.ctx.hasDraft ? 'none' : (l.ctx.checks.draft.length && !acked(l).has('draft') ? 'needs review' : 'checked') },
+      { label: 'YOUR APPROVAL', manual: true, state: a ? 'done' : (r ? 'rejected' : 'current'), note: decidedAt(l) ? when(decidedAt(l)) : 'waiting on you' },
+      { label: 'Email sent', state: sent(l) ? 'done' : (a ? 'next' : 'todo'), note: l.ctx.sends.length ? when(l.ctx.sends[l.ctx.sends.length - 1].sent_at) : (a ? 'run send-approved' : '') },
+    ];
+  }
+  const initials = (n) => { const p = (n || '?').split(/\s+/).filter(Boolean); return ((p[0] || '?')[0] + (p.length > 1 && /[A-Za-z0-9]/.test(p[1][0]) ? p[1][0] : '')).toUpperCase(); };
+  const hue = (id) => (Number(id) * 47) % 360;
+
+  /* ---------- the draft-quality guardrail (port of agents/guardrails.py) ---------- */
+  const RX = {
+    ph: /\[[^\]]*\]|\{[^}]*\}|NEEDS_ENRICHMENT|\bTODO\b|lorem ipsum/i, call: /\b(call|phone|zoom|meeting|demo|calendly|calendar|schedule a)\b/i,
+    self: /\b(autonomous|ai pipeline|ai-powered pipeline)\b/i, gcase: /\b[a-z]I\b/, garble: /\.\.(?!\.)|\s,|,,|\b(\w+) \1\b/i,
+    claim: /\d[\d,.]*\s?%|\$\s?\d[\d,.]*|\b\d+x\b|#1\b|\bguarantee[sd]?\b|\bproven\b/gi,
+  };
+  function checkText(subject, body, o) {
+    const issues = []; const text = subject + '\n' + body;
+    if (RX.ph.test(text)) issues.push('contains an unfilled placeholder (brackets or NEEDS_ENRICHMENT)');
+    const words = body.trim().split(/\s+/).filter(Boolean).length;
+    if (words < o.min || words > o.max) issues.push(words + ' words (target ' + o.target + ')');
+    if (subject.length > 90) issues.push('subject line is over 90 characters');
+    if (o.first && body.slice(0, 80).toLowerCase().indexOf(o.first.toLowerCase()) < 0) issues.push("greeting does not use the contact's first name (" + o.first + ')');
+    const base = (o.company || '').split(/[(\-–|,:]/)[0].trim().toLowerCase();
+    if (o.needCompany && base && body.toLowerCase().indexOf(base) < 0) issues.push('never mentions the company by name (' + o.company + ')');
+    let m = body.match(RX.call); if (m) issues.push("mentions '" + m[0] + "' - emails are email-only, no calls, meetings or demos");
+    m = body.match(RX.self); if (m) issues.push("describes Serfis as '" + m[0] + "'");
+    m = body.match(RX.gcase) || text.match(RX.garble); if (m) issues.push("looks garbled near '" + m[0].trim() + "'");
+    const ev = (o.evidence || '').toLowerCase();
+    (text.match(RX.claim) || []).some((c) => { if (ev.indexOf(c.toLowerCase().trim()) < 0) { issues.push("makes a claim that is not in the research: '" + c.trim() + "'"); return true; } return false; });
+    return issues;
+  }
+  const OPT = ['unsubscribe', 'remove me', 'take me off', 'stop emailing', 'stop contacting', 'do not contact', "don't contact", 'opt out', 'opt-out'];
+  const optOut = (t) => { const x = (t || '').toLowerCase().replace(/’/g, "'"); return OPT.some((p) => x.indexOf(p) >= 0); };
+
+  /* ---------- top: stats, approval queue, pipeline ---------- */
+  function funnel() {
+    let w = 0, a = 0, s = 0, r = 0;
+    LEADS.forEach((l) => { const ap = approval(l); if (ap === 'rejected') r++; else if (ap === 'pending_review') w++; else if (sent(l)) s++; else a++; });
+    return { w, a, s, r, total: LEADS.length };
+  }
+  function renderTop() {
+    const f = funnel();
+    const qualified = LEADS.filter((l) => l.f.icp_fit_score >= 7).length;
+    $('#cards').innerHTML = [['Total leads', LEADS.length, ''], ['Qualified (score ≥ 7)', qualified, ''], ['Pending review', f.w, 'card-pending'], ['Approved', f.a + f.s, 'card-approved'], ['Rejected', f.r, 'card-rejected']]
+      .map(([k, v, c]) => '<div class="card ' + c + '"><div class="card-value">' + v + '</div><div class="card-label">' + k + '</div></div>').join('');
+    const segs = [['waiting', 'Waiting for your approval', f.w], ['approved', 'Approved, not sent yet', f.a], ['sent', 'Sent', f.s], ['rejected', 'Rejected', f.r]];
+    const tot = f.total || 1;
+    $('#funnel').innerHTML = '<div class="funnel-head"><strong>Manual approval queue</strong><span class="funnel-waiting ' + (f.w ? '' : 'is-zero') + '">' +
+      (f.w ? f.w + ' lead' + (f.w === 1 ? '' : 's') + ' waiting for your approval' : 'Nothing waiting for approval') + '</span></div>' +
+      '<div class="funnel-bar" role="img" aria-label="' + segs.map((x) => x[2] + ' ' + x[1]).join(', ') + '">' + segs.filter((x) => x[2]).map((x) => '<span class="funnel-seg seg-' + x[0] + '" style="flex:' + x[2] + '" title="' + x[1] + '">' + x[2] + '</span>').join('') + '</div>' +
+      '<ul class="funnel-legend">' + segs.map((x) => '<li><span class="swatch seg-' + x[0] + '"></span>' + x[1] + ' <strong>' + x[2] + '</strong> <span class="pct">' + Math.round(100 * x[2] / tot) + '%</span></li>').join('') + '</ul>';
+  }
+  /* ---------- the lead list ---------- */
+  function filtered() {
+    const f = st.f, q = f.q.toLowerCase();
+    return LEADS.filter((l) => (!q || l.f.company_name.toLowerCase().indexOf(q) >= 0) && (!f.fit || l.f.icp_fit_score >= Number(f.fit)) && (!f.appr || approval(l) === f.appr) &&
+      (!f.lead || l.f.lead_status === f.lead) && (!f.industry || l.f.industry === f.industry))
+      .sort((a, b) => (f.sort === 'asc' ? 1 : -1) * ((a.f.icp_fit_score || 0) - (b.f.icp_fit_score || 0)) || b.f.id - a.f.id);
+  }
+  const APL = { pending_review: 'Pending Review', approved: 'Approved', rejected: 'Rejected' };
+  const LSL = { new: 'New', contacted: 'Contacted', qualified: 'Qualified', disqualified: 'Disqualified', converted: 'Converted' };
+  function renderFilters() {
+    const inds = [...new Set(LEADS.map((l) => l.f.industry).filter(Boolean))].sort();
+    const opt = (v, t, cur) => '<option value="' + esc(v) + '"' + (String(cur) === String(v) ? ' selected' : '') + '>' + esc(t) + '</option>';
+    $('#filters').innerHTML = '<input type="text" id="f-q" placeholder="Search company name..." value="' + esc(st.f.q) + '">' +
+      '<select id="f-fit">' + opt('', 'Any ICP Score', st.f.fit) + [10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map((n) => opt(n, n + '+ and above', st.f.fit)).join('') + '</select>' +
+      '<select id="f-lead">' + opt('', 'Any Lead Status', st.f.lead) + Object.keys(LSL).map((k) => opt(k, LSL[k], st.f.lead)).join('') + '</select>' +
+      '<select id="f-appr">' + opt('', 'Any Approval Status', st.f.appr) + Object.keys(APL).map((k) => opt(k, APL[k], st.f.appr)).join('') + '</select>' +
+      '<select id="f-industry">' + opt('', 'Any Industry', st.f.industry) + inds.map((i) => opt(i, i, st.f.industry)).join('') + '</select>' +
+      '<select id="f-sort">' + opt('desc', 'ICP Score: High to Low', st.f.sort) + opt('asc', 'ICP Score: Low to High', st.f.sort) + '</select>' +
+      '<button type="button" id="f-clear" class="clear-btn">Clear</button>';
+  }
+  function renderTable() {
+    const rows = filtered();
+    $('#tbody').innerHTML = rows.length ? rows.map((l) => {
+      const ap = approval(l), sc = l.f.icp_fit_score, cs = summary(l);
+      return '<tr class="lead-row ' + (ap === 'pending_review' ? 'row-pending ' : '') + (st.sel === l.f.id ? 'row-selected' : '') + '" data-lead="' + l.f.id + '" tabindex="0">' +
+        '<td class="company-cell"><span class="row-link"><span class="mini-avatar" style="--h:' + hue(l.f.id) + '">' + esc(l.f.company_name.slice(0, 2).toUpperCase()) + '</span>' + esc(l.f.company_name) + '</span></td>' +
+        '<td>' + esc(l.f.industry || '-') + '</td><td>' + esc(l.f.company_size || '-') + '</td>' +
+        '<td>' + (sc == null ? '-' : '<span class="score-pill score-' + (sc >= 7 ? 'high' : sc >= 4 ? 'mid' : 'low') + '">' + sc + '</span>') + '</td>' +
+        '<td>' + esc(l.f.contact_name || '-') + '</td><td><span class="badge badge-status-' + l.f.lead_status + '">' + LSL[l.f.lead_status] + '</span></td>' +
+        '<td><span class="badge badge-approval-' + ap + '">' + APL[ap] + '</span></td>' +
+        '<td>' + (cs[0] === 'ok' ? '<span class="badge badge-check-ok">Clear</span>' : cs[0] === 'reviewed' ? '<span class="badge badge-check-reviewed">Reviewed</span>' : '<span class="badge badge-check-flag">⚠ ' + cs[1] + ' to review</span>') + '</td>' +
+        '<td>' + esc((l.f.created_at || '').slice(0, 10)) + '</td></tr>';
+    }).join('') : '<tr><td colspan="9" class="empty-state">No leads match these filters.</td></tr>';
+  }
+
+  /* ---------- the company panel ---------- */
+  function panelLead(l) {
+    const f = l.f, id = f.id, ap = approval(l), b = blocking(l), score = f.icp_fit_score;
+    const ring = score >= 7 ? 'high' : score >= 4 ? 'mid' : 'low';
+    const rd = readiness(l), rc = rd.filter((x) => x.ok).length, stp = steps(l), a = acked(l);
+    const confirming = st.confirm === id;
+    const approveBtn = b.length
+      ? '<button type="button" class="btn btn-approve btn-warn" data-act="approve" data-id="' + id + '" data-override="1">' + (confirming ? 'Click again to approve anyway' : 'Approve anyway') + '</button>'
+      : '<button type="button" class="btn btn-approve" data-act="approve" data-id="' + id + '">Approve outreach</button>';
+    const rejectBtn = '<button type="button" class="btn btn-reject" data-act="reject" data-id="' + id + '">Reject outreach</button>';
+    const state = ap === 'pending_review' ? 'AWAITING YOUR APPROVAL' : ap === 'approved' ? 'APPROVED BY YOU' : 'REJECTED BY YOU';
+    const sub = ap === 'pending_review' ? 'Nothing is emailed until you approve this lead <em>and</em> run the send step.'
+      : ap === 'approved' ? (decidedAt(l) ? when(decidedAt(l)) + ' UTC. ' : '') + (l.ctx.sends.length ? 'Sent ' + when(l.ctx.sends[0].sent_at) + '.' : 'Not sent yet: run <code>python main.py send-approved</code>.')
+      : when(decidedAt(l)) + ' UTC. This lead will not be emailed.';
+    const chips = [f.priority && '<span class="chip chip-priority">' + esc(f.priority) + '</span>', f.market && '<span class="chip">' + esc(f.market) + '</span>', f.company_size && '<span class="chip">' + esc(f.company_size) + ' people</span>',
+      f.location && '<span class="chip">' + esc(f.location) + '</span>', f.yc_batch && '<span class="chip chip-yc">YC ' + esc(f.yc_batch) + '</span>', f.category && '<span class="chip">' + esc(f.category) + '</span>',
+      '<span class="badge badge-status-' + f.lead_status + '">' + LSL[f.lead_status] + '</span>'].filter(Boolean).join('');
+    const link = (u, t) => u ? '<a class="link-btn" href="' + esc(u) + '" target="_blank" rel="noopener">&#8599; ' + esc(t) + '</a>' : '';
+    const veri = f.email_status === 'published' ? '<span class="vbadge vb-ok">&#10003; Published on their website</span>' : f.email_status === 'linkedin' ? '<span class="vbadge vb-ok">&#10003; Written on their LinkedIn</span>'
+      : f.email_status === 'confirmed' ? '<span class="vbadge vb-ok">&#10003; Confirmed by a person</span>' : '<span class="vbadge vb-bad">&#9888; From a data provider, not verified</span>';
+    const dl = (pairs) => '<dl>' + pairs.map(([k, v, pre]) => '<dt>' + k + '</dt><dd' + (pre ? ' class="preline"' : '') + '>' + (v == null || v === '' ? '-' : v) + '</dd>').join('') + '</dl>';
+    const e = (x) => esc(x);
+    const guard = ['draft', 'region'].map((c) => { const iss = l.ctx.checks[c]; return '<div class="guard-row"><span class="guard-name">' + (c === 'draft' ? 'Draft email' : 'Location') + '</span>' +
+      (!iss.length ? '<span class="badge badge-check-ok">&#10003; Clear</span>' : (a.has(c) ? '<span class="badge badge-check-reviewed">Reviewed</span>' : '<span class="badge badge-check-flag">&#9888; Needs review</span>') + '<ul class="guard-issues">' + iss.map((i) => '<li>' + e(i) + '</li>').join('') + '</ul>') + '</div>'; }).join('');
+    const fields = Object.keys(f).map((k) => '<tr><th scope="row">' + k + '</th><td class="' + (f[k] == null || f[k] === '' ? 'empty' : '') + '">' + (f[k] == null || f[k] === '' ? '(empty)' : e(f[k])) + '</td></tr>').join('');
+    return '<article class="lead-panel">' +
+      '<div class="strip strip-' + ap + '"><span class="strip-dot ' + (ap === 'pending_review' ? 'pulse' : '') + '"></span><span class="strip-name">' + e(f.company_name) + '</span><span class="strip-state">' + state + '</span>' +
+      '<span class="strip-actions">' + approveBtn.replace('btn-approve', 'btn-approve btn-sm') + rejectBtn.replace('btn-reject', 'btn-reject btn-sm') + '<button type="button" class="strip-close" data-close aria-label="Close company record">&times;</button></span></div>' +
+      '<header class="hero"><div class="avatar" style="--h:' + hue(id) + '">' + e(initials(f.company_name)) + '</div><div class="hero-main"><div class="lp-eyebrow">Company record #' + id + ' · source: ' + e(f.source) + '</div>' +
+      '<h2 class="lp-title">' + e(f.company_name) + '</h2><div class="chips">' + chips + '</div><div class="hero-links">' + link(f.website, f.website.replace(/^https?:\/\//, '').replace(/\/$/, '')) + link(f.yc_profile_url, 'YC profile') + link(f.contact_profile_url, (f.contact_name || 'Contact') + ' on LinkedIn') + '</div></div>' +
+      '<div class="ring-wrap"><div class="ring ring-' + ring + '" style="--p:' + ((score || 0) * 10) + '"></div><span class="ring-num">' + (score == null ? '-' : score) + '</span><span class="ring-of">/10</span><div class="ring-label">ICP fit</div></div></header>' +
+      '<p class="preview-note"><strong>Preview.</strong> Approve and reject work in this page only, to show the flow. Decisions that count are made in your local dashboard.</p>' +
+      '<section class="approval approval-' + ap + '"><div class="approval-top"><div class="approval-icon">' + (ap === 'pending_review' ? '&#9203;' : ap === 'approved' ? '&#10003;' : '&times;') + '</div>' +
+      '<div class="approval-text"><div class="approval-kicker">' + (ap === 'pending_review' ? 'Manual approval required' : 'Manual decision recorded') + '</div><div class="approval-headline">' + state + '</div><div class="approval-sub">' + sub + '</div></div>' +
+      '<div class="approval-actions">' + approveBtn + rejectBtn + '</div></div>' +
+      '<ol class="stepper" aria-label="Path from discovery to sent">' + stp.map((s) => '<li class="step step-' + s.state + (s.manual ? ' step-manual' : '') + '"><span class="step-mark">' + (s.state === 'done' ? '&#10003;' : s.state === 'fail' ? '!' : s.state === 'rejected' ? '&times;' : s.state === 'current' ? '&#9679;' : '&middot;') + '</span><span class="step-label">' + s.label + '</span><span class="step-note">' + e(s.note) + '</span></li>').join('') + '</ol>' +
+      '<div class="readiness-head"><strong>Readiness for approval</strong><span class="readiness-count ' + (rc === rd.length ? 'all-ok' : 'some-open') + '">' + rc + ' of ' + rd.length + ' checks passed</span></div>' +
+      '<div class="check-tiles">' + rd.map((r) => '<div class="check-tile ' + (r.ok ? 'ok' : 'open') + '"><div class="check-icon">' + (r.ok ? '&#10003;' : '&#9888;') + '</div><div class="check-title">' + r.label + '</div><div class="check-detail">' + e(r.detail || (r.ok ? 'passed' : 'needs attention')) + '</div></div>').join('') + '</div></section>' +
+      '<section class="lp-section guard-panel ' + (b.length ? 'guard-flag' : '') + '"><h3><span class="h-ico">&#128737;</span> Guardrail checks</h3>' + guard + '<p class="actions-note">Also enforced when sending: one email per company every 90 days, and an automatic pause if emails bounce or anyone complains.</p></section>' +
+      '<div class="glance">' + [['Serfis fit', f.serfis_fit], ['Best ad type', f.best_ad_type], ['Industry', f.industry], ['Email status', f.email_status || 'provider'], ['Sent to them', l.ctx.sends.length]].map(([k, v]) => '<div class="tile"><div class="tile-k">' + k + '</div><div class="tile-v">' + e(v == null || v === '' ? '-' : v) + '</div></div>').join('') + '</div>' +
+      '<div class="lp-grid"><section class="lp-section contact-card"><h3><span class="h-ico">&#128100;</span> Point of contact</h3><div class="contact-top"><div class="avatar avatar-sm" style="--h:' + ((hue(id) + 130) % 360) + '">' + e(initials(f.contact_name)) + '</div><div><div class="contact-name">' + e(f.contact_name || '-') + '</div><div class="contact-title">' + e(f.contact_title || '-') + '</div></div></div>' +
+      '<div class="email-row"><span class="email-addr">' + e(f.contact_email || '-') + '</span><span class="mask-note">masked here</span></div><div class="badges-row">' + veri + (/LinkedIn: confirmed/.test(f.contact_check || '') ? '<span class="vbadge vb-ok">&#10003; LinkedIn role confirmed</span>' : '') + '</div>' +
+      dl([['How it was verified', e(f.contact_check)], ['Email status', e(f.email_status)], ['LinkedIn / profile', f.contact_profile_url ? '<a href="' + e(f.contact_profile_url) + '" target="_blank" rel="noopener">' + e(f.contact_profile_url) + '</a>' : ''], ['Founders', e(f.founders), 1]]) + '</section>' +
+      '<section class="lp-section"><h3><span class="h-ico">&#127970;</span> Company</h3>' + dl([['Company', e(f.company_name)], ['Website', f.website ? '<a href="' + e(f.website) + '" target="_blank" rel="noopener">' + e(f.website) + '</a>' : ''], ['What they sell', e(f.what_they_sell)], ['Industry', e(f.industry)], ['Category', e(f.category)], ['Market', e(f.market)], ['Company size', e(f.company_size)], ['Location', e(f.location)], ['Funding notes', e(f.funding_notes)], ['Y Combinator batch', e(f.yc_batch)], ['Y Combinator profile', f.yc_profile_url ? '<a href="' + e(f.yc_profile_url) + '" target="_blank" rel="noopener">' + e(f.yc_profile_url) + '</a>' : '']]) + '</section>' +
+      '<section class="lp-section"><h3><span class="h-ico">&#127919;</span> ICP fit and content</h3>' + dl([['ICP fit score (1-10)', score == null ? '' : score], ['Priority', e(f.priority)], ['Serfis fit rating', e(f.serfis_fit)], ['Why it fits', e(f.why_it_fits)], ['Suggested ad / content angle', e(f.content_angle)], ['Best ad type', e(f.best_ad_type)], ['Recommended outreach angle', e(f.outreach_angle)]]) + '</section>' +
+      '<section class="lp-section"><h3><span class="h-ico">&#128270;</span> Research</h3><dl><dt>Research notes</dt><dd class="preline">' + (e(f.research_notes) || '-') + '</dd><dt>Research sources</dt><dd>' + ((f.research_sources || '').split(';').filter((x) => x.trim()).map((x) => '<span class="source-chip">' + e(x.trim()) + '</span>').join('') || '-') + '</dd></dl></section>' +
+      '<section class="lp-section lp-wide email-mock"><h3><span class="h-ico">&#9993;</span> Draft email <span class="hint">pipeline draft (a template: no Claude key is set there)</span></h3>' + mock(f.contact_name, f.contact_email, f.draft_email_subject, f.draft_email_body) +
+      '</section>' +
+      '<section class="lp-section lp-wide"><h3><span class="h-ico">&#128337;</span> Activity and history</h3><ol class="timeline"><li class="tl-done"><span class="tl-dot"></span><div><strong>Company added</strong><span>' + when(f.created_at) + '</span></div></li>' +
+      '<li class="' + (decidedAt(l) ? 'tl-done' : 'tl-open') + '"><span class="tl-dot"></span><div><strong>' + (decidedAt(l) ? 'Your decision: ' + APL[ap] : 'Waiting for your decision') + '</strong><span>' + when(decidedAt(l)) + '</span></div></li>' +
+      '<li class="' + (sent(l) ? 'tl-done' : 'tl-open') + '"><span class="tl-dot"></span><div><strong>' + (sent(l) ? 'Email sent' : 'Not sent yet') + '</strong><span></span></div></li></ol>' +
+      '<dl class="lp-cols">' + [['Last updated', when(f.updated_at)], ['Approval status', APL[ap]], ['Decision recorded', when(decidedAt(l)) || 'not yet'], ['Lead status', LSL[f.lead_status]], ['Guardrail flags acknowledged', [...a].join(', ') || 'none'], ['On the do-not-contact list', l.ctx.suppressed ? 'YES' : 'no'], ['Emailed in the last 90 days', l.ctx.cooldown || 'no'], ['Contact lookup history', l.ctx.lookup ? l.ctx.lookup.outcome + ' (' + (l.ctx.lookup.checked_at || '').slice(0, 10) + ')' : 'none'], ['Emails sent to this lead', l.ctx.sends.length]].map(([k, v]) => '<div><dt>' + k + '</dt><dd>' + e(v) + '</dd></div>').join('') + '</dl></section></div>' +
+      '<section class="lp-section"><h3><span class="h-ico">&#128200;</span> Content performance analytics</h3><p class="analytics-empty">No published content yet for this lead.</p></section>' +
+      '<details class="lp-section complete-record"><summary><span class="h-ico">&#128209;</span> Complete record <span class="hint">all ' + Object.keys(f).length + ' stored fields, verbatim · click to expand</span></summary><table class="record-table"><tbody>' + fields + '</tbody></table></details></article>';
+  }
+  function mock(name, email, subject, body) {
+    return '<div class="mock"><div class="mock-head"><div><span class="mock-k">To</span> ' + esc(name || '-') + ' &lt;' + esc(email || '-') + '&gt;</div><div><span class="mock-k">Subject</span> <strong>' + esc(subject || '-') + '</strong></div></div><pre class="mock-body">' + esc(body || '-') + '</pre><div class="mock-foot">An opt-out line and your mailing address are added automatically when it is sent.</div></div>';
+  }
+
+  /* ---------- wiring ---------- */
+  function renderSlot(scroll) {
+    const slot = $('#slot');
+    if (st.sel != null) slot.innerHTML = panelLead(byId(st.sel));
+    else slot.innerHTML = '<div class="lead-panel-hint">Click any company below to see everything we have on it here.</div>';
+    renderTable(); renderTop();
+    if (scroll) { const t = $('#slot').getBoundingClientRect().top + window.scrollY - 70; window.scrollTo({ top: Math.max(0, t), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }
+  }
+  const openLead = (id) => { st.sel = id; st.confirm = null; renderSlot(true); };
+  document.addEventListener('click', (e) => {
+    const t = e.target;
+    const act = t.closest('[data-act]');
+    if (act) {
+      const id = Number(act.dataset.id), l = byId(id);
+      if (act.dataset.act === 'approve') {
+        if (blocking(l).length && !st.confirm) { st.confirm = id; renderSlot(false); setTimeout(() => { if (st.confirm === id) { st.confirm = null; if (st.sel === id) renderSlot(false); } }, 4000); return; }
+        if (blocking(l).length) st.ack[id] = [...new Set([...(st.ack[id] || []), ...blocking(l)])];
+        st.dec[id] = { status: 'approved', at: new Date().toISOString() }; st.confirm = null;
+      } else { st.dec[id] = { status: 'rejected', at: new Date().toISOString() }; }
+      renderSlot(false); return;
+    }
+    if (t.closest('[data-close]')) { st.sel = null; renderSlot(false); return; }
+    const row = t.closest('[data-lead]');
+    if (row) { openLead(Number(row.dataset.lead)); return; }
+    else if (t.id === 'f-clear') { st.f = { q: '', fit: '', appr: '', lead: '', industry: '', sort: 'desc' }; renderFilters(); renderTable(); }
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('.lead-row')) openLead(Number(e.target.dataset.lead)); });
+  document.addEventListener('input', (e) => { if (e.target.id === 'f-q') { st.f.q = e.target.value; renderTable(); } });
+  document.addEventListener('change', (e) => {
+    const m = { 'f-fit': 'fit', 'f-lead': 'lead', 'f-appr': 'appr', 'f-industry': 'industry', 'f-sort': 'sort' }[e.target.id];
+    if (m) { st.f[m] = e.target.value; renderTable(); }
+  });
+  renderFilters(); renderSlot(false);
+})();
+</script>
+</body></html>
