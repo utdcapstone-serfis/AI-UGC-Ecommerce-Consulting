@@ -17,4 +17,16 @@ Git rules (branch protection is not enforced, so these matter):
   use git push --all or --mirror. Changes reach main later through pull requests.
 - The team shares one GitHub login, so required approvals can't work.
 
+Changes on main must stay revertable (added 2026-10-17):
+- Merge into main only through a pull request, one purpose per pull request, so
+  a bad merge can be undone in one step.
+- Undo with `git revert` (or the Revert button on the merged pull request), which
+  adds a new commit and keeps the history. Never rewind main with `git reset` and
+  a force-push.
+- Before merging, check the diff for tokens, passwords and .env contents. A secret
+  that reached main stays in the history and in clones even after a revert, so
+  rotate it, not just revert.
+- A revert doesn't undo outside effects (deploys, posts, emails) or other people's
+  copies; say so when proposing a merge that triggers any of them.
+
 Windows PowerShell: use npm.cmd / npx.cmd (plain npm is blocked).
