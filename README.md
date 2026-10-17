@@ -76,3 +76,9 @@ Each script saves its request id in `higgsfield/runs/`.
 **Not preserved:** the character sheet image and the three reference crops (`ref_front_head.png`, `ref_34left_head.png`,
 `ref_front_body.png`) that `generate_freeze_frame.py` expects in `media/scene1-bar/references/` were not saved. Recreate them by cropping a
 character sheet, or point the script at any 2-3 reference images.
+
+## Added later: audio, status
+
+- `media/audio/veeza-sfx/`: the eight music and sound-effect files used to score the Veeza ad (piano, scream, "ahh", glass clink, "yay", high heels, kiss, gasp).
+- `media/tuxedo-scene/audio/`: three audio files made alongside the bar / tuxedo clips (not listened to; see `higgsfield/PROJECT_STATUS.md`).
+- `higgsfield/PROJECT_STATUS.md`: where every ad stands, including how to resume the paused Roma AI ad.
