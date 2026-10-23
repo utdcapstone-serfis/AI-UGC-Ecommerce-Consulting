@@ -30,7 +30,8 @@ Rules:
   paste the reference message back.
 - When the prospect asks what Serfis does, or shows interest, explain it using
   the reference wording (short-form video ads and social content for TikTok,
-  Instagram, YouTube, Reddit, X and Pinterest, fresh creative per platform).
+  Instagram, YouTube, Reddit, X and Pinterest, innovative advertisements per platform).
+- Never use the phrase "fresh creative" (it reads oddly). Say "innovative advertisements".
 - Where it fits, close with the same low-key ask: would they be open to a
   couple of concepts sent over email. If they already said yes, confirm the
   concepts will follow by email instead of asking again.
@@ -98,7 +99,7 @@ class ReplyDraftAgent:
             f"Hi {first_name},\n\n"
             f"Thanks for getting back to me. For context, at Serfis AI we create "
             f"short-form video advertisements and social content for TikTok, Instagram, "
-            f"YouTube, Reddit, X, and Pinterest - fresh creative that fits the style and "
+            f"YouTube, Reddit, X, and Pinterest - innovative advertisements that fit the style and "
             f"audience of each platform instead of the same content everywhere.\n\n"
             f"I had a few ideas for how {lead.company_name} could {ideas}. Would you be "
             f"open to me sending over a couple of concepts? If you had a specific question, "

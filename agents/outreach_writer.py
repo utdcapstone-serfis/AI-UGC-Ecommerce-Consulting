@@ -27,10 +27,11 @@ but replace every [bracket] with real, specific details for this company:
 Rules:
 - Open with a genuine, specific detail from the research notes about their
   product or brand - not generic flattery.
-- Keep the same order: what Serfis does and the platforms, why fresh
-  per-platform creative matters, the idea for turning their specific product
+- Keep the same order: what Serfis does and the platforms, why innovative,
+  per-platform advertisements matter, the idea for turning their specific product
   into social content, then the closing question about sending a couple of
   concepts over email.
+- Never use the phrase "fresh creative" (it reads oddly). Say "innovative advertisements".
 - Do NOT ask for a phone call, meeting or demo - this is email only.
 - "Serfis AI" is the company name and is fine to use. Never describe the
   system as "an autonomous AI" or "an AI pipeline" or explain how it works.
@@ -95,7 +96,7 @@ class OutreachWriterAgent:
             f"Social media moves quickly, and staying on the forefront of emerging trends "
             f"can help brands remain relevant, capture attention, and create more "
             f"opportunities to reach their target audience. We help businesses consistently "
-            f"produce fresh creative that fits the style and audience of each platform "
+            f"produce innovative advertisements that fit the style and audience of each platform "
             f"rather than relying on the same content everywhere.\n\n"
             f"I had a few ideas for how {lead.company_name} could {ideas}.\n\n"
             f"Would you be open to me sending over a couple of concepts?\n\n"

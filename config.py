@@ -168,8 +168,8 @@ Serfis AI creates short-form video advertisements and social content designed
 for TikTok, Instagram, YouTube, Reddit, X, and Pinterest. Social media moves
 quickly, and staying on the forefront of emerging trends helps brands remain
 relevant, capture attention, and create more opportunities to reach their
-target audience. Serfis helps businesses consistently produce fresh creative
-that fits the style and audience of each platform, rather than relying on the
+target audience. Serfis helps businesses consistently produce innovative
+advertisements that fit the style and audience of each platform, rather than relying on the
 same content everywhere. The offered next step is a couple of concept ideas
 sent over email.
 """
@@ -184,7 +184,7 @@ I came across [Company] and really liked [specific thing about their product/bra
 
 At Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, YouTube, Reddit, X, and Pinterest.
 
-Social media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.
+Social media moves quickly, and staying on the forefront of emerging trends can help brands remain relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently produce innovative advertisements that fit the style and audience of each platform rather than relying on the same content everywhere.
 
 I had a few ideas for how [Company] could turn [specific product/service] into engaging social content.
 

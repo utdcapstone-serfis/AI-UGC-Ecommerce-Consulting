@@ -29,7 +29,7 @@ GOOD_BODY = ("Hi Paul,\n\nI came across Tire Swing and really liked what you're 
              "At Serfis AI, we create short-form video advertisements and social content designed for platforms including TikTok, Instagram, "
              "YouTube, Reddit, X, and Pinterest. Social media moves quickly, and staying on top of emerging trends can help brands remain "
              "relevant, capture attention, and create more opportunities to reach their target audience. We help businesses consistently "
-             "produce fresh creative that fits the style and audience of each platform rather than relying on the same content everywhere.\n\n"
+             "produce innovative advertisements that fit the style and audience of each platform rather than relying on the same content everywhere.\n\n"
              "I had a few ideas for how Tire Swing could turn certification workflows into engaging social content. Would you be open to me "
              "sending over a couple of concepts?\n\nBest,\nAllison\nSerfis AI")
 def mk(**kw):
@@ -46,6 +46,7 @@ ok("too short caught", any("words" in i for i in g.check_draft(mk(draft_email_bo
 ok("wrong first name caught", any("first name" in i for i in g.check_draft(mk(draft_email_body=GOOD_BODY.replace("Hi Paul", "Hi Sam")))))
 ok("missing company caught", any("company by name" in i for i in g.check_draft(mk(draft_email_body=GOOD_BODY.replace("Tire Swing", "your company")))))
 ok("call ask caught", any("meeting" in i or "call" in i for i in g.check_draft(mk(draft_email_body=GOOD_BODY.replace("sending over a couple of concepts", "hopping on a quick call")))))
+ok("old phrase caught", any("fresh creative" in i for i in g.check_draft(mk(draft_email_body=GOOD_BODY.replace("innovative advertisements", "fresh creative")))))
 ok("'aI native' garble caught", any("garbled" in i for i in g.check_draft(mk(draft_email_body=GOOD_BODY.replace("certification workflows", "aI native certification workflows")))))
 ok("'Serfis AI' is NOT a false garble", not any("garbled" in i for i in g.check_draft(mk())))
 ok("unsupported claim caught", any("claim" in i for i in g.check_draft(mk(draft_email_body=GOOD_BODY.replace("engaging social content", "content that boosts sales by 300%")))))

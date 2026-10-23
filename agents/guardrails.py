@@ -36,6 +36,7 @@ CATEGORIES = ("draft", "region")
 _PLACEHOLDER = re.compile(r"\[[^\]]*\]|\{[^}]*\}|NEEDS_ENRICHMENT|\bTODO\b|lorem ipsum", re.I)
 _CALL_ASK = re.compile(r"\b(call|phone|zoom|meeting|demo|calendly|calendar|schedule a)\b", re.I)
 _SELF_DESCRIBE = re.compile(r"\b(autonomous|ai pipeline|ai-powered pipeline)\b", re.I)
+_OFF_BRAND = re.compile(r"\bfresh creative\b", re.I)
 _GARBLE_CASE = re.compile(r"\b[a-z]I\b")                      # "aI native" - case-sensitive on purpose ("AI" is fine)
 _GARBLE = re.compile(r"\.\.(?!\.)|\s,|,,|\b(\w+) \1\b", re.I)
 _CLAIM = re.compile(r"\d[\d,.]*\s?%|\$\s?\d[\d,.]*|\b\d+x\b|#1\b|\bguarantee[sd]?\b|\bproven\b", re.I)
@@ -71,6 +72,9 @@ def check_draft(lead: Lead) -> list:
     m = _SELF_DESCRIBE.search(body)
     if m:
         issues.append(f"describes Serfis as '{m.group(0)}' - the approved message does not")
+    m = _OFF_BRAND.search(text)
+    if m:
+        issues.append(f"uses '{m.group(0)}' - say 'innovative advertisements' instead")
     m = _GARBLE_CASE.search(text) or _GARBLE.search(text)
     if m:
         issues.append(f"looks garbled near '{m.group(0).strip()}'")
