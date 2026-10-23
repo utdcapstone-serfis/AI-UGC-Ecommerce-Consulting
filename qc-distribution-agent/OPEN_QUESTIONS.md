@@ -117,8 +117,9 @@ Reddit denied the data-access request on 2026-10-05 (generic reason: not in comp
 
 To decide:
 - Drop Reddit from the platform list, or keep it as a manual (outside-the-pipeline) channel?
-- Reply on the ticket to learn what was missing, or resubmit a fuller request? Neither is expected to succeed, since new Data API access may be moderation-only (unconfirmed).
+- Reply on the same ticket to learn what was missing and add detail there. Do not register a second Reddit App for the same use case (Developer Terms section 4.2, read 2026-10-11). Neither is expected to succeed, since new Data API access may be moderation-only (unconfirmed).
 - The Reddit adapter code stays in the repo unused; keep it or remove it?
+- Reddit's Developer Terms (section 4.1) bar API use "by or on behalf of a business" without written approval and give no published list of accepted commercial uses; using UploadPost for Reddit would not change that. Details in `CURRENT_OBSTACLES.md`.
 
 ## Decided
 (none yet)
