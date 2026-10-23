@@ -1,0 +1,1673 @@
+{
+ "run": "2026-10-23 QC of the team zip 'BPS AI Generated Videos' (27 files, 8 folders), declared final by the user in chat",
+ "method": "Hard gates (15-30 s; 9:16 at 1080x1920 or larger) and technical quality and audio were measured (OpenCV, ffmpeg). Visual metrics come from 4 sampled frames per video; audio was not listened to.",
+ "not_reviewed_again": {
+  "Alena/1-Quippy 30 sec clip.mp4": "same bytes as a video already evaluated (see the hub record 1-quippy-30-sec-clip)",
+  "Alena/woof-rainy-puppy-draft 1.mp4": "same bytes as a video already evaluated (see the hub record woof-rainy-puppy-draft-1)",
+  "Allison/Copy of 5Kc66hNQI3o6TdMVRTk_Rg.mp4": "exact copy of Allison/5Kc66hNQI3o6TdMVRTk_Rg.mp4, which was evaluated"
+ },
+ "summary": {
+  "evaluated": 24,
+  "pass": 1,
+  "pass_video": "Mirella/VEEZA.mp4 (composite 7.9)",
+  "hard_gate_fail": 23
+ },
+ "records": [
+  {
+   "doc_id": "cat-edm-dance",
+   "data": {
+    "title": "cat-edm-dance",
+    "url": "",
+    "source": "Alena",
+    "metrics": {
+     "duration": {
+      "verdict": "fail",
+      "score": null,
+      "note": "6.04s, under the 15s minimum"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "720x1280, vertical 9:16 but below the 1080x1920 minimum"
+     },
+     "technical_quality": {
+      "verdict": "flag",
+      "score": 6.7,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 23 → 0.0/10, noise (sigma) 0.38 → 10.0/10, blockiness 0.09 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "fail",
+      "score": 3.0,
+      "note": "Measured: integrated loudness -22.1 LUFS (target -14 +/-2), true peak -9.1 dBFS, 0 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "pass",
+      "score": 8,
+      "note": "A cat in a neon light burst, dancing on its hind legs; strong motion and color, works muted"
+     },
+     "captions": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No text in the sampled frames; a music clip"
+     },
+     "safe_zone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No text or logo seen"
+     },
+     "branding": {
+      "verdict": "flag",
+      "score": 3,
+      "note": "No logo, brand colors or advertised company in the sampled frames"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No narration confirmed"
+     },
+     "pacing": {
+      "verdict": "flag",
+      "score": 6,
+      "note": "One continuous dance on a black background; cut frequency could not be confirmed from 4 frames"
+     },
+     "cta": {
+      "verdict": "fail",
+      "score": 1,
+      "note": "No call-to-action seen in the final sampled frame"
+     }
+    },
+    "composite": 4.9,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on duration and size (6.04 s, 720x1280). Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "cat-edm-dance.mp4"
+   }
+  },
+  {
+   "doc_id": "quippy-ad-final-v8",
+   "data": {
+    "title": "quippy-ad-FINAL-v8",
+    "url": "",
+    "source": "Alena",
+    "metrics": {
+     "duration": {
+      "verdict": "fail",
+      "score": null,
+      "note": "30.17s, over the 30s limit"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "720x1280, vertical 9:16 but below the 1080x1920 minimum"
+     },
+     "technical_quality": {
+      "verdict": "pass",
+      "score": 8.9,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 115 → 6.8/10, noise (sigma) 0.35 → 10.0/10, blockiness 0.07 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "fail",
+      "score": 3.0,
+      "note": "Measured: integrated loudness -25.7 LUFS (target -14 +/-2), true peak -7.0 dBFS, 0 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "Opens on a person lying awake in bed; the first caption and the app screen follow; no text on the very first frame"
+     },
+     "captions": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "Burned-in captions on the sampled frames ('Ten minutes a day.', 'Already knew exactly what to say.'); small and low contrast over the busy office frame"
+     },
+     "safe_zone": {
+      "verdict": "flag",
+      "score": 5,
+      "note": "Captions sit in the lower third and the end-card line is near the bottom, inside the platform UI overlay zone"
+     },
+     "branding": {
+      "verdict": "pass",
+      "score": 9,
+      "note": "Quippy penguin mascot and logo, consistent palette, clean end card with logo and tagline"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "Not scored: whether there is narration was not confirmed by listening"
+     },
+     "pacing": {
+      "verdict": "pass",
+      "score": 8,
+      "note": "Varied shots across the sampled frames (bed, app screen, office, end card); no long static hold seen"
+     },
+     "cta": {
+      "verdict": "pass",
+      "score": 8,
+      "note": "Final card says 'Try Quippy today.' with logo"
+     }
+    },
+    "composite": 7.0,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on duration and size (30.17 s, 720x1280). The 'FINAL v8' file is 0.17 s over the 30 s limit and 720x1280; a re-export at 1080x1920 and 30.0 s or less would clear both gates. Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "quippy-ad-FINAL-v8.mp4"
+   }
+  },
+  {
+   "doc_id": "woof-music-clip",
+   "data": {
+    "title": "woof-music-clip",
+    "url": "",
+    "source": "Alena",
+    "metrics": {
+     "duration": {
+      "verdict": "fail",
+      "score": null,
+      "note": "8.04s, under the 15s minimum"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "726x1270, vertical 9:16 but below the 1080x1920 minimum"
+     },
+     "technical_quality": {
+      "verdict": "flag",
+      "score": 6.7,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 23 → 0.0/10, noise (sigma) 0.39 → 10.0/10, blockiness 0.00 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "fail",
+      "score": 3.0,
+      "note": "Measured: integrated loudness -31.5 LUFS (target -14 +/-2), true peak -8.6 dBFS, 0 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "flag",
+      "score": 6,
+      "note": "A golden retriever puppy eating from a red bowl in warm light; charming but no motion change or text across the frames"
+     },
+     "captions": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No captions seen; whether there is dialogue was not confirmed"
+     },
+     "safe_zone": {
+      "verdict": "flag",
+      "score": 6,
+      "note": "The 'Woof' text on the bowl sits in the bottom fifth of the frame, inside the UI overlay zone"
+     },
+     "branding": {
+      "verdict": "flag",
+      "score": 3,
+      "note": "A 'Woof' bowl is the only brand-like element; no logo, brand colors or outro"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No narration confirmed"
+     },
+     "pacing": {
+      "verdict": "flag",
+      "score": 4,
+      "note": "All four sampled frames are the same close-up; likely a single static shot"
+     },
+     "cta": {
+      "verdict": "fail",
+      "score": 1,
+      "note": "No call-to-action seen"
+     }
+    },
+    "composite": 4.4,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on duration and size (8.04 s, 726x1270). Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "woof-music-clip.mp4"
+   }
+  },
+  {
+   "doc_id": "5kc66hnqi3o6tdmvrtk-rg",
+   "data": {
+    "title": "5Kc66hNQI3o6TdMVRTk_Rg",
+    "url": "",
+    "source": "Allison",
+    "metrics": {
+     "duration": {
+      "verdict": "fail",
+      "score": null,
+      "note": "7.00s, under the 15s minimum"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "720x1280, vertical 9:16 but below the 1080x1920 minimum"
+     },
+     "technical_quality": {
+      "verdict": "pass",
+      "score": 10.0,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 356 → 10.0/10, noise (sigma) 1.07 → 10.0/10, blockiness 0.27 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No audio track in the file"
+     },
+     "hook": {
+      "verdict": "pass",
+      "score": 8,
+      "note": "A scuba diver drifting past tropical fish, then a sea turtle over a coral reef; vivid and moving"
+     },
+     "captions": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No captions seen; no dialogue expected (no audio track)"
+     },
+     "safe_zone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No text or logo seen"
+     },
+     "branding": {
+      "verdict": "flag",
+      "score": 3,
+      "note": "No logo, brand colors or advertised company seen"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No audio track"
+     },
+     "pacing": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "Scene changes from open water to reef; could be one continuous take"
+     },
+     "cta": {
+      "verdict": "fail",
+      "score": 1,
+      "note": "No call-to-action seen"
+     }
+    },
+    "composite": 5.8,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on duration and size (7.0 s, 720x1280). Byte-for-byte identical to Allison/Copy of 5Kc66hNQI3o6TdMVRTk_Rg.mp4 (that copy was not reviewed separately). Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "5Kc66hNQI3o6TdMVRTk_Rg.mp4"
+   }
+  },
+  {
+   "doc_id": "extuauys-dcddswhwi9ucg",
+   "data": {
+    "title": "eXTuaUYS-DcdDsWHWi9ucg",
+    "url": "",
+    "source": "Allison",
+    "metrics": {
+     "duration": {
+      "verdict": "fail",
+      "score": null,
+      "note": "7.00s, under the 15s minimum"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "720x1280, vertical 9:16 but below the 1080x1920 minimum"
+     },
+     "technical_quality": {
+      "verdict": "pass",
+      "score": 10.0,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 196 → 10.0/10, noise (sigma) 0.53 → 10.0/10, blockiness 0.10 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No audio track in the file"
+     },
+     "hook": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "A family dinner where one person looks anxious as relatives lean in; relatable, no text on the first frame"
+     },
+     "captions": {
+      "verdict": "flag",
+      "score": 5,
+      "note": "Text appears only on the last frame ('Practice awkward moments before they happen.'); no captions on the earlier frames"
+     },
+     "safe_zone": {
+      "verdict": "flag",
+      "score": 5,
+      "note": "The end caption and logo sit low on the frame, inside the UI overlay zone"
+     },
+     "branding": {
+      "verdict": "pass",
+      "score": 8,
+      "note": "Quippy app screen on a phone and a 'QUIPPY AI' logo tile on the last frame"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No audio track"
+     },
+     "pacing": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "Dinner scene, phone close-up, dinner again, end tag: a clear sequence"
+     },
+     "cta": {
+      "verdict": "flag",
+      "score": 5,
+      "note": "A tagline, not an action: no 'try' or 'download', no link"
+     }
+    },
+    "composite": 6.7,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on duration and size (7.0 s, 720x1280). Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "eXTuaUYS-DcdDsWHWi9ucg.mp4"
+   }
+  },
+  {
+   "doc_id": "veeza-ai-ad",
+   "data": {
+    "title": "Veeza AI ad",
+    "url": "",
+    "source": "Allison",
+    "metrics": {
+     "duration": {
+      "verdict": "pass",
+      "score": null,
+      "note": "29.5s within the 15-30s window"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "720x1280, vertical 9:16 but below the 1080x1920 minimum"
+     },
+     "technical_quality": {
+      "verdict": "flag",
+      "score": 6.7,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 24 → 0.0/10, noise (sigma) 0.29 → 10.0/10, blockiness 0.05 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "fail",
+      "score": 3.0,
+      "note": "Measured: integrated loudness -14.6 LUFS (target -14 +/-2), true peak 14.9 dBFS, 2 silences over 1.5s. A true peak above 0 dBFS is implausible for a normal file; recheck the audio"
+     },
+     "hook": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "A stressed woman at a table covered in papers, then a wedding to-do list; clear, no text on the first frame"
+     },
+     "captions": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No captions seen in the sampled frames"
+     },
+     "safe_zone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "The only text is a handwritten list inside the frame"
+     },
+     "branding": {
+      "verdict": "fail",
+      "score": 2,
+      "note": "No readable logo or brand name in the sampled frames (a faint watermark may be on one frame)"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "Not scored: whether there is narration was not confirmed"
+     },
+     "pacing": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "Planning stress, checklist, wedding walk, honeymoon beach: a clear sequence"
+     },
+     "cta": {
+      "verdict": "fail",
+      "score": 1,
+      "note": "The last sampled frame is a beach scene with no call-to-action"
+     }
+    },
+    "composite": 4.5,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on size (29.54 s, 720x1280). The file is named 'Veeza AI ad' but the sampled frames show a wedding-planning story with no Veeza logo; check that the right file was exported. The measured true peak (+14.9 dBFS) looks implausible and the audio should be rechecked. Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "Veeza AI ad.mp4"
+   }
+  },
+  {
+   "doc_id": "vqmil0utrnahhvj9pjaifq",
+   "data": {
+    "title": "vqMIL0UtRnahhvJ9pjAiFQ",
+    "url": "",
+    "source": "Allison",
+    "metrics": {
+     "duration": {
+      "verdict": "fail",
+      "score": null,
+      "note": "7.00s, under the 15s minimum"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "720x1280, vertical 9:16 but below the 1080x1920 minimum"
+     },
+     "technical_quality": {
+      "verdict": "pass",
+      "score": 9.8,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 145 → 9.5/10, noise (sigma) 0.55 → 10.0/10, blockiness 0.15 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No audio track in the file"
+     },
+     "hook": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "A couple at a cafe table, one looking unsure; relatable, no text on the first frame"
+     },
+     "captions": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "The only text is the end card; no captions on the earlier frames"
+     },
+     "safe_zone": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "The end-card block sits in the middle of the frame, clear of the edges"
+     },
+     "branding": {
+      "verdict": "pass",
+      "score": 8,
+      "note": "Quippy app screen with a coaching message, 'Quippy AI' logo on the end card"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No audio track"
+     },
+     "pacing": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "Cafe, phone close-up, cafe, end card: a clear sequence"
+     },
+     "cta": {
+      "verdict": "flag",
+      "score": 5,
+      "note": "'PRACTICE. IMPROVE. CONNECT.' is a tagline, not an action; no link"
+     }
+    },
+    "composite": 7.3,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on duration and size (7.0 s, 720x1280). Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "vqMIL0UtRnahhvJ9pjAiFQ.mp4"
+   }
+  },
+  {
+   "doc_id": "cell-type-ad-2",
+   "data": {
+    "title": "Cell Type Ad 2",
+    "url": "",
+    "source": "Cell Type",
+    "metrics": {
+     "duration": {
+      "verdict": "pass",
+      "score": null,
+      "note": "15.0s within the 15-30s window"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "496x864, ratio 0.574; the gate needs 9:16 at 1080x1920 or larger"
+     },
+     "technical_quality": {
+      "verdict": "pass",
+      "score": 10.0,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 374 → 10.0/10, noise (sigma) 0.51 → 10.0/10, blockiness 0.00 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "pass",
+      "score": 10.0,
+      "note": "Measured: integrated loudness -15.1 LUFS (target -14 +/-2), true peak -3.0 dBFS, 0 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "Bold kinetic text over a cell graphic ('Biology is complex.'), but the headline overlaps the artwork and is hard to read"
+     },
+     "captions": {
+      "verdict": "flag",
+      "score": 3,
+      "note": "The bottom caption lines are garbled ('The nfteligence behind Your aeiins to fumts-drug discovery.'); text on a screen is partly unreadable"
+     },
+     "safe_zone": {
+      "verdict": "flag",
+      "score": 5,
+      "note": "The bottom caption sits at the very bottom edge, in the UI overlay zone"
+     },
+     "branding": {
+      "verdict": "pass",
+      "score": 9,
+      "note": "CellType logo and consistent red, black and off-white palette throughout"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "Not scored: whether there is narration was not confirmed"
+     },
+     "pacing": {
+      "verdict": "pass",
+      "score": 8,
+      "note": "Four distinct scenes across the sampled frames"
+     },
+     "cta": {
+      "verdict": "flag",
+      "score": 6,
+      "note": "End card shows celltype.com but no action verb"
+     }
+    },
+    "composite": 7.1,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on size (15.04 s, 496x864). The burned-in caption lines on frames 2 to 4 are garbled (misspelled text), which is a defect to fix before use. Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "Cell Type Ad 2 .mp4"
+   }
+  },
+  {
+   "doc_id": "hf-20261019-233703-b6aa2fbb-db10-4bb7-9fb0-fe0950e5cd46",
+   "data": {
+    "title": "hf_20261019_233703_b6aa2fbb-db10-4bb7-9fb0-fe0950e5cd46",
+    "url": "",
+    "source": "Cell Type",
+    "metrics": {
+     "duration": {
+      "verdict": "pass",
+      "score": null,
+      "note": "15.0s within the 15-30s window"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "496x864, ratio 0.574; the gate needs 9:16 at 1080x1920 or larger"
+     },
+     "technical_quality": {
+      "verdict": "pass",
+      "score": 10.0,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 198 → 10.0/10, noise (sigma) 0.29 → 10.0/10, blockiness 0.02 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No audio track in the file"
+     },
+     "hook": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "'Biology is complex.' over a network sphere, clean and legible"
+     },
+     "captions": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "Headline text only; no captions expected (no audio track)"
+     },
+     "safe_zone": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "Headlines sit in the upper part of the frame, clear of the bottom UI zone"
+     },
+     "branding": {
+      "verdict": "pass",
+      "score": 8,
+      "note": "CellType palette and the celltype.com end card"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No audio track"
+     },
+     "pacing": {
+      "verdict": "pass",
+      "score": 8,
+      "note": "Several distinct scenes across the sampled frames"
+     },
+     "cta": {
+      "verdict": "flag",
+      "score": 6,
+      "note": "The end card shows celltype.com with no action verb"
+     }
+    },
+    "composite": 7.6,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on size (15.04 s, 496x864). Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "hf_20261019_233703_b6aa2fbb-db10-4bb7-9fb0-fe0950e5cd46.mp4"
+   }
+  },
+  {
+   "doc_id": "combined-final",
+   "data": {
+    "title": "combined_final",
+    "url": "",
+    "source": "Gym Advertisement",
+    "metrics": {
+     "duration": {
+      "verdict": "pass",
+      "score": null,
+      "note": "29.8s within the 15-30s window"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "496x864, ratio 0.574; the gate needs 9:16 at 1080x1920 or larger"
+     },
+     "technical_quality": {
+      "verdict": "flag",
+      "score": 6.8,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 46 → 0.5/10, noise (sigma) 0.34 → 10.0/10, blockiness 0.01 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "pass",
+      "score": 10.0,
+      "note": "Measured: integrated loudness -15.1 LUFS (target -14 +/-2), true peak -1.6 dBFS, 0 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "pass",
+      "score": 8,
+      "note": "A man in a tuxedo at a rooftop bar at night, cinematic lighting"
+     },
+     "captions": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No captions seen; whether there is dialogue was not confirmed"
+     },
+     "safe_zone": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "The end-card tagline sits in the middle of the frame"
+     },
+     "branding": {
+      "verdict": "pass",
+      "score": 9,
+      "note": "'S' logo on the gym shirt and a 'START AGAIN, where discipline meets design' end card"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No narration confirmed"
+     },
+     "pacing": {
+      "verdict": "pass",
+      "score": 8,
+      "note": "Bar, close-up, gym, end card across the sampled frames"
+     },
+     "cta": {
+      "verdict": "flag",
+      "score": 5,
+      "note": "A brand tagline, not an action; no link"
+     }
+    },
+    "composite": 7.8,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on size (29.79 s, 496x864). Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "combined_final.mp4"
+   }
+  },
+  {
+   "doc_id": "diving-video-needs-scene-detailing",
+   "data": {
+    "title": "Diving Video (needs scene detailing)",
+    "url": "",
+    "source": "Martin",
+    "metrics": {
+     "duration": {
+      "verdict": "fail",
+      "score": null,
+      "note": "12.04s, under the 15s minimum"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "1112x834, ratio 1.333; the gate needs 9:16 at 1080x1920 or larger"
+     },
+     "technical_quality": {
+      "verdict": "pass",
+      "score": 8.8,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 112 → 6.5/10, noise (sigma) 0.55 → 10.0/10, blockiness 0.01 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "fail",
+      "score": 3.0,
+      "note": "Measured: integrated loudness -25.6 LUFS (target -14 +/-2), true peak -4.5 dBFS, 0 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "flag",
+      "score": 5,
+      "note": "A diver putting on a mask on a boat; slow, no text"
+     },
+     "captions": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No captions seen"
+     },
+     "safe_zone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "Landscape video: vertical in-feed UI safe zones do not apply"
+     },
+     "branding": {
+      "verdict": "fail",
+      "score": 2,
+      "note": "No logo or brand seen"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No narration confirmed"
+     },
+     "pacing": {
+      "verdict": "flag",
+      "score": 5,
+      "note": "Boat, descent, turtle: several scenes but footage-like and unfinished"
+     },
+     "cta": {
+      "verdict": "fail",
+      "score": 1,
+      "note": "No call-to-action seen"
+     }
+    },
+    "composite": 4.0,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on duration and size (12.04 s, 1112x834). The file name says it needs scene detailing; it is also landscape (1112x834), so it is out of scope for this agent. Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "Diving Video (needs scene detailing).mp4"
+   }
+  },
+  {
+   "doc_id": "energy",
+   "data": {
+    "title": "Energy",
+    "url": "",
+    "source": "Martin",
+    "metrics": {
+     "duration": {
+      "verdict": "fail",
+      "score": null,
+      "note": "6.04s, under the 15s minimum"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "722x1276, vertical 9:16 but below the 1080x1920 minimum"
+     },
+     "technical_quality": {
+      "verdict": "flag",
+      "score": 6.7,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 35 → 0.0/10, noise (sigma) 0.40 → 10.0/10, blockiness 0.00 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "fail",
+      "score": 3.0,
+      "note": "Measured: integrated loudness -28.0 LUFS (target -14 +/-2), true peak -1.3 dBFS, 0 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "flag",
+      "score": 6,
+      "note": "A can and a glass on a plain table, then a pour; clear product action but a low-key start"
+     },
+     "captions": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No captions seen"
+     },
+     "safe_zone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No text or logo seen"
+     },
+     "branding": {
+      "verdict": "flag",
+      "score": 4,
+      "note": "A can with a green band and handwritten text that is not legible; no readable brand name"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No narration confirmed"
+     },
+     "pacing": {
+      "verdict": "flag",
+      "score": 6,
+      "note": "Pour sequence is clear; one location and a static camera"
+     },
+     "cta": {
+      "verdict": "fail",
+      "score": 1,
+      "note": "No call-to-action seen"
+     }
+    },
+    "composite": 4.5,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on duration and size (6.04 s, 722x1276). Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "Energy.mp4"
+   }
+  },
+  {
+   "doc_id": "smoothie",
+   "data": {
+    "title": "Smoothie",
+    "url": "",
+    "source": "Martin",
+    "metrics": {
+     "duration": {
+      "verdict": "fail",
+      "score": null,
+      "note": "6.04s, under the 15s minimum"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "720x1280, vertical 9:16 but below the 1080x1920 minimum"
+     },
+     "technical_quality": {
+      "verdict": "pass",
+      "score": 7.1,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 53 → 1.2/10, noise (sigma) 0.33 → 10.0/10, blockiness 0.05 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "fail",
+      "score": 3.0,
+      "note": "Measured: integrated loudness -26.8 LUFS (target -14 +/-2), true peak -8.9 dBFS, 0 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "A hand starts a blender full of strawberries and banana; clear process, clean kitchen"
+     },
+     "captions": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No captions seen"
+     },
+     "safe_zone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No text or logo seen"
+     },
+     "branding": {
+      "verdict": "flag",
+      "score": 3,
+      "note": "A plain white blender with no logo or brand name"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No narration confirmed"
+     },
+     "pacing": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "Ingredients, blending, result: a clear sequence with a static camera"
+     },
+     "cta": {
+      "verdict": "fail",
+      "score": 1,
+      "note": "No call-to-action seen"
+     }
+    },
+    "composite": 4.7,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on duration and size (6.04 s, 720x1280). Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "Smoothie.mp4"
+   }
+  },
+  {
+   "doc_id": "antimattr",
+   "data": {
+    "title": "antimattr",
+    "url": "",
+    "source": "Mirella",
+    "metrics": {
+     "duration": {
+      "verdict": "fail",
+      "score": null,
+      "note": "7.04s, under the 15s minimum"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "854x480, ratio 1.779; the gate needs 9:16 at 1080x1920 or larger"
+     },
+     "technical_quality": {
+      "verdict": "pass",
+      "score": 7.5,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 69 → 2.6/10, noise (sigma) 0.39 → 10.0/10, blockiness 0.00 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "fail",
+      "score": 3.0,
+      "note": "Measured: integrated loudness -29.8 LUFS (target -14 +/-2), true peak -11.1 dBFS, 0 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "flag",
+      "score": 5,
+      "note": "A man in a dark coat seen from behind walking into a building; no text"
+     },
+     "captions": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No captions seen"
+     },
+     "safe_zone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "Landscape video: vertical in-feed UI safe zones do not apply"
+     },
+     "branding": {
+      "verdict": "fail",
+      "score": 2,
+      "note": "No logo or brand seen"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No narration confirmed"
+     },
+     "pacing": {
+      "verdict": "pass",
+      "score": 6,
+      "note": "Street, lobby, city view, earbud close-up"
+     },
+     "cta": {
+      "verdict": "fail",
+      "score": 1,
+      "note": "No call-to-action seen"
+     }
+    },
+    "composite": 3.9,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on duration and size (7.04 s, 854x480). Landscape (854x480), so out of scope for this agent. Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "antimattr.mp4"
+   }
+  },
+  {
+   "doc_id": "local",
+   "data": {
+    "title": "local_",
+    "url": "",
+    "source": "Mirella",
+    "metrics": {
+     "duration": {
+      "verdict": "fail",
+      "score": null,
+      "note": "7.04s, under the 15s minimum"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "854x480, ratio 1.779; the gate needs 9:16 at 1080x1920 or larger"
+     },
+     "technical_quality": {
+      "verdict": "pass",
+      "score": 7.3,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 62 → 2.0/10, noise (sigma) 0.50 → 10.0/10, blockiness 0.00 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "fail",
+      "score": 3.0,
+      "note": "Measured: integrated loudness -29.7 LUFS (target -14 +/-2), true peak -8.9 dBFS, 0 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "pass",
+      "score": 6,
+      "note": "A man steps out of a yellow taxi on a busy New York street and touches an earbud"
+     },
+     "captions": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No captions seen"
+     },
+     "safe_zone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "Landscape video: vertical in-feed UI safe zones do not apply"
+     },
+     "branding": {
+      "verdict": "fail",
+      "score": 2,
+      "note": "No logo or brand seen"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No narration confirmed"
+     },
+     "pacing": {
+      "verdict": "pass",
+      "score": 6,
+      "note": "Street and taxi, two close-ups"
+     },
+     "cta": {
+      "verdict": "fail",
+      "score": 1,
+      "note": "No call-to-action seen"
+     }
+    },
+    "composite": 4.2,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on duration and size (7.04 s, 854x480). Landscape (854x480), so out of scope for this agent. Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "local_.mp4"
+   }
+  },
+  {
+   "doc_id": "orca",
+   "data": {
+    "title": "orca_",
+    "url": "",
+    "source": "Mirella",
+    "metrics": {
+     "duration": {
+      "verdict": "fail",
+      "score": null,
+      "note": "7.04s, under the 15s minimum"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "854x480, ratio 1.779; the gate needs 9:16 at 1080x1920 or larger"
+     },
+     "technical_quality": {
+      "verdict": "pass",
+      "score": 7.5,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 68 → 2.6/10, noise (sigma) 0.38 → 10.0/10, blockiness 0.00 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "fail",
+      "score": 3.0,
+      "note": "Measured: integrated loudness -25.1 LUFS (target -14 +/-2), true peak -8.0 dBFS, 0 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "pass",
+      "score": 8,
+      "note": "A selfie-style dive with orcas swimming behind the diver; striking"
+     },
+     "captions": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No captions seen"
+     },
+     "safe_zone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "Landscape video: vertical in-feed UI safe zones do not apply"
+     },
+     "branding": {
+      "verdict": "fail",
+      "score": 2,
+      "note": "No logo or brand seen"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No narration confirmed"
+     },
+     "pacing": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "Boat, dive, orcas"
+     },
+     "cta": {
+      "verdict": "fail",
+      "score": 1,
+      "note": "No call-to-action seen"
+     }
+    },
+    "composite": 4.9,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on duration and size (7.04 s, 854x480). Landscape (854x480), so out of scope for this agent. Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "orca_.mp4"
+   }
+  },
+  {
+   "doc_id": "otdsyqrjbu2-zhroz6c8nq",
+   "data": {
+    "title": "otDSyQRjBu2-ZHroz6C8nQ",
+    "url": "",
+    "source": "Mirella",
+    "metrics": {
+     "duration": {
+      "verdict": "fail",
+      "score": null,
+      "note": "7.04s, under the 15s minimum"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "1280x720, ratio 1.778; the gate needs 9:16 at 1080x1920 or larger"
+     },
+     "technical_quality": {
+      "verdict": "pass",
+      "score": 7.3,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 62 → 2.0/10, noise (sigma) 0.62 → 10.0/10, blockiness 0.23 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "fail",
+      "score": 3.0,
+      "note": "Measured: integrated loudness -51.1 LUFS (target -14 +/-2), true peak -29.6 dBFS, 0 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "A winged horse and a rider flying above clouds at sunset; striking"
+     },
+     "captions": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No captions seen"
+     },
+     "safe_zone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "Landscape video: vertical in-feed UI safe zones do not apply"
+     },
+     "branding": {
+      "verdict": "fail",
+      "score": 2,
+      "note": "No logo or brand seen"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No narration confirmed"
+     },
+     "pacing": {
+      "verdict": "flag",
+      "score": 5,
+      "note": "The sampled frames show the same flight shot; cut frequency not confirmed"
+     },
+     "cta": {
+      "verdict": "fail",
+      "score": 1,
+      "note": "No call-to-action seen"
+     }
+    },
+    "composite": 4.4,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on duration and size (7.04 s, 1280x720). Landscape (1280x720), so out of scope for this agent. The audio is very quiet. Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "otDSyQRjBu2-ZHroz6C8nQ.mp4"
+   }
+  },
+  {
+   "doc_id": "roma",
+   "data": {
+    "title": "roma",
+    "url": "",
+    "source": "Mirella",
+    "metrics": {
+     "duration": {
+      "verdict": "fail",
+      "score": null,
+      "note": "12.00s, under the 15s minimum"
+     },
+     "aspect_ratio": {
+      "verdict": "pass",
+      "score": null,
+      "note": "1080x1920, 9:16 at 1080x1920 or larger"
+     },
+     "technical_quality": {
+      "verdict": "pass",
+      "score": 10.0,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 281 → 10.0/10, noise (sigma) 0.35 → 10.0/10, blockiness 0.06 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "fail",
+      "score": 3.0,
+      "note": "Measured: integrated loudness -21.7 LUFS (target -14 +/-2), true peak -8.2 dBFS, 1 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "pass",
+      "score": 8,
+      "note": "'POV: your to-do list has a to-do list' over a man typing frantically; a relatable setup"
+     },
+     "captions": {
+      "verdict": "flag",
+      "score": 6,
+      "note": "The only text is a thin 'POV' line at the top left in small type"
+     },
+     "safe_zone": {
+      "verdict": "flag",
+      "score": 6,
+      "note": "The POV line sits in the top 13% of the frame, near the platform's top bar"
+     },
+     "branding": {
+      "verdict": "pass",
+      "score": 9,
+      "note": "RomaAI logo and tagline on a clean end card"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "Not scored: whether there is narration was not confirmed"
+     },
+     "pacing": {
+      "verdict": "pass",
+      "score": 8,
+      "note": "Setup, escalation, end card"
+     },
+     "cta": {
+      "verdict": "flag",
+      "score": 6,
+      "note": "End card says 'The to-do list that does itself.', a tagline with no action or link"
+     }
+    },
+    "composite": 7.1,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on duration (12.0 s, 1080x1920). Passes the size gate (1080x1920) but is 12.0 s, under the 15 s minimum; a re-cut to 15 s or more would clear it. Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "roma.mp4"
+   }
+  },
+  {
+   "doc_id": "veeza",
+   "data": {
+    "title": "VEEZA",
+    "url": "",
+    "source": "Mirella",
+    "metrics": {
+     "duration": {
+      "verdict": "pass",
+      "score": null,
+      "note": "15.0s within the 15-30s window"
+     },
+     "aspect_ratio": {
+      "verdict": "pass",
+      "score": null,
+      "note": "1080x1920, 9:16 at 1080x1920 or larger"
+     },
+     "technical_quality": {
+      "verdict": "pass",
+      "score": 9.1,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 120 → 7.2/10, noise (sigma) 0.49 → 10.0/10, blockiness 0.01 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "flag",
+      "score": 6.0,
+      "note": "Measured: integrated loudness -19.5 LUFS (target -14 +/-2), true peak -4.2 dBFS, 1 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "pass",
+      "score": 9,
+      "note": "'POV: you thought booking the flight was the hard part.' over a beach photo, then a paper maze; strong curiosity hook, works muted"
+     },
+     "captions": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "Burned-in POV line on the first frame, readable; later frames carry no captions"
+     },
+     "safe_zone": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "The POV line sits in the upper third, clear of the bottom UI zone"
+     },
+     "branding": {
+      "verdict": "pass",
+      "score": 9,
+      "note": "Veeza AI logo, mascot and tagline on the end card; consistent look"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "Not scored: whether there is narration was not confirmed"
+     },
+     "pacing": {
+      "verdict": "pass",
+      "score": 9,
+      "note": "Four distinct scenes: table, paper maze, phone reveal, end card"
+     },
+     "cta": {
+      "verdict": "flag",
+      "score": 6,
+      "note": "End card says 'Apply for tourist visas ethically and safely with AI.', a benefit line with no explicit action or link"
+     }
+    },
+    "composite": 7.9,
+    "verdict": "PASS",
+    "reviewer_notes": "Both hard gates pass. The only video in the zip that clears both hard gates (1080x1920, 15.04 s). Its end card is a tagline without an explicit action, and the loudness (-19.5 LUFS) is a little quiet. Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "VEEZA.mp4"
+   }
+  },
+  {
+   "doc_id": "forward-ad-1-0",
+   "data": {
+    "title": "Forward Ad 1.0",
+    "url": "",
+    "source": "Sarina",
+    "metrics": {
+     "duration": {
+      "verdict": "pass",
+      "score": null,
+      "note": "15.0s within the 15-30s window"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "720x1280, vertical 9:16 but below the 1080x1920 minimum"
+     },
+     "technical_quality": {
+      "verdict": "pass",
+      "score": 7.3,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 60 → 1.8/10, noise (sigma) 0.39 → 10.0/10, blockiness 0.05 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "flag",
+      "score": 6.0,
+      "note": "Measured: integrated loudness -17.5 LUFS (target -14 +/-2), true peak -3.2 dBFS, 0 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "flag",
+      "score": 5,
+      "note": "A close-up of a monitor with a blurred hand and no text; slow to land"
+     },
+     "captions": {
+      "verdict": "flag",
+      "score": 3,
+      "note": "A person appears to speak in the last frame but no captions are seen"
+     },
+     "safe_zone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No text or logo seen"
+     },
+     "branding": {
+      "verdict": "flag",
+      "score": 3,
+      "note": "A software screen on a monitor but no readable logo or brand name"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "Not scored: whether there is narration was not confirmed"
+     },
+     "pacing": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "Screen, hands, screen, speaker: some variety"
+     },
+     "cta": {
+      "verdict": "fail",
+      "score": 1,
+      "note": "No call-to-action seen in the final sampled frame"
+     }
+    },
+    "composite": 4.3,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on size (15.04 s, 720x1280). Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "Forward Ad 1.0.mp4"
+   }
+  },
+  {
+   "doc_id": "playground-result-1790647805823",
+   "data": {
+    "title": "playground-result-1790647805823",
+    "url": "",
+    "source": "Sarina",
+    "metrics": {
+     "duration": {
+      "verdict": "fail",
+      "score": null,
+      "note": "10.04s, under the 15s minimum"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "720x1280, vertical 9:16 but below the 1080x1920 minimum"
+     },
+     "technical_quality": {
+      "verdict": "flag",
+      "score": 6.7,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 11 → 0.0/10, noise (sigma) 0.29 → 10.0/10, blockiness 0.05 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "fail",
+      "score": 3.0,
+      "note": "Measured: integrated loudness -24.3 LUFS (target -14 +/-2), true peak -5.1 dBFS, 0 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "pass",
+      "score": 6,
+      "note": "A man lying awake in a dim bedroom who turns to show a phone; understated, no text"
+     },
+     "captions": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No captions seen"
+     },
+     "safe_zone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No text or logo on the frame itself"
+     },
+     "branding": {
+      "verdict": "flag",
+      "score": 5,
+      "note": "A penguin app screen is visible on the phone but is small and not clearly branded"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No narration confirmed"
+     },
+     "pacing": {
+      "verdict": "flag",
+      "score": 5,
+      "note": "One bedroom scene across the sampled frames"
+     },
+     "cta": {
+      "verdict": "fail",
+      "score": 1,
+      "note": "No call-to-action seen"
+     }
+    },
+    "composite": 4.7,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on duration and size (10.04 s, 720x1280). Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "playground-result-1790647805823.mp4"
+   }
+  },
+  {
+   "doc_id": "alternate-gym-flashback",
+   "data": {
+    "title": "Alternate Gym Flashback",
+    "url": "",
+    "source": "Start Again",
+    "metrics": {
+     "duration": {
+      "verdict": "fail",
+      "score": null,
+      "note": "6.04s, under the 15s minimum"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "484x844, ratio 0.573; the gate needs 9:16 at 1080x1920 or larger"
+     },
+     "technical_quality": {
+      "verdict": "pass",
+      "score": 9.5,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 134 → 8.6/10, noise (sigma) 0.46 → 10.0/10, blockiness 0.00 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "fail",
+      "score": 3.0,
+      "note": "Measured: integrated loudness -33.0 LUFS (target -14 +/-2), true peak -20.3 dBFS, 0 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "flag",
+      "score": 5,
+      "note": "Two men standing in a gym with weights at rest; little motion at the start"
+     },
+     "captions": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No captions seen"
+     },
+     "safe_zone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No text on the frame"
+     },
+     "branding": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "The 'S' logo is visible on one man's shirt; small"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No narration confirmed"
+     },
+     "pacing": {
+      "verdict": "flag",
+      "score": 5,
+      "note": "One gym scene across the sampled frames"
+     },
+     "cta": {
+      "verdict": "fail",
+      "score": 1,
+      "note": "No call-to-action seen"
+     }
+    },
+    "composite": 5.2,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on duration and size (6.04 s, 484x844). Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "Alternate Gym Flashback.mp4"
+   }
+  },
+  {
+   "doc_id": "ending",
+   "data": {
+    "title": "Ending",
+    "url": "",
+    "source": "Start Again",
+    "metrics": {
+     "duration": {
+      "verdict": "fail",
+      "score": null,
+      "note": "7.04s, under the 15s minimum"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "560x752, ratio 0.745; the gate needs 9:16 at 1080x1920 or larger"
+     },
+     "technical_quality": {
+      "verdict": "pass",
+      "score": 7.7,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 74 → 3.1/10, noise (sigma) 0.46 → 10.0/10, blockiness 0.29 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "pass",
+      "score": 10.0,
+      "note": "Measured: integrated loudness -15.2 LUFS (target -14 +/-2), true peak -1.9 dBFS, 0 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "A rooftop workout at sunset with a 'STRONGER TOGETHER' sign; clear scene"
+     },
+     "captions": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No captions seen"
+     },
+     "safe_zone": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "The end tagline sits in the middle of the frame"
+     },
+     "branding": {
+      "verdict": "pass",
+      "score": 9,
+      "note": "'START AGAIN, where discipline meets design' logo end card"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No narration confirmed"
+     },
+     "pacing": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "Rooftop, close shot, end card"
+     },
+     "cta": {
+      "verdict": "flag",
+      "score": 5,
+      "note": "A brand tagline, not an action; no link"
+     }
+    },
+    "composite": 7.6,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on duration and size (7.04 s, 560x752). Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "Ending.mp4"
+   }
+  },
+  {
+   "doc_id": "opening",
+   "data": {
+    "title": "Opening",
+    "url": "",
+    "source": "Start Again",
+    "metrics": {
+     "duration": {
+      "verdict": "fail",
+      "score": null,
+      "note": "9.04s, under the 15s minimum"
+     },
+     "aspect_ratio": {
+      "verdict": "fail",
+      "score": null,
+      "note": "496x864, ratio 0.574; the gate needs 9:16 at 1080x1920 or larger"
+     },
+     "technical_quality": {
+      "verdict": "pass",
+      "score": 8.1,
+      "note": "Measured across 10 sampled frames — blur (Laplacian var) 89 → 4.4/10, noise (sigma) 0.32 → 10.0/10, blockiness 0.00 → 10.0/10"
+     },
+     "audio_quality": {
+      "verdict": "flag",
+      "score": 6.0,
+      "note": "Measured: integrated loudness -11.5 LUFS (target -14 +/-2), true peak -1.6 dBFS, 0 silences over 1.5s"
+     },
+     "hook": {
+      "verdict": "pass",
+      "score": 7,
+      "note": "A man in a tuxedo drinking at a bar, then a handshake; cinematic"
+     },
+     "captions": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No captions seen"
+     },
+     "safe_zone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No text until the end card"
+     },
+     "branding": {
+      "verdict": "pass",
+      "score": 8,
+      "note": "A 'HIGGSFIELD START AGAIN' logo end card on black"
+     },
+     "voice_tone": {
+      "verdict": "n/a",
+      "score": null,
+      "note": "No narration confirmed"
+     },
+     "pacing": {
+      "verdict": "pass",
+      "score": 8,
+      "note": "Four distinct shots including the end card"
+     },
+     "cta": {
+      "verdict": "flag",
+      "score": 5,
+      "note": "A brand sign-off, not an action; no link"
+     }
+    },
+    "composite": 7.0,
+    "verdict": "FAIL (hard gate)",
+    "reviewer_notes": "Hard gate failed on duration and size (9.04 s, 496x864). Visual metrics are from 4 sampled frames; the review was of the zip copy dated 2026-10-23.",
+    "file_name": "Opening.mp4"
+   }
+  }
+ ]
+}

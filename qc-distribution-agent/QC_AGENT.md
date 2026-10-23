@@ -127,6 +127,16 @@ dashboard auto-update with no republish needed.
 
 Dashboard: https://claude.ai/artifact/WfSG1dqhwF2ZUjwvrEnnrM
 
+The QC Review Desk was also copied into the Quality Control tab of the Serfis Agent
+Hub (a private artifact, 2026-10-17), with its own copy of the data. Which one is the
+home for new results is still to be decided (see `OPEN_QUESTIONS.md`); until then a
+run is written to the hub and kept as a file in `qc_results/`.
+
+**QC runs kept as files** (`qc_results/`):
+- `2026-10-23_bps_zip_evaluations.json`: the team zip "BPS AI Generated Videos" (27
+  files; 24 evaluated, 3 skipped as duplicates). One pass (Mirella/VEEZA, 7.9); the
+  other 23 failed a hard gate, mostly because the size is below 1080x1920.
+
 Demo/fixture evaluations used to exercise `report.py` live in
 `quality_control_agent/examples.py` — these are illustrative sample
 data, not live production evaluations.
