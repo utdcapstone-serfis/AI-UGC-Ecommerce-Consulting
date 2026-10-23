@@ -2,6 +2,7 @@
 
 Usage:
     python main.py run --limit 5          # run the pipeline, save to SQLite
+    python main.py report --label "Run 1" --email   # guardrail + kill-switch test summary, emailed to the Gmail account
     python main.py export                 # export current DB to Excel
     python main.py review                 # print pending leads for review
     python main.py approve <id> [--force] # approve a lead (refused if guardrails flag it; --force = approve anyway)
@@ -301,6 +302,15 @@ def cmd_reset(args):
     print("All leads and analytics deleted. Database is now empty.")
 
 
+def cmd_report(args):
+    import run_report
+    body = run_report.build(args.label, args.before_id, args.log)
+    print(body)
+    if args.email:
+        to = run_report.send_email(f"[Serfis lead-gen test] {args.label}", body)
+        print(f"Summary emailed to {to}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Serfis lead-gen agent")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -310,6 +320,11 @@ def main():
     p_run.add_argument("--max-lookups", type=int, default=None,
                        help="Cap on paid contact lookups this run (default: MAX_LOOKUPS_PER_RUN)")
     p_run.set_defaults(func=cmd_run)
+
+    p_rep = sub.add_parser("report", help="Guardrail + kill-switch test summary; --email sends it to the Gmail account")
+    p_rep.add_argument("--label", default="Test run"); p_rep.add_argument("--before-id", type=int, default=0)
+    p_rep.add_argument("--log", default=""); p_rep.add_argument("--email", action="store_true")
+    p_rep.set_defaults(func=cmd_report)
 
     p_export = sub.add_parser("export", help="Export current leads to Excel")
     p_export.set_defaults(func=cmd_export)
