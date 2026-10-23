@@ -45,4 +45,4 @@ Never diagnose from the prompt text alone when a video exists. A claim with only
 - Always, at delivery: append the new prompt to `generation-log.md` and say so.
 - Only after the user reports an outcome (or shares the video): fill that entry's result, defects and cause, and update `technique-scorecard.md` counts.
 - Status changes on the scorecard follow its rules; one result never makes a technique "proven".
-- Never edit `campaign-start-again.md` on your own. If evidence suggests a campaign rule should change, propose the edit and wait for the user.
+- Never edit a campaign profile (`campaigns/*.md`) on your own. If evidence suggests a campaign rule should change, propose the edit and wait for the user.

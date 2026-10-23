@@ -1,23 +1,9 @@
-# Prompt Templates (7-second clips, human-height camera)
+# Prompt Templates (short clips; fitness examples use the Start Again blocks)
 
 Fill the [brackets]. Keep each clip to ONE exercise and ONE camera move. Attach references first; name them in the prompt.
 
-## Shared blocks (paste into every prompt)
-
-**LOCK (identity and wardrobe)**
-Man A (@ManA reference): young athletic man, light-brown curly hair, clean-shaven. Man B (@ManB reference): athletic man, dark curly hair, short beard. Faces, hair, skin tone and builds identical to the references throughout. Both wear fitted black performance athletic wear with the metallic silver S emblem centered on the chest exactly as in @Logo reference, same size and position in every frame.
-
-**SET**
-Modern rooftop gym at golden hour, black rubber flooring, glass railings, urban skyline behind, warm string lights, people exercising in the background.
-
-**LOOK**
-Warm low-sun key light with soft rim light on shoulders, shallow depth of field, natural motion blur, ARRI ALEXA aesthetic, 35mm film quality, 100% real-life shooting texture. Pore-level skin, individual sweat beads at the temples and forehead, sweat running down skin, sweat-darkened fabric, heavy breathing.
-
-**CONSTRAINTS (positive wording, inside the prompt)**
-Camera stays at human height on the rooftop, one continuous shot, no cuts. Each man holds exactly one silver dumbbell in each hand (four total). Emblem stays sharp and unchanged. Natural human anatomy and balance. No on-screen text, no subtitles, no watermark.
-
-**NEGATIVE field (if the interface has one)**
-drone shot, aerial view, zoom out from building, clouds, logo reveal, extra or missing dumbbells, distorted S logo, changing faces, extra limbs, warped hands, floating weights, text, subtitles, watermark
+## Shared blocks
+The LOCK / SET / LOOK / CONSTRAINTS / NEGATIVE blocks below come from the ACTIVE campaign profile (`campaigns/<name>.md`, section "Prompt blocks"). The bracketed names in the templates refer to them. For a new brand, build the same five blocks from `campaigns/_template.md`.
 
 ---
 
