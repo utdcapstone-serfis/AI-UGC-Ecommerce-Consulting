@@ -588,23 +588,34 @@ dl dd { margin: 4px 0 0; font-size: 15px; line-height: 1.5; word-break: break-wo
 @media (max-width: 520px) { .check-tiles, .glance { grid-template-columns: 1fr; } }
 
 /* =====================================================================
-   Company record as a right-hand drawer: opens when a company is clicked
+   Split view: leads on the left, the clicked company's record on the right
    ===================================================================== */
-.drawer-backdrop { position: fixed; inset: 0; z-index: 40; background: rgba(6,3,15,.62); opacity: 0; pointer-events: none; transition: opacity .25s ease; }
-.drawer-backdrop.open { opacity: 1; pointer-events: auto; }
-.lead-panel-slot.drawer {
-  position: fixed; top: 0; right: 0; bottom: 0; z-index: 50; width: min(820px, 94vw); margin: 0;
-  overflow-y: auto; overscroll-behavior: contain; background: var(--bg); border-left: 1px solid var(--line-2);
-  box-shadow: -30px 0 80px -30px rgba(0,0,0,.8); outline: none;
-  transform: translateX(104%); visibility: hidden; transition: transform .3s var(--ease-out), visibility 0s linear .3s;
+main.wide { max-width: 1800px; }
+.split { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
+.split.has-panel { grid-template-columns: minmax(360px, 5fr) minmax(0, 7fr); }
+.split-right { display: none; }
+.split.has-panel .split-right {
+  display: block; position: sticky; top: 76px; max-height: calc(100vh - 92px); overflow-y: auto; overscroll-behavior: contain;
+  border-radius: 24px; border: 1px solid var(--line-2); outline: none; background: var(--bg);
+  box-shadow: 0 30px 70px -40px rgba(0,0,0,.9);
 }
-.lead-panel-slot.drawer.open { transform: none; visibility: visible; transition: transform .3s var(--ease-out), visibility 0s; }
-body.drawer-open { overflow: hidden; }
-.drawer .lead-panel { border-radius: 0; border: 0; box-shadow: none; animation: none; min-height: 100%; }
-.drawer .hero { grid-template-columns: auto 1fr; }
-.drawer .ring-wrap { grid-column: 1 / -1; justify-self: start; }
-.drawer .lp-grid { grid-template-columns: 1fr; } .drawer .lp-wide, .drawer .guard-panel { grid-column: auto; }
-.drawer .check-tiles { grid-template-columns: repeat(2, 1fr); }
-.drawer .glance { grid-template-columns: repeat(3, 1fr); }
-.drawer .strip-name { display: inline; }
-@media (prefers-reduced-motion: reduce) { .lead-panel-slot.drawer, .drawer-backdrop { transition: none; } }
+.split.has-panel .split-right.is-loading { opacity: .5; }
+.split-right .lead-panel { border-radius: 0; border: 0; box-shadow: none; animation: none; }
+.split-right .hero { grid-template-columns: auto 1fr; }
+.split-right .ring-wrap { grid-column: 1 / -1; justify-self: start; }
+.split-right .lp-grid { grid-template-columns: 1fr; } .split-right .lp-wide, .split-right .guard-panel { grid-column: auto; }
+.split-right .check-tiles { grid-template-columns: repeat(2, 1fr); }
+.split-right .glance { grid-template-columns: repeat(3, 1fr); }
+.split-right .strip-name { display: inline; }
+/* a narrower leads list while a record is open: keep the columns that matter for choosing a lead */
+.split.has-panel .cards { grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); }
+.split.has-panel .lead-table th:nth-child(2), .split.has-panel .lead-table td:nth-child(2),
+.split.has-panel .lead-table th:nth-child(3), .split.has-panel .lead-table td:nth-child(3),
+.split.has-panel .lead-table th:nth-child(5), .split.has-panel .lead-table td:nth-child(5),
+.split.has-panel .lead-table th:nth-child(6), .split.has-panel .lead-table td:nth-child(6),
+.split.has-panel .lead-table th:nth-child(9), .split.has-panel .lead-table td:nth-child(9) { display: none; }
+.split.has-panel .filters { flex-wrap: wrap; }
+@media (max-width: 980px) {
+  .split.has-panel { grid-template-columns: minmax(0, 1fr); }
+  .split.has-panel .split-right { position: static; max-height: none; order: -1; }
+}
