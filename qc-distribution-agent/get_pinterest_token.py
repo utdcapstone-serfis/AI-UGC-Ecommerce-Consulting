@@ -18,6 +18,7 @@ script doesn't yet handle refresh — PinterestAdapter uses a static
 token today. Re-run this script to get a new one when it expires.
 """
 
+import argparse
 import base64
 import os
 import secrets
@@ -45,6 +46,15 @@ def require(name: str) -> str:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--sandbox",
+        action="store_true",
+        help="make a token for Pinterest's Sandbox (api-sandbox.pinterest.com), where Trial apps may create Pins; the token is printed as PINTEREST_SANDBOX_ACCESS_TOKEN",
+    )
+    args = parser.parse_args()
+    api_host = "https://api-sandbox.pinterest.com" if args.sandbox else "https://api.pinterest.com"
+
     client_id = require("PINTEREST_CLIENT_ID")
     client_secret = require("PINTEREST_CLIENT_SECRET")
     state = secrets.token_urlsafe(16)
@@ -87,7 +97,7 @@ def main() -> None:
 
     basic_auth = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
     token_resp = requests.post(
-        "https://api.pinterest.com/v5/oauth/token",
+        f"{api_host}/v5/oauth/token",
         headers={"Authorization": f"Basic {basic_auth}", "Content-Type": "application/x-www-form-urlencoded"},
         data={"grant_type": "authorization_code", "code": captured["code"], "redirect_uri": REDIRECT_URI},
         timeout=15,
@@ -96,7 +106,7 @@ def main() -> None:
     body = token_resp.json()
 
     print("\nSuccess. Add this line to your .env yourself:\n")
-    print(f"PINTEREST_ACCESS_TOKEN={body['access_token']}")
+    print(f"{'PINTEREST_SANDBOX_ACCESS_TOKEN' if args.sandbox else 'PINTEREST_ACCESS_TOKEN'}={body['access_token']}")
     if "refresh_token" in body:
         print(f"\n(A refresh_token was also issued, expires_in={body.get('expires_in')}s. Not currently used by PinterestAdapter, but worth saving somewhere if you want to add refresh support later.)")
 

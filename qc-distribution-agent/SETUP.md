@@ -148,6 +148,8 @@ Note: video posting on AT Protocol requires the video to finish server-side proc
 3. Find the target board's id (`GET /v5/boards`, or from the board's URL) and fill in `PINTEREST_ACCESS_TOKEN` and `PINTEREST_BOARD_ID`.
 4. **Submit the app to Pinterest for review before relying on it beyond initial testing.** Their Developer Terms require review and approval "prior to distribution to End Users or commencement of use" — this isn't optional for production use, even for posting to a single business's own account. See `CURRENT_OBSTACLES.md` for the full note; this step wasn't in earlier versions of this walkthrough and is a real gap, not a formality to skip.
 
+**Sandbox (testing with Trial access, 2026-10-23).** With Trial access the real Pinterest API refuses to create pins (HTTP 403); Pinterest's Sandbox (`api-sandbox.pinterest.com`) allows it, with separate boards and pins visible only to your own account. Run `python get_pinterest_token.py --sandbox`, put the printed value in `.env` as `PINTEREST_SANDBOX_ACCESS_TOKEN` (keep `PINTEREST_ACCESS_TOKEN` unchanged; the tokens are not interchangeable and the Sandbox one lasts about 30 days), then send the same calls to the Sandbox host with that token. A video pin was created this way even though Pinterest's docs list video as unsupported in the Sandbox. The adapter does not have a Sandbox option yet. See `CURRENT_OBSTACLES.md`.
+
 `PinterestAdapter.upload()` requires `VideoAsset.local_path` — it uploads the file directly and generates the required cover image itself (the video's own first frame) rather than needing you to host a separate thumbnail.
 
 ## X (Twitter)
