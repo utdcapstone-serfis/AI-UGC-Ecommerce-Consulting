@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Dashboard - Serfis Lead Dashboard{% endblock %}
 {% block content %}
-  <section id="lead-panel" class="lead-panel-slot" aria-live="polite">
-    {% if selected %}{% include "_lead_panel.html" %}
-    {% else %}<div class="lead-panel-hint">Click any company below to see everything we have on it here, with its manual approval status.</div>{% endif %}
-  </section>
+  <div id="drawer-backdrop" class="drawer-backdrop {{ 'open' if selected else '' }}" data-close-panel></div>
+  <aside id="lead-panel" class="lead-panel-slot drawer {{ 'open' if selected else '' }}" aria-live="polite" aria-label="Company record" tabindex="-1">
+    {% if selected %}{% include "_lead_panel.html" %}{% endif %}
+  </aside>
 
 
   {% if sending_state %}
@@ -149,6 +149,7 @@
 <script>
 (function () {
   var slot = document.getElementById('lead-panel');
+  var backdrop = document.getElementById('drawer-backdrop');
   var rows = document.querySelectorAll('.lead-row');
   function mark(id) { rows.forEach(function (r) { r.classList.toggle('row-selected', String(r.dataset.leadId) === String(id)); }); }
   function setUrl(id) {
@@ -156,23 +157,28 @@
     if (id) { u.searchParams.set('lead', id); } else { u.searchParams.delete('lead'); }
     u.hash = ''; history.replaceState(null, '', u);
   }
+  function show() { slot.classList.add('open'); backdrop.classList.add('open'); document.body.classList.add('drawer-open'); }
   function openLead(id) {
-    slot.classList.add('is-loading');
+    slot.classList.add('is-loading'); show();
     fetch('/panel/' + id, { headers: { 'X-Requested-With': 'fetch' } })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
-      .then(function (html) { slot.innerHTML = html; slot.classList.remove('is-loading'); mark(id); setUrl(id); window.scrollTo({ top: 0, behavior: 'smooth' }); })
-      .catch(function () { slot.classList.remove('is-loading'); window.location = '/?lead=' + id + '#lead-panel'; });
+      .then(function (html) { slot.innerHTML = html; slot.scrollTop = 0; slot.classList.remove('is-loading'); mark(id); setUrl(id); slot.focus({ preventScroll: true }); })
+      .catch(function () { slot.classList.remove('is-loading'); window.location = '/?lead=' + id; });
   }
   function closePanel() {
-    slot.innerHTML = '<div class="lead-panel-hint">Click any company below to see everything we have on it here, with its manual approval status.</div>';
+    slot.classList.remove('open'); backdrop.classList.remove('open'); document.body.classList.remove('drawer-open');
     mark(null); setUrl(null);
+    setTimeout(function () { if (!slot.classList.contains('open')) { slot.innerHTML = ''; } }, 320);
   }
+  if (slot.classList.contains('open')) { document.body.classList.add('drawer-open'); }
   rows.forEach(function (row) {
     row.addEventListener('click', function (e) {
       if (e.metaKey || e.ctrlKey || e.shiftKey) { return; }      // let a modified click open the link normally
       e.preventDefault(); openLead(row.dataset.leadId);
     });
   });
+  backdrop.addEventListener('click', closePanel);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && slot.classList.contains('open')) { closePanel(); } });
   slot.addEventListener('click', function (e) {
     if (e.target.closest('[data-close-panel]')) { closePanel(); return; }
     var c = e.target.closest('[data-copy]');

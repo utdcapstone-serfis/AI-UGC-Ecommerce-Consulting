@@ -586,3 +586,25 @@ dl dd { margin: 4px 0 0; font-size: 15px; line-height: 1.5; word-break: break-wo
   .strip-name { display: none; }
 }
 @media (max-width: 520px) { .check-tiles, .glance { grid-template-columns: 1fr; } }
+
+/* =====================================================================
+   Company record as a right-hand drawer: opens when a company is clicked
+   ===================================================================== */
+.drawer-backdrop { position: fixed; inset: 0; z-index: 40; background: rgba(6,3,15,.62); opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+.drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+.lead-panel-slot.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 50; width: min(820px, 94vw); margin: 0;
+  overflow-y: auto; overscroll-behavior: contain; background: var(--bg); border-left: 1px solid var(--line-2);
+  box-shadow: -30px 0 80px -30px rgba(0,0,0,.8); outline: none;
+  transform: translateX(104%); visibility: hidden; transition: transform .3s var(--ease-out), visibility 0s linear .3s;
+}
+.lead-panel-slot.drawer.open { transform: none; visibility: visible; transition: transform .3s var(--ease-out), visibility 0s; }
+body.drawer-open { overflow: hidden; }
+.drawer .lead-panel { border-radius: 0; border: 0; box-shadow: none; animation: none; min-height: 100%; }
+.drawer .hero { grid-template-columns: auto 1fr; }
+.drawer .ring-wrap { grid-column: 1 / -1; justify-self: start; }
+.drawer .lp-grid { grid-template-columns: 1fr; } .drawer .lp-wide, .drawer .guard-panel { grid-column: auto; }
+.drawer .check-tiles { grid-template-columns: repeat(2, 1fr); }
+.drawer .glance { grid-template-columns: repeat(3, 1fr); }
+.drawer .strip-name { display: inline; }
+@media (prefers-reduced-motion: reduce) { .lead-panel-slot.drawer, .drawer-backdrop { transition: none; } }
