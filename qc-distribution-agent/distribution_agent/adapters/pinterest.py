@@ -8,12 +8,20 @@ Setup required before this works (see SETUP.md):
 
 Requires PINTEREST_ACCESS_TOKEN and PINTEREST_BOARD_ID in the environment.
 
+Sandbox mode (for apps that only have Trial access, where the real API refuses to
+create Pins with HTTP 403): pass sandbox=True, or set PINTEREST_SANDBOX=true. The
+adapter then talks to api-sandbox.pinterest.com and needs PINTEREST_SANDBOX_ACCESS_TOKEN
+(from `get_pinterest_token.py --sandbox`) and PINTEREST_SANDBOX_BOARD_ID. Sandbox tokens,
+boards and Pins are separate from production ones and visible only to your own account,
+so nothing posted in Sandbox is public. Checked on 2026-10-23: a video Pin was created.
+
 A video Pin needs a cover image. Rather than requiring the caller to
 host one separately, this adapter grabs the video's own first frame
 with OpenCV and sends it inline as base64 — no extra public URL needed.
 """
 
 import base64
+import os
 from pathlib import Path
 
 import cv2
@@ -23,14 +31,23 @@ from ..config import require_env
 from .base import PlatformAdapter, PostResult, VideoAsset, poll_until
 
 API_BASE = "https://api.pinterest.com/v5"
+SANDBOX_API_BASE = "https://api-sandbox.pinterest.com/v5"
 
 
 class PinterestAdapter(PlatformAdapter):
     platform_name = "pinterest"
 
-    def __init__(self) -> None:
-        self.access_token = require_env("PINTEREST_ACCESS_TOKEN")
-        self.board_id = require_env("PINTEREST_BOARD_ID")
+    def __init__(self, sandbox: bool | None = None) -> None:
+        if sandbox is None:
+            sandbox = os.environ.get("PINTEREST_SANDBOX", "").strip().lower() in ("1", "true", "yes")
+        self.sandbox = sandbox
+        self.api_base = SANDBOX_API_BASE if sandbox else API_BASE
+        if sandbox:
+            self.access_token = require_env("PINTEREST_SANDBOX_ACCESS_TOKEN")
+            self.board_id = require_env("PINTEREST_SANDBOX_BOARD_ID")
+        else:
+            self.access_token = require_env("PINTEREST_ACCESS_TOKEN")
+            self.board_id = require_env("PINTEREST_BOARD_ID")
 
     def _headers(self) -> dict:
         return {"Authorization": f"Bearer {self.access_token}"}
@@ -43,7 +60,7 @@ class PinterestAdapter(PlatformAdapter):
         cover_b64 = self._first_frame_base64(asset.local_path)
 
         resp = requests.post(
-            f"{API_BASE}/pins",
+            f"{self.api_base}/pins",
             headers=self._headers(),
             json={
                 "board_id": self.board_id,
@@ -60,11 +77,13 @@ class PinterestAdapter(PlatformAdapter):
         )
         resp.raise_for_status()
         pin_id = resp.json()["id"]
-        return PostResult(platform=self.platform_name, post_id=pin_id, url=f"https://www.pinterest.com/pin/{pin_id}/")
+        # A Sandbox Pin is visible only to its creator, so it gets no public link.
+        url = None if self.sandbox else f"https://www.pinterest.com/pin/{pin_id}/"
+        return PostResult(platform=self.platform_name, post_id=pin_id, url=url)
 
     def _upload_video(self, local_path: Path) -> str:
         register = requests.post(
-            f"{API_BASE}/media",
+            f"{self.api_base}/media",
             headers=self._headers(),
             json={"media_type": "video"},
             timeout=15,
@@ -90,7 +109,7 @@ class PinterestAdapter(PlatformAdapter):
         return media_id
 
     def _media_status(self, media_id: str) -> str:
-        resp = requests.get(f"{API_BASE}/media/{media_id}", headers=self._headers(), timeout=15)
+        resp = requests.get(f"{self.api_base}/media/{media_id}", headers=self._headers(), timeout=15)
         resp.raise_for_status()
         status = resp.json().get("status", "")
         if status == "failed":
@@ -109,5 +128,5 @@ class PinterestAdapter(PlatformAdapter):
         return base64.b64encode(buf.tobytes()).decode("ascii")
 
     def verify_live(self, post_id: str) -> bool:
-        resp = requests.get(f"{API_BASE}/pins/{post_id}", headers=self._headers(), timeout=15)
+        resp = requests.get(f"{self.api_base}/pins/{post_id}", headers=self._headers(), timeout=15)
         return resp.ok and "id" in resp.json()
