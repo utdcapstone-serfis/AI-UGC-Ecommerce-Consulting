@@ -166,6 +166,16 @@ Note: X refresh tokens rotate on use (confirmed 2026-10-11): each refresh issues
 
 `XAdapter.upload()` requires `VideoAsset.local_path` — it does a full chunked upload (INIT/APPEND/FINALIZE) directly to X, then polls for video processing before posting.
 
+## Snapchat
+
+**Status 2026-10-23: login and tokens work; the Public Profile API still answers 403 until Snap allowlists the app. No adapter yet.** Details in `CURRENT_OBSTACLES.md`.
+
+1. Use a shared team Snapchat account (not a personal one) with a **Business** Public Profile, and open a Business Account in Business Manager (business.snapchat.com). Do not add a payment method or run ads.
+2. In Business Manager, **Business Details, OAuth Apps, + OAuth App** (not the Developer Portal, and not Apps, Add an App, which is for ad measurement). Name it, choose the scope `snapchat-profile-api`, and enter an **https** redirect address (Snap refuses `http://localhost`); we use `https://utdcapstone-serfis.github.io/serfis-site/callback`, which can show 404.
+3. Copy the **Client ID** (36 characters; check the last character) and the **Client Secret** (shown once) into `.env` yourself as `SNAPCHAT_CLIENT_ID` and `SNAPCHAT_CLIENT_SECRET`.
+4. Run `python get_snapchat_token.py`, open the link it prints in a browser signed in to the shared account, click Continue, then paste the address of the page you land on (it holds `?code=`) into the terminal. Copy the printed `SNAPCHAT_ACCESS_TOKEN` and `SNAPCHAT_REFRESH_TOKEN` into `.env`. The access token lasts 1 hour; the refresh token renews it and was not replaced when used.
+5. The Public Profile API is allowlist-only: email Snap's point of contact (or use the business help site) with the Client ID and a description of the intended use, never the secret. Then fill `SNAPCHAT_PROFILE_ID` from the API.
+
 ## LinkedIn
 
 Native, as of 2026-10-01. Posts to a **personal profile**, not a Company Page — see `CURRENT_OBSTACLES.md` for why (Company Page creation needs a connections/profile-strength threshold on the account that wasn't met, and a LinkedIn developer app can't even be created without a Page attached either way).
